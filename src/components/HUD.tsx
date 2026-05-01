@@ -1,8 +1,6 @@
 import { GameState, getRank, getXPProgress, getFaction, canClaimDaily, countControlled, PLANETS } from "@/lib/gameState";
-import starAtlasLogo from "@/assets/star-atlas-logo.png";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
-import LanguageToggle from "@/components/LanguageToggle";
 
 type Screen = "map" | "planet" | "shop" | "pets" | "info";
 
@@ -29,12 +27,6 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 bg-card/90 backdrop-blur-md border-b border-border/60 shadow-lg">
         {/* Left: Logo + Rank */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <img
-            src={starAtlasLogo}
-            alt="Star Atlas"
-            className="h-6 sm:h-7 opacity-80 cursor-pointer hover:opacity-100 transition-opacity shrink-0"
-            onClick={onLogoClick}
-          />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="text-sm sm:text-base font-bold text-foreground truncate" style={{ fontFamily: "var(--font-display)" }}>
@@ -67,7 +59,6 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
 
         {/* Right: Lang toggle + Planets controlled + Currency + Daily */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-          <LanguageToggle />
           {activeSectors > 0 && (
             <div className="flex items-center gap-1 rounded-lg bg-card/60 px-2 py-1 text-muted-foreground" title={t("activeSectors")}>
               <span className="text-sm">📡</span>

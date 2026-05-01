@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FACTIONS, FactionId } from "@/lib/gameState";
-import starAtlasLogo from "@/assets/star-atlas-logo.png";
 import factionMud from "@/assets/faction-mud.png";
 import factionOni from "@/assets/faction-oni.png";
 import factionUstur from "@/assets/faction-ustur.png";
 import { useI18n } from "@/lib/i18n";
-import LanguageToggle from "@/components/LanguageToggle";
 
 const FACTION_IMAGES: Record<FactionId, string> = {
   mud: factionMud,
@@ -39,13 +37,7 @@ export default function FactionSelect({ onSelect }: Props) {
 
   return (
     <div className="space-bg min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 relative overflow-y-auto">
-      {/* Language toggle */}
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50">
-        <LanguageToggle />
-      </div>
-
       <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-slide-up">
-        <img src={starAtlasLogo} alt="Star Atlas" className="h-16 sm:h-24 md:h-32 lg:h-36 mx-auto mb-2 sm:mb-4 opacity-90" />
         <h1
           className="mx-auto mb-1 whitespace-nowrap text-[clamp(2rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.04em] text-white sm:mb-2"
           style={{

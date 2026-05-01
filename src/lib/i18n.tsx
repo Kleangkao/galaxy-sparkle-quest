@@ -28,7 +28,7 @@ const translations = {
   swipeExplore: { en: "👆 Swipe to explore", th: "👆 ปัดเพื่อสำรวจ" },
 
   // Faction Select
-  cosmicExplorerGalaxy: { en: "🚀 Cosmic Explorer Galaxy", th: "🚀 สำรวจกาแล็กซี่" },
+  cosmicExplorerGalaxy: { en: "🛡️ Guardians of Galia", th: "🛡️ Guardians of Galia" },
   chooseTeam: { en: "Choose your exploration team!", th: "เลือกทีมสำรวจได้เลย!" },
   joinFaction: { en: "Join", th: "เข้าร่วม" },
 
