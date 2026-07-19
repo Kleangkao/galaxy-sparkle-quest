@@ -18,6 +18,9 @@ export default defineConfig({
     },
   },
   build: {
+    // Sites binds static files from dist/client to the production worker.
+    // Keep the worker itself in dist/server (written by prepare-sites.mjs).
+    outDir: "dist/client",
     rollupOptions: {
       output: {
         manualChunks(id) {

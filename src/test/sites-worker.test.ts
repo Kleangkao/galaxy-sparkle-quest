@@ -3,6 +3,11 @@ import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 
 describe("Sites worker", () => {
+  it("builds browser assets into the Sites client directory", async () => {
+    const viteConfig = await readFile(`${process.cwd()}/vite.config.ts`, "utf8");
+    expect(viteConfig).toContain('outDir: "dist/client"');
+  });
+
   it("serves assets, applies security headers, and falls back to the SPA shell", async () => {
     const workerPath = pathToFileURL(`${process.cwd()}/sites/worker.js`).href;
     const { default: worker } = await import(workerPath);
