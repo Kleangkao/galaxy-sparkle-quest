@@ -25,7 +25,9 @@ export function logError(error: unknown, screen = "unknown") {
     logs.push(entry);
     if (logs.length > MAX_LOGS) logs.splice(0, logs.length - MAX_LOGS);
     localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(logs));
-  } catch {}
+  } catch {
+    // Error reporting must never become a second failure when storage is blocked.
+  }
 }
 
 export function getErrorLogs(): ErrorLog[] {
@@ -132,7 +134,7 @@ export function detectLowPerformance(): boolean {
     // Check hardware concurrency
     const cores = navigator.hardwareConcurrency || 2;
     // Check device memory (Chrome only)
-    const memory = (navigator as any).deviceMemory || 4;
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4;
     // Check if mobile
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     
@@ -180,14 +182,27 @@ export function stopHealthCheck() {
 }
 
 // ─── Global Error Handler ────────────────────────────────────────
-export function installGlobalErrorHandlers() {
-  window.addEventListener("error", (event) => {
-    logError(event.error || event.message, "global");
-    event.preventDefault();
-  });
+let removeGlobalErrorHandlers: (() => void) | null = null;
 
-  window.addEventListener("unhandledrejection", (event) => {
+export function installGlobalErrorHandlers() {
+  if (removeGlobalErrorHandlers) return removeGlobalErrorHandlers;
+
+  const handleError = (event: ErrorEvent) => {
+    logError(event.error || event.message, "global");
+  };
+
+  const handleRejection = (event: PromiseRejectionEvent) => {
     logError(event.reason, "promise");
-    event.preventDefault();
-  });
+  };
+
+  window.addEventListener("error", handleError);
+  window.addEventListener("unhandledrejection", handleRejection);
+
+  const cleanup = () => {
+    window.removeEventListener("error", handleError);
+    window.removeEventListener("unhandledrejection", handleRejection);
+    if (removeGlobalErrorHandlers === cleanup) removeGlobalErrorHandlers = null;
+  };
+  removeGlobalErrorHandlers = cleanup;
+  return cleanup;
 }

@@ -1,0 +1,1552 @@
+{
+  "projects": [
+    {
+      "slug": "gwg8WZ",
+      "title": "Star Atlas: MUD Commander",
+      "sourceUrl": "https://www.artstation.com/artwork/gwg8WZ",
+      "assets": [
+        {
+          "source": "gwg8WZ/masters/01-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-002.webp",
+          "display": "/assets/star-atlas/gwg8WZ/01-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-002.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/01-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 42480,
+          "thumbnailBytes": 5546
+        },
+        {
+          "source": "gwg8WZ/masters/02-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-back-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/02-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-back-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/02-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-back-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 43260,
+          "thumbnailBytes": 5672
+        },
+        {
+          "source": "gwg8WZ/masters/03-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyback-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/03-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyback-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/03-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyback-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 85272,
+          "thumbnailBytes": 10712
+        },
+        {
+          "source": "gwg8WZ/masters/04-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyside-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/04-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyside-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/04-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-bodyside-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 83456,
+          "thumbnailBytes": 10650
+        },
+        {
+          "source": "gwg8WZ/masters/05-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsofront-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/05-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsofront-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/05-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsofront-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 76244,
+          "thumbnailBytes": 8940
+        },
+        {
+          "source": "gwg8WZ/masters/06-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-legsback-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/06-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-legsback-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/06-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-legsback-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 49912,
+          "thumbnailBytes": 6372
+        },
+        {
+          "source": "gwg8WZ/masters/07-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsoside-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/07-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsoside-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/07-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-torsoside-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 74928,
+          "thumbnailBytes": 9186
+        },
+        {
+          "source": "gwg8WZ/masters/08-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-003.webp",
+          "display": "/assets/star-atlas/gwg8WZ/08-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-003.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/08-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-003.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 53348,
+          "thumbnailBytes": 7438
+        },
+        {
+          "source": "gwg8WZ/masters/09-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-004.webp",
+          "display": "/assets/star-atlas/gwg8WZ/09-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-004.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/09-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-004.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 48698,
+          "thumbnailBytes": 6528
+        },
+        {
+          "source": "gwg8WZ/masters/10-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-005.webp",
+          "display": "/assets/star-atlas/gwg8WZ/10-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-005.webp",
+          "thumbnail": "/assets/star-atlas/gwg8WZ/thumbs/10-sperasoft-a-keywords-studio-kws-template-cha-mud-f-commander-a-front-005.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 44600,
+          "thumbnailBytes": 5916
+        }
+      ]
+    },
+    {
+      "slug": "Bao3G9",
+      "title": "Star Atlas: MUD Player One",
+      "sourceUrl": "https://www.artstation.com/artwork/Bao3G9",
+      "assets": [
+        {
+          "source": "Bao3G9/masters/01-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-fronta-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/01-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-fronta-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/01-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-fronta-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 44668,
+          "thumbnailBytes": 5462
+        },
+        {
+          "source": "Bao3G9/masters/02-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backa-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/02-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backa-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/02-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backa-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 38200,
+          "thumbnailBytes": 4910
+        },
+        {
+          "source": "Bao3G9/masters/03-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-portrait-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/03-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-portrait-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/03-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-portrait-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 145420,
+          "thumbnailBytes": 13610
+        },
+        {
+          "source": "Bao3G9/masters/04-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-frontb-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/04-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-frontb-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/04-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-frontb-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 47130,
+          "thumbnailBytes": 5622
+        },
+        {
+          "source": "Bao3G9/masters/05-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backb-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/05-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backb-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/05-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-backb-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 37236,
+          "thumbnailBytes": 4494
+        },
+        {
+          "source": "Bao3G9/masters/06-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestback-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/06-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestback-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/06-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestback-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 72048,
+          "thumbnailBytes": 8138
+        },
+        {
+          "source": "Bao3G9/masters/07-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestfront-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/07-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestfront-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/07-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-chestfront-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 84762,
+          "thumbnailBytes": 10072
+        },
+        {
+          "source": "Bao3G9/masters/08-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-torso-002.webp",
+          "display": "/assets/star-atlas/Bao3G9/08-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-torso-002.webp",
+          "thumbnail": "/assets/star-atlas/Bao3G9/thumbs/08-sperasoft-a-keywords-studio-kws-template-cha-mud-m-playerone-torso-002.webp",
+          "width": 1280,
+          "height": 1600,
+          "aspectRatio": 0.8,
+          "hasAlpha": false,
+          "bytes": 95590,
+          "thumbnailBytes": 10962
+        }
+      ]
+    },
+    {
+      "slug": "bgo63m",
+      "title": "Star Atlas - Foliage",
+      "sourceUrl": "https://www.artstation.com/artwork/bgo63m",
+      "assets": [
+        {
+          "source": "bgo63m/masters/01-ethan-pflugh-treerender-02.webp",
+          "display": "/assets/star-atlas/bgo63m/01-ethan-pflugh-treerender-02.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/01-ethan-pflugh-treerender-02.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 29376,
+          "thumbnailBytes": 4162
+        },
+        {
+          "source": "bgo63m/masters/02-ethan-pflugh-treerender-01.webp",
+          "display": "/assets/star-atlas/bgo63m/02-ethan-pflugh-treerender-01.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/02-ethan-pflugh-treerender-01.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 37472,
+          "thumbnailBytes": 5376
+        },
+        {
+          "source": "bgo63m/masters/03-ethan-pflugh-highresscreenshot00002.webp",
+          "display": "/assets/star-atlas/bgo63m/03-ethan-pflugh-highresscreenshot00002.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/03-ethan-pflugh-highresscreenshot00002.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 105012,
+          "thumbnailBytes": 14726
+        },
+        {
+          "source": "bgo63m/masters/04-ethan-pflugh-highresscreenshot00005.webp",
+          "display": "/assets/star-atlas/bgo63m/04-ethan-pflugh-highresscreenshot00005.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/04-ethan-pflugh-highresscreenshot00005.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 98536,
+          "thumbnailBytes": 12534
+        },
+        {
+          "source": "bgo63m/masters/05-ethan-pflugh-highresscreenshot00004.webp",
+          "display": "/assets/star-atlas/bgo63m/05-ethan-pflugh-highresscreenshot00004.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/05-ethan-pflugh-highresscreenshot00004.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 71810,
+          "thumbnailBytes": 11780
+        },
+        {
+          "source": "bgo63m/masters/06-ethan-pflugh-highresscreenshot00006.webp",
+          "display": "/assets/star-atlas/bgo63m/06-ethan-pflugh-highresscreenshot00006.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/06-ethan-pflugh-highresscreenshot00006.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 53278,
+          "thumbnailBytes": 9556
+        },
+        {
+          "source": "bgo63m/masters/07-ethan-pflugh-highresscreenshot00009.webp",
+          "display": "/assets/star-atlas/bgo63m/07-ethan-pflugh-highresscreenshot00009.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/07-ethan-pflugh-highresscreenshot00009.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 75720,
+          "thumbnailBytes": 11608
+        },
+        {
+          "source": "bgo63m/masters/08-ethan-pflugh-highresscreenshot00007.webp",
+          "display": "/assets/star-atlas/bgo63m/08-ethan-pflugh-highresscreenshot00007.webp",
+          "thumbnail": "/assets/star-atlas/bgo63m/thumbs/08-ethan-pflugh-highresscreenshot00007.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 54412,
+          "thumbnailBytes": 9872
+        }
+      ]
+    },
+    {
+      "slug": "kN1PYn",
+      "title": "First Person Kinetic Pistol - Star Atlas",
+      "sourceUrl": "https://www.artstation.com/artwork/kN1PYn",
+      "assets": [
+        {
+          "source": "kN1PYn/masters/01-robin-karlsson-pistol-still-01.webp",
+          "display": "/assets/star-atlas/kN1PYn/01-robin-karlsson-pistol-still-01.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/01-robin-karlsson-pistol-still-01.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 33458,
+          "thumbnailBytes": 4422
+        },
+        {
+          "source": "kN1PYn/masters/02-robin-karlsson-pistol-still-02.webp",
+          "display": "/assets/star-atlas/kN1PYn/02-robin-karlsson-pistol-still-02.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/02-robin-karlsson-pistol-still-02.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 26072,
+          "thumbnailBytes": 3306
+        },
+        {
+          "source": "kN1PYn/masters/03-robin-karlsson-pistol-still-03.webp",
+          "display": "/assets/star-atlas/kN1PYn/03-robin-karlsson-pistol-still-03.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/03-robin-karlsson-pistol-still-03.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 49988,
+          "thumbnailBytes": 8540
+        },
+        {
+          "source": "kN1PYn/masters/04-robin-karlsson-pistol-still-04.webp",
+          "display": "/assets/star-atlas/kN1PYn/04-robin-karlsson-pistol-still-04.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/04-robin-karlsson-pistol-still-04.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 74102,
+          "thumbnailBytes": 11162
+        },
+        {
+          "source": "kN1PYn/masters/05-robin-karlsson-pistol-still-05.webp",
+          "display": "/assets/star-atlas/kN1PYn/05-robin-karlsson-pistol-still-05.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/05-robin-karlsson-pistol-still-05.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 56458,
+          "thumbnailBytes": 8998
+        },
+        {
+          "source": "kN1PYn/masters/06-robin-karlsson-pistol-still-06.webp",
+          "display": "/assets/star-atlas/kN1PYn/06-robin-karlsson-pistol-still-06.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/06-robin-karlsson-pistol-still-06.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 62794,
+          "thumbnailBytes": 11560
+        },
+        {
+          "source": "kN1PYn/masters/07-robin-karlsson-pistol-still-08.webp",
+          "display": "/assets/star-atlas/kN1PYn/07-robin-karlsson-pistol-still-08.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/07-robin-karlsson-pistol-still-08.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 36300,
+          "thumbnailBytes": 5532
+        },
+        {
+          "source": "kN1PYn/masters/08-robin-karlsson-pistol-still-variants.webp",
+          "display": "/assets/star-atlas/kN1PYn/08-robin-karlsson-pistol-still-variants.webp",
+          "thumbnail": "/assets/star-atlas/kN1PYn/thumbs/08-robin-karlsson-pistol-still-variants.webp",
+          "width": 1600,
+          "height": 675,
+          "aspectRatio": 2.3704,
+          "hasAlpha": false,
+          "bytes": 50752,
+          "thumbnailBytes": 6902
+        }
+      ]
+    },
+    {
+      "slug": "rzENQG",
+      "title": "Star Atlas - GAN Guns Kinetic Pistol",
+      "sourceUrl": "https://www.artstation.com/artwork/rzENQG",
+      "assets": [
+        {
+          "source": "rzENQG/masters/01-vertpaint-studios-kin-pst-final-skins-01.webp",
+          "display": "/assets/star-atlas/rzENQG/01-vertpaint-studios-kin-pst-final-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/rzENQG/thumbs/01-vertpaint-studios-kin-pst-final-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 82580,
+          "thumbnailBytes": 10280
+        },
+        {
+          "source": "rzENQG/masters/02-vertpaint-studios-kin-pst-final-main-01.webp",
+          "display": "/assets/star-atlas/rzENQG/02-vertpaint-studios-kin-pst-final-main-01.webp",
+          "thumbnail": "/assets/star-atlas/rzENQG/thumbs/02-vertpaint-studios-kin-pst-final-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 61726,
+          "thumbnailBytes": 7510
+        },
+        {
+          "source": "rzENQG/masters/03-vertpaint-studios-kin-pst-final-close-01.webp",
+          "display": "/assets/star-atlas/rzENQG/03-vertpaint-studios-kin-pst-final-close-01.webp",
+          "thumbnail": "/assets/star-atlas/rzENQG/thumbs/03-vertpaint-studios-kin-pst-final-close-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 65644,
+          "thumbnailBytes": 8238
+        }
+      ]
+    },
+    {
+      "slug": "Z0gQ4X",
+      "title": "Star Atlas - GAN Guns Kinetic Gatling",
+      "sourceUrl": "https://www.artstation.com/artwork/Z0gQ4X",
+      "assets": [
+        {
+          "source": "Z0gQ4X/masters/01-vertpaint-studios-kin-gat-skins-01.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/01-vertpaint-studios-kin-gat-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/01-vertpaint-studios-kin-gat-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 71666,
+          "thumbnailBytes": 8566
+        },
+        {
+          "source": "Z0gQ4X/masters/02-vertpaint-studios-kin-gat-main-02.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/02-vertpaint-studios-kin-gat-main-02.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/02-vertpaint-studios-kin-gat-main-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 47310,
+          "thumbnailBytes": 5890
+        },
+        {
+          "source": "Z0gQ4X/masters/03-vertpaint-studios-kin-gat-bk-01.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/03-vertpaint-studios-kin-gat-bk-01.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/03-vertpaint-studios-kin-gat-bk-01.webp",
+          "width": 1600,
+          "height": 993,
+          "aspectRatio": 1.6113,
+          "hasAlpha": false,
+          "bytes": 100096,
+          "thumbnailBytes": 12798
+        },
+        {
+          "source": "Z0gQ4X/masters/04-vertpaint-studios-kin-gat-bk-04.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/04-vertpaint-studios-kin-gat-bk-04.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/04-vertpaint-studios-kin-gat-bk-04.webp",
+          "width": 1600,
+          "height": 993,
+          "aspectRatio": 1.6113,
+          "hasAlpha": false,
+          "bytes": 74732,
+          "thumbnailBytes": 10808
+        },
+        {
+          "source": "Z0gQ4X/masters/05-vertpaint-studios-kin-gat-bk-02.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/05-vertpaint-studios-kin-gat-bk-02.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/05-vertpaint-studios-kin-gat-bk-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 56554,
+          "thumbnailBytes": 7574
+        },
+        {
+          "source": "Z0gQ4X/masters/06-vertpaint-studios-kin-gat-main-01.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/06-vertpaint-studios-kin-gat-main-01.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/06-vertpaint-studios-kin-gat-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 59982,
+          "thumbnailBytes": 7018
+        },
+        {
+          "source": "Z0gQ4X/masters/07-vertpaint-studios-kin-gat-bk-03.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/07-vertpaint-studios-kin-gat-bk-03.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/07-vertpaint-studios-kin-gat-bk-03.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 61216,
+          "thumbnailBytes": 8462
+        },
+        {
+          "source": "Z0gQ4X/masters/08-vertpaint-studios-kin-gat-fwd-01.webp",
+          "display": "/assets/star-atlas/Z0gQ4X/08-vertpaint-studios-kin-gat-fwd-01.webp",
+          "thumbnail": "/assets/star-atlas/Z0gQ4X/thumbs/08-vertpaint-studios-kin-gat-fwd-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 57536,
+          "thumbnailBytes": 8518
+        }
+      ]
+    },
+    {
+      "slug": "RqEw2E",
+      "title": "Star Atlas - GAN Guns Kinetic Rifle",
+      "sourceUrl": "https://www.artstation.com/artwork/RqEw2E",
+      "assets": [
+        {
+          "source": "RqEw2E/masters/01-vertpaint-studios-kin-ar-skins-01.webp",
+          "display": "/assets/star-atlas/RqEw2E/01-vertpaint-studios-kin-ar-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/01-vertpaint-studios-kin-ar-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 74880,
+          "thumbnailBytes": 8804
+        },
+        {
+          "source": "RqEw2E/masters/02-vertpaint-studios-kin-ar-bk-01.webp",
+          "display": "/assets/star-atlas/RqEw2E/02-vertpaint-studios-kin-ar-bk-01.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/02-vertpaint-studios-kin-ar-bk-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 86494,
+          "thumbnailBytes": 11808
+        },
+        {
+          "source": "RqEw2E/masters/03-vertpaint-studios-kin-ar-main-02.webp",
+          "display": "/assets/star-atlas/RqEw2E/03-vertpaint-studios-kin-ar-main-02.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/03-vertpaint-studios-kin-ar-main-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 69944,
+          "thumbnailBytes": 9388
+        },
+        {
+          "source": "RqEw2E/masters/04-vertpaint-studios-kin-ar-fwd-01.webp",
+          "display": "/assets/star-atlas/RqEw2E/04-vertpaint-studios-kin-ar-fwd-01.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/04-vertpaint-studios-kin-ar-fwd-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 59816,
+          "thumbnailBytes": 9184
+        },
+        {
+          "source": "RqEw2E/masters/05-vertpaint-studios-kin-ar-main-01.webp",
+          "display": "/assets/star-atlas/RqEw2E/05-vertpaint-studios-kin-ar-main-01.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/05-vertpaint-studios-kin-ar-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 48332,
+          "thumbnailBytes": 5514
+        },
+        {
+          "source": "RqEw2E/masters/06-vertpaint-studios-kin-ar-bk-02.webp",
+          "display": "/assets/star-atlas/RqEw2E/06-vertpaint-studios-kin-ar-bk-02.webp",
+          "thumbnail": "/assets/star-atlas/RqEw2E/thumbs/06-vertpaint-studios-kin-ar-bk-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 89596,
+          "thumbnailBytes": 12916
+        }
+      ]
+    },
+    {
+      "slug": "31lYOA",
+      "title": "Star Atlas - GAN Guns Energy Rifle",
+      "sourceUrl": "https://www.artstation.com/artwork/31lYOA",
+      "assets": [
+        {
+          "source": "31lYOA/masters/01-vertpaint-studios-eng-ar-final-skins-01.webp",
+          "display": "/assets/star-atlas/31lYOA/01-vertpaint-studios-eng-ar-final-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/31lYOA/thumbs/01-vertpaint-studios-eng-ar-final-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 72774,
+          "thumbnailBytes": 8754
+        },
+        {
+          "source": "31lYOA/masters/02-vertpaint-studios-eng-ar-final-main-02.webp",
+          "display": "/assets/star-atlas/31lYOA/02-vertpaint-studios-eng-ar-final-main-02.webp",
+          "thumbnail": "/assets/star-atlas/31lYOA/thumbs/02-vertpaint-studios-eng-ar-final-main-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 64602,
+          "thumbnailBytes": 8792
+        },
+        {
+          "source": "31lYOA/masters/03-vertpaint-studios-eng-ar-final-fp-01.webp",
+          "display": "/assets/star-atlas/31lYOA/03-vertpaint-studios-eng-ar-final-fp-01.webp",
+          "thumbnail": "/assets/star-atlas/31lYOA/thumbs/03-vertpaint-studios-eng-ar-final-fp-01.webp",
+          "width": 1600,
+          "height": 993,
+          "aspectRatio": 1.6113,
+          "hasAlpha": false,
+          "bytes": 47726,
+          "thumbnailBytes": 5646
+        },
+        {
+          "source": "31lYOA/masters/04-vertpaint-studios-eng-ar-final-main-01.webp",
+          "display": "/assets/star-atlas/31lYOA/04-vertpaint-studios-eng-ar-final-main-01.webp",
+          "thumbnail": "/assets/star-atlas/31lYOA/thumbs/04-vertpaint-studios-eng-ar-final-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 51138,
+          "thumbnailBytes": 5770
+        },
+        {
+          "source": "31lYOA/masters/05-vertpaint-studios-eng-ar-final-bk-03.webp",
+          "display": "/assets/star-atlas/31lYOA/05-vertpaint-studios-eng-ar-final-bk-03.webp",
+          "thumbnail": "/assets/star-atlas/31lYOA/thumbs/05-vertpaint-studios-eng-ar-final-bk-03.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 65590,
+          "thumbnailBytes": 9070
+        }
+      ]
+    },
+    {
+      "slug": "Qxm54E",
+      "title": "Star Atlas - GAN Guns Energy Pistol",
+      "sourceUrl": "https://www.artstation.com/artwork/Qxm54E",
+      "assets": [
+        {
+          "source": "Qxm54E/masters/01-vertpaint-studios-eng-pst-final-skins-01.webp",
+          "display": "/assets/star-atlas/Qxm54E/01-vertpaint-studios-eng-pst-final-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/Qxm54E/thumbs/01-vertpaint-studios-eng-pst-final-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 74840,
+          "thumbnailBytes": 9922
+        },
+        {
+          "source": "Qxm54E/masters/02-vertpaint-studios-eng-pst-final-main-01.webp",
+          "display": "/assets/star-atlas/Qxm54E/02-vertpaint-studios-eng-pst-final-main-01.webp",
+          "thumbnail": "/assets/star-atlas/Qxm54E/thumbs/02-vertpaint-studios-eng-pst-final-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 65638,
+          "thumbnailBytes": 8764
+        },
+        {
+          "source": "Qxm54E/masters/03-vertpaint-studios-eng-pst-final-close-03.webp",
+          "display": "/assets/star-atlas/Qxm54E/03-vertpaint-studios-eng-pst-final-close-03.webp",
+          "thumbnail": "/assets/star-atlas/Qxm54E/thumbs/03-vertpaint-studios-eng-pst-final-close-03.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 68332,
+          "thumbnailBytes": 8660
+        },
+        {
+          "source": "Qxm54E/masters/04-vertpaint-studios-eng-pst-final-close-02.webp",
+          "display": "/assets/star-atlas/Qxm54E/04-vertpaint-studios-eng-pst-final-close-02.webp",
+          "thumbnail": "/assets/star-atlas/Qxm54E/thumbs/04-vertpaint-studios-eng-pst-final-close-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 65688,
+          "thumbnailBytes": 9230
+        }
+      ]
+    },
+    {
+      "slug": "La5dKR",
+      "title": "Star Atlas - GAN Guns Kinetic Shotgun",
+      "sourceUrl": "https://www.artstation.com/artwork/La5dKR",
+      "assets": [
+        {
+          "source": "La5dKR/masters/01-vertpaint-studios-kin-snp-final-skins-01.webp",
+          "display": "/assets/star-atlas/La5dKR/01-vertpaint-studios-kin-snp-final-skins-01.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/01-vertpaint-studios-kin-snp-final-skins-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 83004,
+          "thumbnailBytes": 10436
+        },
+        {
+          "source": "La5dKR/masters/02-vertpaint-studios-kin-snp-final-main-01.webp",
+          "display": "/assets/star-atlas/La5dKR/02-vertpaint-studios-kin-snp-final-main-01.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/02-vertpaint-studios-kin-snp-final-main-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 51406,
+          "thumbnailBytes": 6228
+        },
+        {
+          "source": "La5dKR/masters/03-vertpaint-studios-kin-snp-final-main-02.webp",
+          "display": "/assets/star-atlas/La5dKR/03-vertpaint-studios-kin-snp-final-main-02.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/03-vertpaint-studios-kin-snp-final-main-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 57774,
+          "thumbnailBytes": 7460
+        },
+        {
+          "source": "La5dKR/masters/04-vertpaint-studios-kin-snp-final-close-fwd-01.webp",
+          "display": "/assets/star-atlas/La5dKR/04-vertpaint-studios-kin-snp-final-close-fwd-01.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/04-vertpaint-studios-kin-snp-final-close-fwd-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 55696,
+          "thumbnailBytes": 8530
+        },
+        {
+          "source": "La5dKR/masters/05-vertpaint-studios-kin-snp-final-close-bk-02.webp",
+          "display": "/assets/star-atlas/La5dKR/05-vertpaint-studios-kin-snp-final-close-bk-02.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/05-vertpaint-studios-kin-snp-final-close-bk-02.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 76294,
+          "thumbnailBytes": 10254
+        },
+        {
+          "source": "La5dKR/masters/06-vertpaint-studios-kin-snp-final-fp-01.webp",
+          "display": "/assets/star-atlas/La5dKR/06-vertpaint-studios-kin-snp-final-fp-01.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/06-vertpaint-studios-kin-snp-final-fp-01.webp",
+          "width": 1600,
+          "height": 993,
+          "aspectRatio": 1.6113,
+          "hasAlpha": false,
+          "bytes": 42966,
+          "thumbnailBytes": 5178
+        },
+        {
+          "source": "La5dKR/masters/07-vertpaint-studios-kin-snp-final-close-fwd-02.webp",
+          "display": "/assets/star-atlas/La5dKR/07-vertpaint-studios-kin-snp-final-close-fwd-02.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/07-vertpaint-studios-kin-snp-final-close-fwd-02.webp",
+          "width": 1600,
+          "height": 993,
+          "aspectRatio": 1.6113,
+          "hasAlpha": false,
+          "bytes": 82414,
+          "thumbnailBytes": 11200
+        },
+        {
+          "source": "La5dKR/masters/08-vertpaint-studios-kin-snp-final-close-bk-03.webp",
+          "display": "/assets/star-atlas/La5dKR/08-vertpaint-studios-kin-snp-final-close-bk-03.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/08-vertpaint-studios-kin-snp-final-close-bk-03.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 75554,
+          "thumbnailBytes": 9914
+        },
+        {
+          "source": "La5dKR/masters/09-vertpaint-studios-kin-snp-final-close-bk-01.webp",
+          "display": "/assets/star-atlas/La5dKR/09-vertpaint-studios-kin-snp-final-close-bk-01.webp",
+          "thumbnail": "/assets/star-atlas/La5dKR/thumbs/09-vertpaint-studios-kin-snp-final-close-bk-01.webp",
+          "width": 1600,
+          "height": 738,
+          "aspectRatio": 2.168,
+          "hasAlpha": false,
+          "bytes": 61998,
+          "thumbnailBytes": 8130
+        }
+      ]
+    },
+    {
+      "slug": "JrKGXR",
+      "title": "Opos Elder",
+      "sourceUrl": "https://www.artstation.com/artwork/JrKGXR",
+      "assets": [
+        {
+          "source": "JrKGXR/masters/01-joao-lira-ust-leader-vertical.webp",
+          "display": "/assets/star-atlas/JrKGXR/01-joao-lira-ust-leader-vertical.webp",
+          "thumbnail": "/assets/star-atlas/JrKGXR/thumbs/01-joao-lira-ust-leader-vertical.webp",
+          "width": 1200,
+          "height": 1600,
+          "aspectRatio": 0.75,
+          "hasAlpha": false,
+          "bytes": 250908,
+          "thumbnailBytes": 12784
+        },
+        {
+          "source": "JrKGXR/masters/02-joao-lira-ustur-leader.webp",
+          "display": "/assets/star-atlas/JrKGXR/02-joao-lira-ustur-leader.webp",
+          "thumbnail": "/assets/star-atlas/JrKGXR/thumbs/02-joao-lira-ustur-leader.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 124316,
+          "thumbnailBytes": 17998
+        },
+        {
+          "source": "JrKGXR/masters/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "display": "/assets/star-atlas/JrKGXR/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "thumbnail": "/assets/star-atlas/JrKGXR/thumbs/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 78142,
+          "thumbnailBytes": 11570
+        },
+        {
+          "source": "JrKGXR/masters/04-joao-lira-old-leaders-s.webp",
+          "display": "/assets/star-atlas/JrKGXR/04-joao-lira-old-leaders-s.webp",
+          "thumbnail": "/assets/star-atlas/JrKGXR/thumbs/04-joao-lira-old-leaders-s.webp",
+          "width": 1600,
+          "height": 893,
+          "aspectRatio": 1.7917,
+          "hasAlpha": false,
+          "bytes": 44212,
+          "thumbnailBytes": 9694
+        }
+      ]
+    },
+    {
+      "slug": "8BqDQn",
+      "title": "Vaor Scarka",
+      "sourceUrl": "https://www.artstation.com/artwork/8BqDQn",
+      "assets": [
+        {
+          "source": "8BqDQn/masters/01-joao-lira-oni-leader-vertical.webp",
+          "display": "/assets/star-atlas/8BqDQn/01-joao-lira-oni-leader-vertical.webp",
+          "thumbnail": "/assets/star-atlas/8BqDQn/thumbs/01-joao-lira-oni-leader-vertical.webp",
+          "width": 1200,
+          "height": 1600,
+          "aspectRatio": 0.75,
+          "hasAlpha": false,
+          "bytes": 251382,
+          "thumbnailBytes": 8536
+        },
+        {
+          "source": "8BqDQn/masters/02-joao-lira-oni-leader.webp",
+          "display": "/assets/star-atlas/8BqDQn/02-joao-lira-oni-leader.webp",
+          "thumbnail": "/assets/star-atlas/8BqDQn/thumbs/02-joao-lira-oni-leader.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 142614,
+          "thumbnailBytes": 14718
+        },
+        {
+          "source": "8BqDQn/masters/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "display": "/assets/star-atlas/8BqDQn/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "thumbnail": "/assets/star-atlas/8BqDQn/thumbs/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 78142,
+          "thumbnailBytes": 11570
+        },
+        {
+          "source": "8BqDQn/masters/04-joao-lira-old-leaders-s.webp",
+          "display": "/assets/star-atlas/8BqDQn/04-joao-lira-old-leaders-s.webp",
+          "thumbnail": "/assets/star-atlas/8BqDQn/thumbs/04-joao-lira-old-leaders-s.webp",
+          "width": 1600,
+          "height": 893,
+          "aspectRatio": 1.7917,
+          "hasAlpha": false,
+          "bytes": 44212,
+          "thumbnailBytes": 9694
+        }
+      ]
+    },
+    {
+      "slug": "K3DZAR",
+      "title": "Charon Gotti Jr",
+      "sourceUrl": "https://www.artstation.com/artwork/K3DZAR",
+      "assets": [
+        {
+          "source": "K3DZAR/masters/01-joao-lira-mud-leader-vertical.webp",
+          "display": "/assets/star-atlas/K3DZAR/01-joao-lira-mud-leader-vertical.webp",
+          "thumbnail": "/assets/star-atlas/K3DZAR/thumbs/01-joao-lira-mud-leader-vertical.webp",
+          "width": 1200,
+          "height": 1600,
+          "aspectRatio": 0.75,
+          "hasAlpha": false,
+          "bytes": 224468,
+          "thumbnailBytes": 6414
+        },
+        {
+          "source": "K3DZAR/masters/02-joao-lira-mud-leader.webp",
+          "display": "/assets/star-atlas/K3DZAR/02-joao-lira-mud-leader.webp",
+          "thumbnail": "/assets/star-atlas/K3DZAR/thumbs/02-joao-lira-mud-leader.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 117982,
+          "thumbnailBytes": 9764
+        },
+        {
+          "source": "K3DZAR/masters/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "display": "/assets/star-atlas/K3DZAR/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "thumbnail": "/assets/star-atlas/K3DZAR/thumbs/03-joao-lira-star-atlas-20251111-141601451.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 78142,
+          "thumbnailBytes": 11570
+        },
+        {
+          "source": "K3DZAR/masters/04-joao-lira-old-leaders-s.webp",
+          "display": "/assets/star-atlas/K3DZAR/04-joao-lira-old-leaders-s.webp",
+          "thumbnail": "/assets/star-atlas/K3DZAR/thumbs/04-joao-lira-old-leaders-s.webp",
+          "width": 1600,
+          "height": 893,
+          "aspectRatio": 1.7917,
+          "hasAlpha": false,
+          "bytes": 44212,
+          "thumbnailBytes": 9694
+        }
+      ]
+    },
+    {
+      "slug": "8BqD6Q",
+      "title": "MUD NPC",
+      "sourceUrl": "https://www.artstation.com/artwork/8BqD6Q",
+      "assets": [
+        {
+          "source": "8BqD6Q/masters/01-joao-lira-mud-npc-enemy-portrait-001.webp",
+          "display": "/assets/star-atlas/8BqD6Q/01-joao-lira-mud-npc-enemy-portrait-001.webp",
+          "thumbnail": "/assets/star-atlas/8BqD6Q/thumbs/01-joao-lira-mud-npc-enemy-portrait-001.webp",
+          "width": 1600,
+          "height": 577,
+          "aspectRatio": 2.773,
+          "hasAlpha": false,
+          "bytes": 45632,
+          "thumbnailBytes": 6376
+        },
+        {
+          "source": "8BqD6Q/masters/02-joao-lira-mud-npc-enemy-005.webp",
+          "display": "/assets/star-atlas/8BqD6Q/02-joao-lira-mud-npc-enemy-005.webp",
+          "thumbnail": "/assets/star-atlas/8BqD6Q/thumbs/02-joao-lira-mud-npc-enemy-005.webp",
+          "width": 1600,
+          "height": 730,
+          "aspectRatio": 2.1918,
+          "hasAlpha": false,
+          "bytes": 68412,
+          "thumbnailBytes": 10690
+        },
+        {
+          "source": "8BqD6Q/masters/03-joao-lira-mud-npc-enemy-004.webp",
+          "display": "/assets/star-atlas/8BqD6Q/03-joao-lira-mud-npc-enemy-004.webp",
+          "thumbnail": "/assets/star-atlas/8BqD6Q/thumbs/03-joao-lira-mud-npc-enemy-004.webp",
+          "width": 1600,
+          "height": 790,
+          "aspectRatio": 2.0253,
+          "hasAlpha": false,
+          "bytes": 69628,
+          "thumbnailBytes": 11014
+        },
+        {
+          "source": "8BqD6Q/masters/04-joao-lira-mud-npc-enemy.webp",
+          "display": "/assets/star-atlas/8BqD6Q/04-joao-lira-mud-npc-enemy.webp",
+          "thumbnail": "/assets/star-atlas/8BqD6Q/thumbs/04-joao-lira-mud-npc-enemy.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 56502,
+          "thumbnailBytes": 9408
+        }
+      ]
+    },
+    {
+      "slug": "QK2Y1L",
+      "title": "PURI",
+      "sourceUrl": "https://www.artstation.com/artwork/QK2Y1L",
+      "assets": [
+        {
+          "source": "QK2Y1L/masters/01-joao-lira-illustration-002.webp",
+          "display": "/assets/star-atlas/QK2Y1L/01-joao-lira-illustration-002.webp",
+          "thumbnail": "/assets/star-atlas/QK2Y1L/thumbs/01-joao-lira-illustration-002.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 29078,
+          "thumbnailBytes": 4838
+        },
+        {
+          "source": "QK2Y1L/masters/02-joao-lira-jee.jpg",
+          "display": "/assets/star-atlas/QK2Y1L/02-joao-lira-jee.webp",
+          "thumbnail": "/assets/star-atlas/QK2Y1L/thumbs/02-joao-lira-jee.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 82572,
+          "thumbnailBytes": 12982
+        },
+        {
+          "source": "QK2Y1L/masters/03-joao-lira-aaaax.webp",
+          "display": "/assets/star-atlas/QK2Y1L/03-joao-lira-aaaax.webp",
+          "thumbnail": "/assets/star-atlas/QK2Y1L/thumbs/03-joao-lira-aaaax.webp",
+          "width": 1600,
+          "height": 764,
+          "aspectRatio": 2.0942,
+          "hasAlpha": false,
+          "bytes": 41132,
+          "thumbnailBytes": 7414
+        },
+        {
+          "source": "QK2Y1L/masters/04-joao-lira-gh.jpg",
+          "display": "/assets/star-atlas/QK2Y1L/04-joao-lira-gh.webp",
+          "thumbnail": "/assets/star-atlas/QK2Y1L/thumbs/04-joao-lira-gh.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 90510,
+          "thumbnailBytes": 14630
+        }
+      ]
+    },
+    {
+      "slug": "kQLooz",
+      "title": "MIssion 1",
+      "sourceUrl": "https://www.artstation.com/artwork/kQLooz",
+      "assets": [
+        {
+          "source": "kQLooz/masters/01-vitaly-tyukin-sand-punaab-fire3.jpg",
+          "display": "/assets/star-atlas/kQLooz/01-vitaly-tyukin-sand-punaab-fire3.webp",
+          "thumbnail": "/assets/star-atlas/kQLooz/thumbs/01-vitaly-tyukin-sand-punaab-fire3.webp",
+          "width": 1600,
+          "height": 611,
+          "aspectRatio": 2.6187,
+          "hasAlpha": false,
+          "bytes": 74484,
+          "thumbnailBytes": 9882
+        },
+        {
+          "source": "kQLooz/masters/02-vitaly-tyukin-sand-punaab-fire2.jpg",
+          "display": "/assets/star-atlas/kQLooz/02-vitaly-tyukin-sand-punaab-fire2.webp",
+          "thumbnail": "/assets/star-atlas/kQLooz/thumbs/02-vitaly-tyukin-sand-punaab-fire2.webp",
+          "width": 1600,
+          "height": 809,
+          "aspectRatio": 1.9778,
+          "hasAlpha": false,
+          "bytes": 122382,
+          "thumbnailBytes": 19056
+        },
+        {
+          "source": "kQLooz/masters/03-vitaly-tyukin-2.jpg",
+          "display": "/assets/star-atlas/kQLooz/03-vitaly-tyukin-2.webp",
+          "thumbnail": "/assets/star-atlas/kQLooz/thumbs/03-vitaly-tyukin-2.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 42136,
+          "thumbnailBytes": 5694
+        }
+      ]
+    },
+    {
+      "slug": "14NRqo",
+      "title": "Ahr",
+      "sourceUrl": "https://www.artstation.com/artwork/14NRqo",
+      "assets": [
+        {
+          "source": "14NRqo/masters/01-joao-lira-ahr.webp",
+          "display": "/assets/star-atlas/14NRqo/01-joao-lira-ahr.webp",
+          "thumbnail": "/assets/star-atlas/14NRqo/thumbs/01-joao-lira-ahr.webp",
+          "width": 1200,
+          "height": 1600,
+          "aspectRatio": 0.75,
+          "hasAlpha": false,
+          "bytes": 100152,
+          "thumbnailBytes": 12282
+        },
+        {
+          "source": "14NRqo/masters/02-joao-lira-the-photoli-d360.jpg",
+          "display": "/assets/star-atlas/14NRqo/02-joao-lira-the-photoli-d360.webp",
+          "thumbnail": "/assets/star-atlas/14NRqo/thumbs/02-joao-lira-the-photoli-d360.webp",
+          "width": 1600,
+          "height": 611,
+          "aspectRatio": 2.6187,
+          "hasAlpha": false,
+          "bytes": 102848,
+          "thumbnailBytes": 13792
+        },
+        {
+          "source": "14NRqo/masters/03-joao-lira-the-photoli-d.jpg",
+          "display": "/assets/star-atlas/14NRqo/03-joao-lira-the-photoli-d.webp",
+          "thumbnail": "/assets/star-atlas/14NRqo/thumbs/03-joao-lira-the-photoli-d.webp",
+          "width": 1371,
+          "height": 1600,
+          "aspectRatio": 0.8569,
+          "hasAlpha": false,
+          "bytes": 100916,
+          "thumbnailBytes": 14918
+        },
+        {
+          "source": "14NRqo/masters/04-joao-lira-the-photoli-d-meat.jpg",
+          "display": "/assets/star-atlas/14NRqo/04-joao-lira-the-photoli-d-meat.webp",
+          "thumbnail": "/assets/star-atlas/14NRqo/thumbs/04-joao-lira-the-photoli-d-meat.webp",
+          "width": 1600,
+          "height": 1101,
+          "aspectRatio": 1.4532,
+          "hasAlpha": false,
+          "bytes": 80418,
+          "thumbnailBytes": 10400
+        }
+      ]
+    },
+    {
+      "slug": "1NvkdG",
+      "title": "Old Leaders",
+      "sourceUrl": "https://www.artstation.com/artwork/1NvkdG",
+      "assets": [
+        {
+          "source": "1NvkdG/masters/01-joao-lira-old-leaders1.webp",
+          "display": "/assets/star-atlas/1NvkdG/01-joao-lira-old-leaders1.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/01-joao-lira-old-leaders1.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 61594,
+          "thumbnailBytes": 9142
+        },
+        {
+          "source": "1NvkdG/masters/02-joao-lira-old-leaders2.webp",
+          "display": "/assets/star-atlas/1NvkdG/02-joao-lira-old-leaders2.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/02-joao-lira-old-leaders2.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 59570,
+          "thumbnailBytes": 10472
+        },
+        {
+          "source": "1NvkdG/masters/03-joao-lira-old-leaders3.webp",
+          "display": "/assets/star-atlas/1NvkdG/03-joao-lira-old-leaders3.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/03-joao-lira-old-leaders3.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 70300,
+          "thumbnailBytes": 9822
+        },
+        {
+          "source": "1NvkdG/masters/04-joao-lira-old-leaders4.webp",
+          "display": "/assets/star-atlas/1NvkdG/04-joao-lira-old-leaders4.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/04-joao-lira-old-leaders4.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 56988,
+          "thumbnailBytes": 8286
+        },
+        {
+          "source": "1NvkdG/masters/05-joao-lira-old-leaders5.webp",
+          "display": "/assets/star-atlas/1NvkdG/05-joao-lira-old-leaders5.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/05-joao-lira-old-leaders5.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 61252,
+          "thumbnailBytes": 7714
+        },
+        {
+          "source": "1NvkdG/masters/06-joao-lira-old-leaders6.webp",
+          "display": "/assets/star-atlas/1NvkdG/06-joao-lira-old-leaders6.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/06-joao-lira-old-leaders6.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 60792,
+          "thumbnailBytes": 8428
+        },
+        {
+          "source": "1NvkdG/masters/07-joao-lira-star-atlas-20251111-141601451.webp",
+          "display": "/assets/star-atlas/1NvkdG/07-joao-lira-star-atlas-20251111-141601451.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/07-joao-lira-star-atlas-20251111-141601451.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 78142,
+          "thumbnailBytes": 11570
+        },
+        {
+          "source": "1NvkdG/masters/08-joao-lira-old-leaders-s.webp",
+          "display": "/assets/star-atlas/1NvkdG/08-joao-lira-old-leaders-s.webp",
+          "thumbnail": "/assets/star-atlas/1NvkdG/thumbs/08-joao-lira-old-leaders-s.webp",
+          "width": 1600,
+          "height": 893,
+          "aspectRatio": 1.7917,
+          "hasAlpha": false,
+          "bytes": 44212,
+          "thumbnailBytes": 9694
+        }
+      ]
+    },
+    {
+      "slug": "bgenAm",
+      "title": "Ustur Combat",
+      "sourceUrl": "https://www.artstation.com/artwork/bgenAm",
+      "assets": [
+        {
+          "source": "bgenAm/masters/01-joao-lira-cc-ust-m-combat-001.webp",
+          "display": "/assets/star-atlas/bgenAm/01-joao-lira-cc-ust-m-combat-001.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/01-joao-lira-cc-ust-m-combat-001.webp",
+          "width": 1600,
+          "height": 1239,
+          "aspectRatio": 1.2914,
+          "hasAlpha": false,
+          "bytes": 49156,
+          "thumbnailBytes": 7954
+        },
+        {
+          "source": "bgenAm/masters/02-joao-lira-cc-ust-m-blockout.webp",
+          "display": "/assets/star-atlas/bgenAm/02-joao-lira-cc-ust-m-blockout.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/02-joao-lira-cc-ust-m-blockout.webp",
+          "width": 1600,
+          "height": 700,
+          "aspectRatio": 2.2857,
+          "hasAlpha": false,
+          "bytes": 55148,
+          "thumbnailBytes": 7604
+        },
+        {
+          "source": "bgenAm/masters/03-joao-lira-001.webp",
+          "display": "/assets/star-atlas/bgenAm/03-joao-lira-001.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/03-joao-lira-001.webp",
+          "width": 1600,
+          "height": 1239,
+          "aspectRatio": 1.2914,
+          "hasAlpha": false,
+          "bytes": 53608,
+          "thumbnailBytes": 8560
+        },
+        {
+          "source": "bgenAm/masters/04-joao-lira-002.webp",
+          "display": "/assets/star-atlas/bgenAm/04-joao-lira-002.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/04-joao-lira-002.webp",
+          "width": 1600,
+          "height": 1239,
+          "aspectRatio": 1.2914,
+          "hasAlpha": false,
+          "bytes": 54190,
+          "thumbnailBytes": 8936
+        },
+        {
+          "source": "bgenAm/masters/05-joao-lira-003.webp",
+          "display": "/assets/star-atlas/bgenAm/05-joao-lira-003.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/05-joao-lira-003.webp",
+          "width": 1600,
+          "height": 1239,
+          "aspectRatio": 1.2914,
+          "hasAlpha": false,
+          "bytes": 54066,
+          "thumbnailBytes": 8990
+        },
+        {
+          "source": "bgenAm/masters/06-joao-lira-004.webp",
+          "display": "/assets/star-atlas/bgenAm/06-joao-lira-004.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/06-joao-lira-004.webp",
+          "width": 1600,
+          "height": 1239,
+          "aspectRatio": 1.2914,
+          "hasAlpha": false,
+          "bytes": 55418,
+          "thumbnailBytes": 9378
+        },
+        {
+          "source": "bgenAm/masters/07-joao-lira-screenshot00015.webp",
+          "display": "/assets/star-atlas/bgenAm/07-joao-lira-screenshot00015.webp",
+          "thumbnail": "/assets/star-atlas/bgenAm/thumbs/07-joao-lira-screenshot00015.webp",
+          "width": 1600,
+          "height": 874,
+          "aspectRatio": 1.8307,
+          "hasAlpha": false,
+          "bytes": 50796,
+          "thumbnailBytes": 7390
+        }
+      ]
+    },
+    {
+      "slug": "x3XLlY",
+      "title": "Ustur Racer",
+      "sourceUrl": "https://www.artstation.com/artwork/x3XLlY",
+      "assets": [
+        {
+          "source": "x3XLlY/masters/01-joao-lira-ust-racer-robo1.webp",
+          "display": "/assets/star-atlas/x3XLlY/01-joao-lira-ust-racer-robo1.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/01-joao-lira-ust-racer-robo1.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 57628,
+          "thumbnailBytes": 8108
+        },
+        {
+          "source": "x3XLlY/masters/02-joao-lira-ust-racer-robo3.webp",
+          "display": "/assets/star-atlas/x3XLlY/02-joao-lira-ust-racer-robo3.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/02-joao-lira-ust-racer-robo3.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 81492,
+          "thumbnailBytes": 12758
+        },
+        {
+          "source": "x3XLlY/masters/03-joao-lira-ust-racer-robo2.webp",
+          "display": "/assets/star-atlas/x3XLlY/03-joao-lira-ust-racer-robo2.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/03-joao-lira-ust-racer-robo2.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 41300,
+          "thumbnailBytes": 7180
+        },
+        {
+          "source": "x3XLlY/masters/04-joao-lira-ust-racer-robo4.webp",
+          "display": "/assets/star-atlas/x3XLlY/04-joao-lira-ust-racer-robo4.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/04-joao-lira-ust-racer-robo4.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 38590,
+          "thumbnailBytes": 6920
+        },
+        {
+          "source": "x3XLlY/masters/05-joao-lira-ust-racer-robo5.webp",
+          "display": "/assets/star-atlas/x3XLlY/05-joao-lira-ust-racer-robo5.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/05-joao-lira-ust-racer-robo5.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 87146,
+          "thumbnailBytes": 13896
+        },
+        {
+          "source": "x3XLlY/masters/06-joao-lira-ustur-racer-hud.gif",
+          "display": "/assets/star-atlas/x3XLlY/06-joao-lira-ustur-racer-hud.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/06-joao-lira-ustur-racer-hud.webp",
+          "width": 1460,
+          "height": 1600,
+          "aspectRatio": 0.9125,
+          "hasAlpha": false,
+          "bytes": 78080,
+          "thumbnailBytes": 9394
+        },
+        {
+          "source": "x3XLlY/masters/07-joao-lira-ust-racer-skins2.webp",
+          "display": "/assets/star-atlas/x3XLlY/07-joao-lira-ust-racer-skins2.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/07-joao-lira-ust-racer-skins2.webp",
+          "width": 1600,
+          "height": 637,
+          "aspectRatio": 2.5118,
+          "hasAlpha": false,
+          "bytes": 87868,
+          "thumbnailBytes": 11756
+        },
+        {
+          "source": "x3XLlY/masters/08-joao-lira-ust-racer-skins1.webp",
+          "display": "/assets/star-atlas/x3XLlY/08-joao-lira-ust-racer-skins1.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/08-joao-lira-ust-racer-skins1.webp",
+          "width": 1600,
+          "height": 609,
+          "aspectRatio": 2.6273,
+          "hasAlpha": false,
+          "bytes": 57686,
+          "thumbnailBytes": 8238
+        },
+        {
+          "source": "x3XLlY/masters/09-joao-lira-ust8.webp",
+          "display": "/assets/star-atlas/x3XLlY/09-joao-lira-ust8.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/09-joao-lira-ust8.webp",
+          "width": 1600,
+          "height": 1496,
+          "aspectRatio": 1.0695,
+          "hasAlpha": false,
+          "bytes": 147784,
+          "thumbnailBytes": 22818
+        },
+        {
+          "source": "x3XLlY/masters/10-joao-lira-ust9.webp",
+          "display": "/assets/star-atlas/x3XLlY/10-joao-lira-ust9.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/10-joao-lira-ust9.webp",
+          "width": 1600,
+          "height": 594,
+          "aspectRatio": 2.6936,
+          "hasAlpha": false,
+          "bytes": 72790,
+          "thumbnailBytes": 10770
+        },
+        {
+          "source": "x3XLlY/masters/11-joao-lira-ust10.webp",
+          "display": "/assets/star-atlas/x3XLlY/11-joao-lira-ust10.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/11-joao-lira-ust10.webp",
+          "width": 1600,
+          "height": 594,
+          "aspectRatio": 2.6936,
+          "hasAlpha": false,
+          "bytes": 73866,
+          "thumbnailBytes": 11026
+        },
+        {
+          "source": "x3XLlY/masters/12-joao-lira-ust11.webp",
+          "display": "/assets/star-atlas/x3XLlY/12-joao-lira-ust11.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/12-joao-lira-ust11.webp",
+          "width": 1600,
+          "height": 900,
+          "aspectRatio": 1.7778,
+          "hasAlpha": false,
+          "bytes": 74926,
+          "thumbnailBytes": 11628
+        },
+        {
+          "source": "x3XLlY/masters/13-joao-lira-ust-racer-01.webp",
+          "display": "/assets/star-atlas/x3XLlY/13-joao-lira-ust-racer-01.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/13-joao-lira-ust-racer-01.webp",
+          "width": 1600,
+          "height": 661,
+          "aspectRatio": 2.4206,
+          "hasAlpha": false,
+          "bytes": 78404,
+          "thumbnailBytes": 10490
+        },
+        {
+          "source": "x3XLlY/masters/14-joao-lira-ust-racer-02.webp",
+          "display": "/assets/star-atlas/x3XLlY/14-joao-lira-ust-racer-02.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/14-joao-lira-ust-racer-02.webp",
+          "width": 1600,
+          "height": 661,
+          "aspectRatio": 2.4206,
+          "hasAlpha": false,
+          "bytes": 87796,
+          "thumbnailBytes": 11850
+        },
+        {
+          "source": "x3XLlY/masters/15-joao-lira-ust-racer-04.webp",
+          "display": "/assets/star-atlas/x3XLlY/15-joao-lira-ust-racer-04.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/15-joao-lira-ust-racer-04.webp",
+          "width": 1600,
+          "height": 661,
+          "aspectRatio": 2.4206,
+          "hasAlpha": false,
+          "bytes": 84782,
+          "thumbnailBytes": 11734
+        },
+        {
+          "source": "x3XLlY/masters/16-joao-lira-ust-racer-06.webp",
+          "display": "/assets/star-atlas/x3XLlY/16-joao-lira-ust-racer-06.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/16-joao-lira-ust-racer-06.webp",
+          "width": 1600,
+          "height": 661,
+          "aspectRatio": 2.4206,
+          "hasAlpha": false,
+          "bytes": 84576,
+          "thumbnailBytes": 11430
+        },
+        {
+          "source": "x3XLlY/masters/17-joao-lira-ust-racer-robo56.webp",
+          "display": "/assets/star-atlas/x3XLlY/17-joao-lira-ust-racer-robo56.webp",
+          "thumbnail": "/assets/star-atlas/x3XLlY/thumbs/17-joao-lira-ust-racer-robo56.webp",
+          "width": 1600,
+          "height": 544,
+          "aspectRatio": 2.9412,
+          "hasAlpha": false,
+          "bytes": 68930,
+          "thumbnailBytes": 11520
+        }
+      ]
+    }
+  ]
+}

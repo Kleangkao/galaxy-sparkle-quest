@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Local source references and safety snapshots are intentionally kept off the deployment repository.
+/assets/
+/backups/
+/bun.lock
+/bun.lockb

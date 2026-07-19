@@ -201,15 +201,22 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved === "th" || saved === "en") return saved;
-    } catch {}
+    } catch {
+      // Browser storage is optional; language detection still works without it.
+    }
     // Auto-detect device language
-    const browserLang = navigator.language || (navigator as any).userLanguage || "";
+    const browserNavigator = navigator as Navigator & { userLanguage?: string };
+    const browserLang = browserNavigator.language || browserNavigator.userLanguage || "";
     return browserLang.startsWith("th") ? "th" : "en";
   });
 
   const setLang = (l: Lang) => {
     setLangState(l);
-    try { localStorage.setItem(STORAGE_KEY, l); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, l);
+    } catch {
+      // Keep the in-memory language when storage is blocked.
+    }
   };
 
   const t = (key: TranslationKey): string => {

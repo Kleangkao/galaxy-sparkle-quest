@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FACTIONS, FactionId } from "@/lib/gameState";
-import factionMud from "@/assets/faction-mud.png";
-import factionOni from "@/assets/faction-oni.png";
-import factionUstur from "@/assets/faction-ustur.png";
 import { useI18n } from "@/lib/i18n";
 
 const FACTION_IMAGES: Record<FactionId, string> = {
-  mud: factionMud,
-  oni: factionOni,
-  ustur: factionUstur,
+  mud: "/assets/star-atlas/K3DZAR/01-joao-lira-mud-leader-vertical.webp",
+  oni: "/assets/star-atlas/8BqDQn/01-joao-lira-oni-leader-vertical.webp",
+  ustur: "/assets/star-atlas/JrKGXR/01-joao-lira-ust-leader-vertical.webp",
+};
+
+const FACTION_LEADERS: Record<FactionId, string> = {
+  mud: "Commander Charon",
+  oni: "Pathfinder Vaor",
+  ustur: "Elder Opos",
 };
 
 interface Props {
@@ -37,7 +40,8 @@ export default function FactionSelect({ onSelect }: Props) {
 
   return (
     <div className="space-bg min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 relative overflow-y-auto">
-      <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-slide-up">
+      <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-slide-up max-w-4xl">
+        <div className="command-kicker mb-3">An original frontier adventure</div>
         <h1
           className="mx-auto mb-1 whitespace-nowrap text-[clamp(2rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.04em] text-white sm:mb-2"
           style={{
@@ -45,42 +49,42 @@ export default function FactionSelect({ onSelect }: Props) {
             textShadow: "0 0 18px hsl(330 85% 65% / 0.35), 0 0 36px hsl(280 80% 65% / 0.18)",
           }}
         >
-          {t("cosmicExplorerGalaxy")}
+          Guardians of Galia
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
-          {t("chooseTeam")}
+          A signal vanished beyond the map. Choose the crew that will bring it home.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 w-full max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mb-4 sm:mb-6 md:mb-8">
         {FACTIONS.map((faction, i) => (
           <button key={faction.id} onClick={() => handleSelect(faction.id)}
-            className={`relative flex flex-row sm:flex-col items-center sm:items-stretch gap-3 sm:gap-4 p-4 sm:p-5 min-h-[100px] sm:min-h-[360px] rounded-2xl border-2 transition-all duration-300 animate-slide-up
+            className={`faction-card relative flex flex-row sm:flex-col items-center sm:items-stretch gap-3 sm:gap-4 p-4 sm:p-5 min-h-[100px] sm:min-h-[390px] rounded-2xl border transition-all duration-300 animate-slide-up
               ${selected === faction.id
                 ? `${faction.borderClass} bg-card/80 scale-[1.02] sm:scale-105 shadow-lg`
                 : "border-border bg-card/40 hover:bg-card/60 hover:scale-[1.01] sm:hover:scale-102"}
             `}
             style={{ animationDelay: `${i * 0.15}s` }}>
-            <div className="flex w-20 sm:w-full shrink-0 justify-center">
+            <div className="faction-card__portrait flex w-20 sm:w-full shrink-0 justify-center">
               <img
                 src={FACTION_IMAGES[faction.id]}
                 alt={faction.name}
-                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain animate-float shrink-0"
-                style={{ animationDelay: `${i * 0.5}s` }}
+                className="h-full w-full object-cover object-top"
               />
+              <span>{FACTION_LEADERS[faction.id]}</span>
             </div>
             <div className="text-left sm:text-center flex flex-1 min-w-0 flex-col sm:h-full">
               <div className={`text-base sm:text-lg md:text-xl font-bold ${faction.colorClass}`} style={{ fontFamily: "var(--font-display)" }}>
                 {faction.emoji} {faction.name}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                {t(`${faction.id}Subtitle` as any)}
+                {faction.subtitle}
               </div>
               <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed sm:flex-1">
-                {t(`${faction.id}Description` as any)}
+                {faction.description}
               </p>
               <div className={`mt-3 flex min-h-[44px] w-full items-center justify-center rounded-2xl px-3 py-2 text-center text-xs font-bold leading-snug sm:min-h-[56px] sm:px-4 sm:text-sm ${getBonusClassName(faction.id)}`}>
-                {faction.id === "mud" ? t("mudBonus2") : faction.id === "oni" ? t("oniBonus") : t("usturBonus")}
+                {faction.bonusText}
               </div>
             </div>
             {selected === faction.id && (
@@ -106,7 +110,7 @@ export default function FactionSelect({ onSelect }: Props) {
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.1 }}
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
           />
-          <span className="relative z-10">{t("joinFaction")} {selectedFaction.name}! 🚀</span>
+          <span className="relative z-10">Begin as a {selectedFaction.name} cadet →</span>
         </motion.button>
       )}
     </div>

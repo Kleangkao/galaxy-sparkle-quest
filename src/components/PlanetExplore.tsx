@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, PLANETS, getPlanetDisplayName } from "@/lib/gameState";
+import { useState, useCallback, useRef } from "react";
+import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, PLANETS, getPlanetDisplayName, getSectorLore } from "@/lib/gameState";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PlanetExploration from "@/components/PlanetExploration";
@@ -20,6 +20,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const displayName = getPlanetDisplayName(planetIndex, gameState.faction);
   const [phase, setPhase] = useState<"landing" | "exploring" | "celebration">("landing");
   const [bonusCrystals, setBonusCrystals] = useState(0);
+  const rewardsClaimed = useRef(false);
   const alreadyVisited = gameState.visitedPlanets.includes(planet.id);
   const hasPet = planet.pet ? gameState.pets.includes(planet.pet.name) : false;
   const modifiers = getGameplayModifiers(gameState);
@@ -28,6 +29,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const petChance = Math.min(0.98, basePetChance + modifiers.petDiscoveryBonus);
   const [willFindPet] = useState(() => Boolean(!hasPet && planet.pet && Math.random() < petChance));
   const missionBrief = getMissionBrief(planet.id);
+  const lore = getSectorLore(planet.id);
 
   const handleExplorationComplete = useCallback((bonus: number) => {
     setBonusCrystals(bonus);
@@ -48,6 +50,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
       : `${planet.pet.name} can still be discovered`;
 
   const handleCelebrationDone = () => {
+    if (rewardsClaimed.current) return;
+    rewardsClaimed.current = true;
     onCollect(totalCrystals, totalXP, petToCollect);
     onBack();
   };
@@ -69,10 +73,12 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             {displayName}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">{planet.description}</p>
+          <div className="command-kicker">{lore.chapter} · Threat: {lore.threat}</div>
+          <p className="max-w-md text-sm leading-relaxed text-cyan-50/80">{lore.story}</p>
           <div className="w-full rounded-2xl border border-border/50 bg-card/35 px-4 py-3 text-left shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-border/50 bg-background/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                {alreadyVisited ? "Survey Run" : "Primary Mission"}
+                {alreadyVisited ? "Survey Run" : "Story Mission"}
               </span>
               <span className="rounded-full border border-cosmic-cyan/20 bg-cosmic-cyan/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-cyan">
                 {rewardLabel}
@@ -99,7 +105,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
                 Encounter Brief
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-cyan-50/85 sm:text-xs">
-                {missionBrief.encounters}
+                {lore.mission} {missionBrief.encounters}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-cosmic-green sm:text-xs">
                 How to handle: {missionBrief.tip}

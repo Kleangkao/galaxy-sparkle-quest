@@ -1,4 +1,5 @@
 import { getPetById, getPetByName } from "@/lib/pets";
+import { getPilot, getTool } from "@/lib/loadouts";
 
 export interface Planet {
   id: string;
@@ -14,6 +15,9 @@ export interface Planet {
   pet: { name: string; emoji: string } | null;
   position: { x: number; y: number };
   miniGame: "tap-crystals" | "find-pets" | "match-3" | "hidden-animals" | "collect-stars";
+  chapter?: string;
+  threat?: string;
+  story?: string;
 }
 
 export type FactionId = "mud" | "oni" | "ustur";
@@ -40,9 +44,9 @@ export interface Faction {
 
 export const FACTIONS: Faction[] = [
   {
-    id: "mud", name: "MUD", subtitle: "The Builders", emoji: "🔴",
-    description: "The MUD explorers love building bases and collecting crystals. Brave, curious, and hardworking!",
-    bonusText: "+20% more crystals from planets",
+    id: "mud", name: "MUD", subtitle: "Forge Vanguard", emoji: "🔴",
+    description: "Bold frontier engineers who turn wreckage into wonders. Choose MUD for sturdy gear, big salvage, and fearless exploration.",
+    bonusText: "+20% salvage from every expedition",
     colorClass: "text-cosmic-pink", glowClass: "glow-text",
     borderClass: "border-cosmic-pink", bgClass: "bg-cosmic-pink",
     shipEmoji: "🚀", shipColor: "text-cosmic-pink",
@@ -50,9 +54,9 @@ export const FACTIONS: Faction[] = [
     hslColor: "330 85% 65%",
   },
   {
-    id: "oni", name: "ONI", subtitle: "The Alien Masters", emoji: "🔵",
-    description: "The ONI aliens use special space magic and discover rare alien pets. Smart, mysterious, and creative!",
-    bonusText: "Higher chance to find alien pets",
+    id: "oni", name: "ONI", subtitle: "Dreamseekers", emoji: "🔵",
+    description: "Curious xenobiologists who follow living starlight. Choose ONI for secrets, strange creatures, and clever discoveries.",
+    bonusText: "Rare companion signals appear more often",
     colorClass: "text-cosmic-cyan", glowClass: "glow-text-cyan",
     borderClass: "border-cosmic-cyan", bgClass: "bg-cosmic-cyan",
     shipEmoji: "🛸", shipColor: "text-cosmic-cyan",
@@ -60,9 +64,9 @@ export const FACTIONS: Faction[] = [
     hslColor: "190 90% 55%",
   },
   {
-    id: "ustur", name: "USTUR", subtitle: "The Robot Intelligence", emoji: "🟡",
-    description: "The USTUR robots use smart technology to travel faster in space. Logical, fast, and helpful!",
-    bonusText: "Faster travel + unlock planets earlier",
+    id: "ustur", name: "USTUR", subtitle: "Swift Circuit", emoji: "🟡",
+    description: "Lightning-fast machine pilots who calculate impossible routes. Choose USTUR for speed, precision, and early access.",
+    bonusText: "Scan one sector ahead of your captain rank",
     colorClass: "text-cosmic-yellow", glowClass: "glow-text-yellow",
     borderClass: "border-cosmic-yellow", bgClass: "bg-cosmic-yellow",
     shipEmoji: "🚄", shipColor: "text-cosmic-yellow",
@@ -253,6 +257,28 @@ export interface GameState {
   activePet: string | null;
   /** Collected eggs waiting to be hatched */
   eggs: import("@/lib/pets").AlienEgg[];
+  /** Active expedition pilot. Loadout data is migration-safe and cloud-ready. */
+  activePilot: string;
+  /** Active expedition tool. */
+  activeTool: string;
+  modeRecords: {
+    swarmHighScore: number;
+    arcadeHighScore: number;
+    discoveryFinds: number;
+    strategyWins: number;
+    puriBond: number;
+    arcadeContracts: Record<string, { bestScore: number; clears: number }>;
+    discoveryMastery: Record<string, number>;
+    discoveryRuns: number;
+    strategyCycles: number;
+    strategyObjectives: number;
+  };
+  accessibility: {
+    combatSpeed: 0.75 | 1 | 1.15;
+    effects: "full" | "reduced";
+    aimHelp: "standard" | "wide";
+    contrast: "standard" | "high";
+  };
 }
 
 export interface GameplayModifiers {
@@ -287,8 +313,82 @@ export const PLANETS: Planet[] = [
   { id: "golden-galaxy", name: "Golden Galaxy", emoji: "🌟", color: "bg-cosmic-yellow", glowClass: "planet-glow-yellow", biome: "legendary", description: "The legendary golden galaxy awaits!", unlockLevel: 10, crystals: 40, xp: 60, pet: { name: "Little", emoji: "🐯" }, position: { x: 50, y: 84 }, miniGame: "collect-stars" },
 ];
 
+export interface SectorLore {
+  name: string;
+  chapter: string;
+  threat: string;
+  story: string;
+  mission: string;
+}
+
+export const SECTOR_LORE: Record<string, SectorLore> = {
+  "sparkle-moon": { name: "Luma Outpost", chapter: "01 · First Light", threat: "Crystal surge", story: "A forgotten distress signal is repeating your captain code.", mission: "Restore the silent beacon inside the moon's singing crystal tunnels." },
+  "candy-planet": { name: "Kora Wilds", chapter: "02 · Living Signal", threat: "Mimic spores", story: "The signal is alive—and it wants you to follow.", mission: "Track a playful lifeform through glowing coral forests." },
+  "frosty-star": { name: "Vesper Drift", chapter: "03 · Cold Trail", threat: "Slipstream ice", story: "A lost navigation core contains a map erased from every archive.", mission: "Ride unstable ice streams and recover the navigation core." },
+  "jungle-world": { name: "Verdant Vault", chapter: "04 · The Watchers", threat: "Guardian drones", story: "Someone protected this route long before the three crews arrived.", mission: "Outsmart roaming guardians beneath the ancient canopy." },
+  "rainbow-nebula": { name: "Prism Reach", chapter: "05 · Broken Sky", threat: "Ion storm", story: "A rival expedition is racing for the same star-key.", mission: "Dash between shattered islands before the storm closes in." },
+  "bubbly-bay": { name: "Pelagos Deep", chapter: "06 · Below the Stars", threat: "Pressure blooms", story: "The drowned observatory points beyond known space.", mission: "Power the observatory beneath an alien ocean." },
+  "cookie-crater": { name: "Cinder Hollow", chapter: "07 · Falling Fire", threat: "Meteor swarm", story: "The star-key wakes a machine hidden inside the moon.", mission: "Salvage fuel cells while the crater floor breaks apart." },
+  "starlight-shore": { name: "Astra Shoals", chapter: "08 · Starseed Run", threat: "Light tide", story: "The seeds can heal the frontier—or open its final gate.", mission: "Deliver two unstable star-seeds across tidal lightfields." },
+  "crystal-cave": { name: "Nullspire", chapter: "09 · Three Rivals", threat: "Null sentinels", story: "The crews must choose: compete for the gate, or open it together.", mission: "Navigate a shifting fortress contested by every faction." },
+  "golden-galaxy": { name: "The Aurora Crown", chapter: "10 · Beyond the Map", threat: "Crown keeper", story: "The lost signal has been waiting for a new Guardian.", mission: "Enter the Crown and answer the mystery at the heart of Galia." },
+};
+
+export function getSectorLore(planetId: string): SectorLore {
+  const planet = PLANETS.find((candidate) => candidate.id === planetId);
+  return SECTOR_LORE[planetId] ?? {
+    name: planet?.name ?? "Unknown Sector",
+    chapter: "Uncharted",
+    threat: "Unknown",
+    story: "No signal data is available.",
+    mission: planet?.description ?? "Survey the sector.",
+  };
+}
+
 function getStorageKey(faction: FactionId) {
   return `${STORAGE_KEY_PREFIX}:${faction}`;
+}
+
+function nonNegativeInteger(value: unknown, fallback = 0, maximum = Number.MAX_SAFE_INTEGER) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.min(maximum, Math.max(0, Math.floor(value)))
+    : fallback;
+}
+
+function uniqueStrings(value: unknown) {
+  return Array.isArray(value)
+    ? [...new Set(value.filter((item): item is string => typeof item === "string"))]
+    : [];
+}
+
+function sanitizeInfluence(value: unknown): Record<string, PlanetInfluence> {
+  const source = value && typeof value === "object" ? value as Record<string, Partial<PlanetInfluence>> : {};
+  return Object.fromEntries(PLANETS.map((planet) => {
+    const sector = source[planet.id];
+    return [planet.id, {
+      mud: nonNegativeInteger(sector?.mud, 0, INFLUENCE_TO_CAPTURE),
+      oni: nonNegativeInteger(sector?.oni, 0, INFLUENCE_TO_CAPTURE),
+      ustur: nonNegativeInteger(sector?.ustur, 0, INFLUENCE_TO_CAPTURE),
+    }];
+  }));
+}
+
+function sanitizeNumberRecord(value: unknown, maximum = Number.MAX_SAFE_INTEGER) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, nonNegativeInteger(entry, 0, maximum)]),
+  );
+}
+
+function sanitizeContractRecords(value: unknown): GameState["modeRecords"]["arcadeContracts"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => {
+    const record = entry && typeof entry === "object" ? entry as { bestScore?: unknown; clears?: unknown } : {};
+    return [key, {
+      bestScore: nonNegativeInteger(record.bestScore),
+      clears: nonNegativeInteger(record.clears),
+    }];
+  }));
 }
 
 export function getLastPlayedFaction(): FactionId | null {
@@ -307,25 +407,71 @@ export function setLastPlayedFaction(faction: FactionId | null) {
       return;
     }
     localStorage.setItem(LAST_PLAYED_FACTION_KEY, faction);
-  } catch {}
+  } catch {
+    // Local storage is optional; private browsing may block it.
+  }
 }
 
 function createStateSnapshot(source: Partial<GameState> | null | undefined, faction: FactionId | null): GameState {
+  const xp = nonNegativeInteger(source?.xp);
+  const pets = [...new Set(uniqueStrings(source?.pets)
+    .map((pet) => getPetById(pet) ?? getPetByName(pet))
+    .filter((pet): pet is NonNullable<typeof pet> => Boolean(pet))
+    .map((pet) => pet.name))];
+  const upgrades = uniqueStrings(source?.upgrades).filter((id) => SHIP_UPGRADES.some((upgrade) => upgrade.id === id));
+  const ownedSkins = uniqueStrings(source?.ownedSkins).filter((id) => SHIP_SKINS.some((skin) => skin.id === id));
+  if (!ownedSkins.includes("red-rocket")) ownedSkins.unshift("red-rocket");
+  const requestedSkin = typeof source?.activeSkin === "string" ? source.activeSkin : "red-rocket";
+  const activePetDefinition = typeof source?.activePet === "string"
+    ? getPetById(source.activePet) ?? getPetByName(source.activePet)
+    : undefined;
+  const activePet = activePetDefinition && pets.includes(activePetDefinition.name) ? activePetDefinition.id : null;
+  const eggs = Array.isArray(source?.eggs)
+    ? source.eggs.filter((egg) => (
+      egg && typeof egg.id === "string" &&
+      (egg.rarity === "common" || egg.rarity === "rare" || egg.rarity === "legendary") &&
+      typeof egg.foundAt === "string" && PLANETS.some((planet) => planet.id === egg.foundAt)
+    )).slice(0, 8)
+    : [];
+  const lastDailyReward = typeof source?.lastDailyReward === "string" && Number.isFinite(Date.parse(source.lastDailyReward))
+    ? source.lastDailyReward
+    : null;
+
   return {
     faction,
-    level: source?.level || 1,
-    xp: source?.xp || 0,
-    crystals: source?.crystals || 0,
-    pets: source?.pets || [],
-    visitedPlanets: source?.visitedPlanets || [],
-    shipLevel: source?.shipLevel || 1,
-    upgrades: source?.upgrades || [],
-    activeSkin: source?.activeSkin || "red-rocket",
-    ownedSkins: source?.ownedSkins || ["red-rocket"],
-    lastDailyReward: source?.lastDailyReward || null,
-    influence: source?.influence || defaultInfluence(),
-    activePet: source?.activePet || null,
-    eggs: source?.eggs || [],
+    level: Math.min(RANKS.length, Math.max(nonNegativeInteger(source?.level, 1), getLevelFromXP(xp))),
+    xp,
+    crystals: nonNegativeInteger(source?.crystals),
+    pets,
+    visitedPlanets: uniqueStrings(source?.visitedPlanets).filter((id) => PLANETS.some((planet) => planet.id === id)),
+    shipLevel: Math.max(1, nonNegativeInteger(source?.shipLevel, 1)),
+    upgrades,
+    activeSkin: ownedSkins.includes(requestedSkin) ? requestedSkin : "red-rocket",
+    ownedSkins,
+    lastDailyReward,
+    influence: sanitizeInfluence(source?.influence),
+    activePet,
+    eggs,
+    activePilot: getPilot(source?.activePilot).id,
+    activeTool: getTool(source?.activeTool).id,
+    modeRecords: {
+      swarmHighScore: nonNegativeInteger(source?.modeRecords?.swarmHighScore),
+      arcadeHighScore: nonNegativeInteger(source?.modeRecords?.arcadeHighScore),
+      discoveryFinds: nonNegativeInteger(source?.modeRecords?.discoveryFinds),
+      strategyWins: nonNegativeInteger(source?.modeRecords?.strategyWins),
+      puriBond: nonNegativeInteger(source?.modeRecords?.puriBond, 0, 100),
+      arcadeContracts: sanitizeContractRecords(source?.modeRecords?.arcadeContracts),
+      discoveryMastery: sanitizeNumberRecord(source?.modeRecords?.discoveryMastery, 100),
+      discoveryRuns: nonNegativeInteger(source?.modeRecords?.discoveryRuns),
+      strategyCycles: nonNegativeInteger(source?.modeRecords?.strategyCycles),
+      strategyObjectives: nonNegativeInteger(source?.modeRecords?.strategyObjectives),
+    },
+    accessibility: {
+      combatSpeed: source?.accessibility?.combatSpeed === 0.75 || source?.accessibility?.combatSpeed === 1.15 ? source.accessibility.combatSpeed : 1,
+      effects: source?.accessibility?.effects === "reduced" ? "reduced" : "full",
+      aimHelp: source?.accessibility?.aimHelp === "wide" ? "wide" : "standard",
+      contrast: source?.accessibility?.contrast === "high" ? "high" : "standard",
+    },
   };
 }
 
@@ -349,7 +495,9 @@ function migrateLegacySave() {
     }
 
     localStorage.removeItem(LEGACY_STORAGE_KEY);
-  } catch {}
+  } catch {
+    // Local storage is optional; private browsing may block it.
+  }
 }
 
 export function loadGame(faction: FactionId | null = null): GameState {
@@ -361,15 +509,21 @@ export function loadGame(faction: FactionId | null = null): GameState {
     if (saved) {
       return createStateSnapshot(JSON.parse(saved) as Partial<GameState>, faction);
     }
-  } catch {}
+  } catch {
+    // Invalid legacy saves are ignored and replaced with safe defaults.
+  }
 
   return createNewGameState(faction);
 }
 
 export function saveGame(state: GameState) {
   if (!state.faction) return;
-  setLastPlayedFaction(state.faction);
-  localStorage.setItem(getStorageKey(state.faction), JSON.stringify(createStateSnapshot(state, state.faction)));
+  try {
+    setLastPlayedFaction(state.faction);
+    localStorage.setItem(getStorageKey(state.faction), JSON.stringify(createStateSnapshot(state, state.faction)));
+  } catch {
+    // Gameplay remains available in memory when storage is blocked or full.
+  }
 }
 
 export function resetGame(faction: FactionId | null = null): GameState {
@@ -387,7 +541,9 @@ export function resetGame(faction: FactionId | null = null): GameState {
     if (getLastPlayedFaction() === faction) {
       setLastPlayedFaction(faction);
     }
-  } catch {}
+  } catch {
+    // Local storage is optional; gameplay remains available without persistence.
+  }
 
   return createNewGameState(faction);
 }
@@ -419,11 +575,11 @@ export function getXPProgress(xp: number, level: number) {
   return { current, next, progress: Math.min(((xp - current) / (next - current)) * 100, 100) };
 }
 
-export function canClaimDaily(lastClaim: string | null): boolean {
+export function canClaimDaily(lastClaim: string | null, now = new Date()): boolean {
   if (!lastClaim) return true;
   const last = new Date(lastClaim);
-  const now = new Date();
-  return now.getTime() - last.getTime() > 24 * 60 * 60 * 1000;
+  if (!Number.isFinite(last.getTime())) return true;
+  return now.getTime() - last.getTime() >= 24 * 60 * 60 * 1000;
 }
 
 export function getFaction(id: FactionId | null): Faction | undefined {
@@ -438,13 +594,23 @@ export function getActiveShipEmoji(state: Pick<GameState, "activeSkin" | "factio
   return getShipSkin(state.activeSkin)?.emoji || getFaction(state.faction)?.shipEmoji || "🚀";
 }
 
-export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgrades">): GameplayModifiers {
+export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgrades" | "activePilot" | "activeTool">): GameplayModifiers {
   let crystalMultiplier = 1;
   let petDiscoveryBonus = 0;
   let missionTimeBonus = 0;
   let failRewardMultiplier = 0.3;
 
   const activePet = state.activePet ? getPetById(state.activePet) || getPetByName(state.activePet) : undefined;
+  const activePilot = getPilot(state.activePilot);
+  const activeTool = getTool(state.activeTool);
+
+  crystalMultiplier *= activePilot.crystalMultiplier ?? 1;
+  missionTimeBonus += activePilot.missionTimeBonus ?? 0;
+  failRewardMultiplier = Math.max(failRewardMultiplier, activePilot.failRewardMultiplier ?? 0);
+
+  if (activeTool.effectType === "discovery") petDiscoveryBonus += 0.12;
+  if (activeTool.effectType === "time") missionTimeBonus += 4;
+  if (activeTool.effectType === "shield") failRewardMultiplier = Math.max(failRewardMultiplier, 0.5);
 
   switch (activePet?.id) {
     case "aneko":
@@ -517,7 +683,9 @@ const FACTION_PLANET_NAMES: Record<FactionId, string[]> = {
 };
 
 export function getPlanetDisplayName(planetIndex: number, faction: FactionId | null): string {
-  if (!faction) return PLANETS[planetIndex]?.name || "Unknown";
-  return FACTION_PLANET_NAMES[faction]?.[planetIndex] || PLANETS[planetIndex]?.name || "Unknown";
+  const planet = PLANETS[planetIndex];
+  if (planet) return getSectorLore(planet.id).name;
+  if (!faction) return "Unknown";
+  return FACTION_PLANET_NAMES[faction]?.[planetIndex] || "Unknown";
 }
 

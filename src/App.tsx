@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    installGlobalErrorHandlers();
+    return installGlobalErrorHandlers();
   }, []);
 
   return (

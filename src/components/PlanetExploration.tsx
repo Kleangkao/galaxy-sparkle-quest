@@ -456,15 +456,17 @@ export default function PlanetExploration({
   shipEmoji = "🚀",
 }: Props) {
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const mountedRef = useRef(false);
+  const completedRef = useRef(false);
   const { t } = useI18n();
   const theme = PLANET_THEMES[planetId] || PLANET_THEMES["sparkle-moon"];
-  const mission = MISSION_PROFILES[planetId] ?? {
+  const mission = useMemo(() => MISSION_PROFILES[planetId] ?? ({
     name: "Survey Operation",
     objective: "Collect enough resources and secure extraction.",
     duration: theme.timeLimit,
     crystalGoal: 6,
     requireReturn: true,
-  };
+  }), [planetId, theme.timeLimit]);
   const missionTimeLimit = mission.duration + missionTimeBonus;
   const [mapData] = useState(() => generateMap(theme, mission));
   const [items, setItems] = useState<ExplorationItem[]>(mapData.items);
@@ -499,7 +501,7 @@ export default function PlanetExploration({
   const walls = useMemo(() => new Set((mission.walls ?? []).map(([r, c]) => coordKey(r, c))), [mission.walls]);
   const hazards = useMemo(() => new Set((mission.hazards ?? []).map(([r, c]) => coordKey(r, c))), [mission.hazards]);
   const speedTiles = useMemo(() => new Set((mission.speedTiles ?? []).map(([r, c]) => coordKey(r, c))), [mission.speedTiles]);
-  const dropZones = mission.dropZones ?? [];
+  const dropZones = useMemo(() => mission.dropZones ?? [], [mission.dropZones]);
   const teleportMap = useMemo(() => {
     const pairs = mission.teleportPairs ?? [];
     const map = new Map<string, Coord>();
@@ -509,6 +511,19 @@ export default function PlanetExploration({
     });
     return map;
   }, [mission.teleportPairs]);
+
+  const completeOnce = useCallback((reward: number) => {
+    if (!mountedRef.current || completedRef.current) return;
+    completedRef.current = true;
+    onComplete(reward);
+  }, [onComplete]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Landing animation
   useEffect(() => {
@@ -532,13 +547,13 @@ export default function PlanetExploration({
       if (hasEnough) playVictorySound(); else playFailSound();
       setTimeout(() => {
         setShipReached(true);
-        onComplete(hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier));
+        completeOnce(hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier));
       }, 2500);
       return;
     }
     const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, gameOver, landing, onComplete, requiredCollect, items, mission, deliveredZones.length, playerPos.row, playerPos.col, failRewardMultiplier]);
+  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, items, mission, deliveredZones.length, playerPos.row, playerPos.col, failRewardMultiplier]);
 
   // Spawn sparkle burst at a grid position
   const spawnSparkles = useCallback((row: number, col: number) => {
@@ -589,7 +604,7 @@ export default function PlanetExploration({
       setRobotMessage(t("robotRevealed"));
       setTimeout(() => setRobotMessage(null), 2000);
     }, 800);
-  }, []);
+  }, [t]);
 
   const collectItem = useCallback((item: ExplorationItem, row: number, col: number) => {
     if (item.type === "robot") {
@@ -648,9 +663,9 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("success");
       setShipReached(true);
-      setTimeout(() => onComplete(totalCollected.current), 800);
+      setTimeout(() => completeOnce(totalCollected.current), 800);
     }
-  }, [goalsMet, mission.requireReturn, onComplete]);
+  }, [completeOnce, goalsMet, mission.requireReturn]);
 
   const movePlayer = useCallback((deltaRow: number, deltaCol: number) => {
     if (landing || gameOver) return;
@@ -720,9 +735,9 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("fail");
       playFailSound();
-      setTimeout(() => onComplete(Math.floor(totalCollected.current * failRewardMultiplier)), 1200);
+      setTimeout(() => completeOnce(Math.floor(totalCollected.current * failRewardMultiplier)), 1200);
     }
-  }, [hp, landing, gameOver, onComplete, failRewardMultiplier]);
+  }, [hp, landing, gameOver, completeOnce, failRewardMultiplier]);
 
   useEffect(() => {
     if (landing || gameOver || enemies.length === 0) return;
@@ -761,9 +776,9 @@ export default function PlanetExploration({
       setMissionResult("success");
       setShipReached(true);
       playVictorySound();
-      setTimeout(() => onComplete(totalCollected.current), 700);
+      setTimeout(() => completeOnce(totalCollected.current), 700);
     }
-  }, [goalsMet, landing, gameOver, mission.requireReturn, onComplete]);
+  }, [completeOnce, goalsMet, landing, gameOver, mission.requireReturn]);
 
   useEffect(() => {
     if (landing || gameOver) return;
@@ -805,8 +820,8 @@ export default function PlanetExploration({
     setMissionResult("success");
     setShipReached(true);
     playVictorySound();
-    setTimeout(() => onComplete(totalCollected.current), 800);
-  }, [gameOver, landing, onComplete, playerPos, goalsMet, mission.requireReturn]);
+    setTimeout(() => completeOnce(totalCollected.current), 800);
+  }, [completeOnce, gameOver, landing, playerPos, goalsMet, mission.requireReturn]);
 
   const handleDpad = useCallback((dir: "up" | "down" | "left" | "right") => {
     if (landing || gameOver) return;
@@ -854,7 +869,7 @@ export default function PlanetExploration({
         duration: 2 + Math.random() * 3,
         delay: i * 0.3,
       })),
-    [theme.ambientEmoji],
+    [],
   );
 
   return (

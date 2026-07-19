@@ -2,7 +2,7 @@ import { GameState, getRank, getXPProgress, getFaction, canClaimDaily, countCont
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
-type Screen = "map" | "planet" | "shop" | "pets" | "info";
+type Screen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy";
 
 interface Props {
   gameState: GameState;
@@ -93,8 +93,9 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
 
       {/* Bottom Navigation Bar - always visible */}
       <div className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-around px-2 py-1.5 sm:py-2 bg-card/90 backdrop-blur-md border-t border-border/60 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+        <NavButton emoji="🎮" label="Play" active={activeScreen === "hub" || activeScreen === "swarm" || activeScreen === "arcade" || activeScreen === "discovery" || activeScreen === "strategy"} onClick={() => onNavigate("hub")} />
         <NavButton emoji="🗺️" label={t("galaxy")} active={activeScreen === "map"} onClick={() => onNavigate("map")} />
-        <NavButton emoji="🚀" label={t("ships")} active={activeScreen === "shop"} onClick={() => onNavigate("shop")} />
+        <NavButton emoji="🧑‍🚀" label="Crew" active={activeScreen === "shop"} onClick={() => onNavigate("shop")} />
         <NavButton emoji="🐾" label={t("pets")} active={activeScreen === "pets"} onClick={() => onNavigate("pets")} badge={gameState.pets.length} />
         <NavButton emoji="ℹ️" label={t("info")} active={activeScreen === "info"} onClick={() => onNavigate("info")} />
       </div>

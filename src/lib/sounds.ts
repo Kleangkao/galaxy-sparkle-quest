@@ -20,7 +20,9 @@ function playTone(freq: number, duration: number, type: OscillatorType = "sine",
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + duration);
-  } catch {}
+  } catch {
+    // Audio is an enhancement and may be blocked until the first interaction.
+  }
 }
 
 function playNotes(notes: { freq: number; delay: number; dur: number; type?: OscillatorType; vol?: number }[]) {
@@ -53,7 +55,9 @@ export function playTravelSound() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.5);
-  } catch {}
+  } catch {
+    // Audio is an enhancement and may be unavailable on some devices.
+  }
 }
 
 /** 👽 Alien pet discovery — magical sparkle arpeggio */
