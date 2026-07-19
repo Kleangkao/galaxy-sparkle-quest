@@ -18,7 +18,7 @@ export const DISCOVERY_BIOMES: DiscoveryBiome[] = [
   {
     id: "verdant-vault", name: "Verdant Vault", subtitle: "Living forest", accent: "green",
     description: "Follow pollen trails through an ancient grove that remembers every visitor.",
-    backdrop: "/assets/star-atlas/bgo63m/03-ethan-pflugh-highresscreenshot00002.webp",
+    backdrop: "/assets/galia-cute-tech/verdant-tree-biome-v2.png",
     finds: [
       { icon: "✦", name: "Whisper Seed", lore: "It hums when pointed toward the Aurora Crown." },
       { icon: "❋", name: "PURI Print", lore: "Three toes, a round heel, and traces of luminous pollen." },

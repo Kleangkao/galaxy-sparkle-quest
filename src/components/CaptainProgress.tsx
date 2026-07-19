@@ -86,7 +86,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
 
         <section className="progress-panel progress-panel--puri">
           <div className="progress-panel__heading"><PawPrint /><div><span>Adventure companion</span><h2>PURI · {puri.current.name}</h2></div></div>
-          <div className="progress-puri"><img src="/assets/galia-soft-tech/puri-companion-v1.png" alt="PURI" /><div><strong>{puri.current.ability}</strong><p>{puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? `${puri.next.bond - puri.bond} bond until ${puri.next.ability}` : "Every PURI ability is unlocked"}</small></div></div>
+          <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{puri.current.ability}</strong><p>{puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? `${puri.next.bond - puri.bond} bond until ${puri.next.ability}` : "Every PURI ability is unlocked"}</small></div></div>
         </section>
       </div>
     </main>

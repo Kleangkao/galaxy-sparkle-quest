@@ -25,7 +25,7 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
     duration: 50,
     bossTime: null,
     spawnMultiplier: 1,
-    image: "/assets/star-atlas/14NRqo/01-joao-lira-ahr.webp",
+    image: "/assets/galia-cute-tech/ahr-boss-v2.png",
     accent: "pink",
   },
   {

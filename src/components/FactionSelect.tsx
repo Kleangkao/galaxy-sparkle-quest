@@ -4,9 +4,9 @@ import { FACTIONS, FactionId } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
 
 const FACTION_IMAGES: Record<FactionId, string> = {
-  mud: "/assets/star-atlas/K3DZAR/01-joao-lira-mud-leader-vertical.webp",
-  oni: "/assets/star-atlas/8BqDQn/01-joao-lira-oni-leader-vertical.webp",
-  ustur: "/assets/star-atlas/JrKGXR/01-joao-lira-ust-leader-vertical.webp",
+  mud: "/assets/galia-plush-tech/canonical/mud-leader-master-v1.jpg",
+  oni: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg",
+  ustur: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg",
 };
 
 const FACTION_LEADERS: Record<FactionId, string> = {

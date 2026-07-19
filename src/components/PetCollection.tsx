@@ -124,7 +124,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSe
 
                       {/* Pet emoji with animations */}
                       <motion.span
-                        className={`text-3xl sm:text-4xl ${owned ? "" : "grayscale"}`}
+                        className={`flex h-20 w-full items-center justify-center overflow-hidden rounded-xl text-3xl sm:h-24 sm:text-4xl ${owned ? "" : "grayscale"}`}
                         animate={owned ? {
                           y: [0, -5, 0],
                           rotate: [0, 3, -3, 0],
@@ -132,7 +132,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSe
                         } : {}}
                         transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.2 }}
                       >
-                        {pet.emoji}
+                        {pet.image ? <img src={pet.image} alt={owned ? pet.name : "Undiscovered companion"} className="h-full w-full object-cover" /> : pet.emoji}
                       </motion.span>
 
                       <span className={`text-xs sm:text-sm font-bold ${owned ? pet.color : "text-muted-foreground"}`}

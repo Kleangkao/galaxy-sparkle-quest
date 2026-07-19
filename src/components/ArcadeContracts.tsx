@@ -14,7 +14,7 @@ export default function ArcadeContracts({ gameState, onBack, onStart }: Props) {
       <header className="arcade-contracts__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button>
         <div><div className="command-kicker">Arcade operations board · Aim & shoot</div><h1>Pick your shooting challenge.</h1><p>Mouse aim, click to fire, six-shot magazines, moving targets, and accuracy combos. This is a different game from Swarm.</p></div>
-        <div className="arcade-contracts__bond"><img src="/assets/galia-soft-tech/puri-companion-v1.png" alt="PURI companion" /><span>PURI bond<strong>{gameState.modeRecords.puriBond}</strong></span></div>
+        <div className="arcade-contracts__bond"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI companion" /><span>PURI bond<strong>{gameState.modeRecords.puriBond}</strong></span></div>
       </header>
 
       <section className="arcade-contract-grid">

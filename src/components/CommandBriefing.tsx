@@ -3,9 +3,9 @@ import { GameState, PLANETS, getFaction, getRank, getSectorLore, isPlanetUnlocke
 import { getPilot, getTool } from "@/lib/loadouts";
 
 const LEADER_TRANSMISSIONS = {
-  mud: { name: "Commander Charon", image: "/assets/star-atlas/K3DZAR/01-joao-lira-mud-leader-vertical.webp" },
-  oni: { name: "Pathfinder Vaor", image: "/assets/star-atlas/8BqDQn/01-joao-lira-oni-leader-vertical.webp" },
-  ustur: { name: "Elder Opos", image: "/assets/star-atlas/JrKGXR/01-joao-lira-ust-leader-vertical.webp" },
+  mud: { name: "Commander Charon", image: "/assets/galia-plush-tech/canonical/mud-leader-master-v1.jpg" },
+  oni: { name: "Pathfinder Vaor", image: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg" },
+  ustur: { name: "Elder Opos", image: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg" },
 };
 
 interface Props {

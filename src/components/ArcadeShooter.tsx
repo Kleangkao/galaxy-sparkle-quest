@@ -239,7 +239,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               onPointerDown={(event) => { event.stopPropagation(); shootTarget(target.id); }}
               aria-label={target.kind === "decoy" ? "Do not shoot decoy" : `Shoot ${target.kind}`}
             >
-              {target.kind === "boss" ? <img src="/assets/star-atlas/14NRqo/01-joao-lira-ahr.webp" alt="" /> : target.kind === "crystal" ? "◆" : target.kind === "decoy" ? "!" : ""}
+              {target.kind === "boss" ? <img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="" /> : target.kind === "crystal" ? "◆" : target.kind === "decoy" ? "!" : ""}
               {target.kind === "boss" && <i><b style={{ width: `${target.hp / target.maxHp * 100}%` }} /></i>}
             </button>
           ))}

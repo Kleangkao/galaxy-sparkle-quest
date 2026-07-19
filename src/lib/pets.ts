@@ -11,6 +11,7 @@ export interface AlienPet {
   id: string;
   name: string;
   emoji: string;
+  image?: string;
   species: string;
   description: string;
   rarity: "common" | "rare" | "legendary";
@@ -29,13 +30,13 @@ export interface AlienEgg {
 /** All collectible alien companions */
 export const ALIEN_PETS: AlienPet[] = [
   {
-    id: "aneko", name: "Aneko", emoji: "🐈", species: "Pink Cat Alien",
+    id: "aneko", name: "Aneko", emoji: "🐈", image: "/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg", species: "Pink Cat Alien",
     description: "A playful pink cat from the crystal caves. Loves to chase sparkles!",
     rarity: "common", color: "text-cosmic-pink",
     ability: { type: "crystal-boost", descEn: "+10% crystals", descTh: "+10% คริสตัล", emoji: "💎" },
   },
   {
-    id: "tigu", name: "Tigu", emoji: "😺", species: "Cute Teal Cat",
+    id: "tigu", name: "Tigu", emoji: "😺", image: "/assets/galia-plush-tech/canonical/teal-companion-master-v1.jpg", species: "Cute Teal Cat",
     description: "A calm teal cat who purrs in zero gravity. Great at finding hidden treasures!",
     rarity: "common", color: "text-cosmic-cyan",
     ability: { type: "discovery", descEn: "Better treasure finds", descTh: "หาสมบัติเก่งขึ้น", emoji: "🔍" },
