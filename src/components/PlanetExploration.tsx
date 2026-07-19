@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound } from "@/lib/sounds";
+import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound, playImpactSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -44,6 +44,8 @@ interface MissionProfile {
   teleportPairs?: [Coord, Coord][];
   enemyCount?: number;
   slippery?: boolean;
+  nodeGoal?: number;
+  bossName?: string;
 }
 
 interface CollectEffect {
@@ -82,15 +84,15 @@ function getMoveDirectionFromKeyboard(event: KeyboardEvent): "up" | "down" | "le
 
 const MISSION_PROFILES: Record<string, MissionProfile> = {
   "sparkle-moon": {
-    name: "First Contact",
-    objective: "Collect 5 crystals and return to base.",
+    name: "Crystal Flight School",
+    objective: "Learn movement, collect 5 crystals, then return to your ship.",
     duration: 50,
     crystalGoal: 5,
     requireReturn: true,
   },
   "candy-planet": {
-    name: "Simple Maze",
-    objective: "Collect 6 crystals through maze lanes.",
+    name: "Living Signal Hunt",
+    objective: "Track one hidden creature signature through the coral maze.",
     duration: 60,
     crystalGoal: 6,
     requireReturn: false,
@@ -101,38 +103,43 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     ],
   },
   "frosty-star": {
-    name: "First Decision",
-    objective: "Collect 8 crystals before timer expires.",
+    name: "Slipstream Route",
+    objective: "Master two-cell ice slides and collect 8 navigation shards.",
     duration: 45,
     crystalGoal: 8,
     requireReturn: false,
+    slippery: true,
+    walls: [[1, 3], [2, 3], [4, 4], [5, 4]],
   },
   "jungle-world": {
-    name: "Risk Zone",
-    objective: "Collect 8 crystals while avoiding hazard cells.",
+    name: "Silent Canopy",
+    objective: "Collect 8 vault keys while evading two guardian patrols.",
     duration: 65,
     crystalGoal: 8,
     requireReturn: false,
     hazards: [[1, 1], [1, 6], [2, 3], [3, 4], [4, 2], [5, 5]],
+    enemyCount: 2,
   },
   "rainbow-nebula": {
-    name: "Speed Control",
-    objective: "Collect 10 crystals. Speed tiles trigger dash movement.",
+    name: "Prism Warden",
+    objective: "Activate 5 prism nodes to break the Warden shield.",
     duration: 65,
-    crystalGoal: 10,
+    nodeGoal: 5,
     requireReturn: false,
+    enemyCount: 1,
+    bossName: "Prism Warden",
     speedTiles: [[1, 3], [2, 6], [4, 1], [5, 4], [6, 2]],
   },
   "bubbly-bay": {
-    name: "First Enemy",
-    objective: "Collect 6 crystals and return while enemy roams.",
+    name: "Pressure Dive",
+    objective: "Collect 6 pressure blooms and return while the deep sentinel hunts.",
     duration: 70,
     crystalGoal: 6,
     requireReturn: true,
     enemyCount: 1,
   },
   "cookie-crater": {
-    name: "Pet Hunt",
+    name: "Mimic Pet Hunt",
     objective: "Find at least 1 pet signature in hidden sectors.",
     duration: 70,
     petGoal: 1,
@@ -140,8 +147,8 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     walls: [[2, 2], [2, 3], [2, 5], [4, 2], [4, 5], [5, 3], [5, 4]],
   },
   "starlight-shore": {
-    name: "Slippery Ice",
-    objective: "Collect 8 crystals with slippery movement.",
+    name: "Starlight Relay",
+    objective: "Chain slippery movement to collect 8 relay stars.",
     duration: 70,
     crystalGoal: 8,
     requireReturn: false,
@@ -149,7 +156,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     walls: [[1, 4], [2, 4], [3, 4], [4, 4]],
   },
   "crystal-cave": {
-    name: "Multi Delivery",
+    name: "Two-Gate Delivery",
     objective: "Collect resources then deliver to 2 drop zones.",
     duration: 80,
     crystalGoal: 6,
@@ -159,13 +166,15 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     dropZones: [[0, 1], [0, 6]],
   },
   "golden-galaxy": {
-    name: "Sector Chaos",
-    objective: "Collect crystals, find pet intel, and return through controlled hazards.",
+    name: "Aurora Core Finale",
+    objective: "Charge both gate nodes, recover pet intel, collect 8 cores, and escape.",
     duration: 90,
     crystalGoal: 8,
     petGoal: 1,
     requireReturn: true,
     enemyCount: 2,
+    nodeGoal: 2,
+    bossName: "Aurora Core",
     // Keep the original chaos shape, but remove one damage tile for fairness.
     hazards: [[1, 1], [1, 6], [3, 2], [4, 5], [5, 1], [5, 6]],
     walls: [[2, 2], [2, 3], [2, 5], [3, 5], [4, 2], [4, 3], [5, 4]],
@@ -464,7 +473,7 @@ export default function PlanetExploration({
     name: "Survey Operation",
     objective: "Collect enough resources and secure extraction.",
     duration: theme.timeLimit,
-    crystalGoal: 6,
+    petGoal: 1,
     requireReturn: true,
   }), [planetId, theme.timeLimit]);
   const missionTimeLimit = mission.duration + missionTimeBonus;
@@ -477,6 +486,7 @@ export default function PlanetExploration({
   const [dashReady, setDashReady] = useState(false);
   const [carriedPayload, setCarriedPayload] = useState(0);
   const [deliveredZones, setDeliveredZones] = useState<string[]>([]);
+  const [activatedNodes, setActivatedNodes] = useState<string[]>([]);
   const [collectEffects, setCollectEffects] = useState<CollectEffect[]>([]);
   const [sparkles, setSparkles] = useState<SparkleParticle[]>([]);
   const [damageNotices, setDamageNotices] = useState<DamageNotice[]>([]);
@@ -542,6 +552,7 @@ export default function PlanetExploration({
         crystalCollected >= (mission.crystalGoal ?? 0) &&
         petCollected >= (mission.petGoal ?? 0) &&
         deliveredZones.length >= (mission.deliveryGoal ?? 0) &&
+        activatedNodes.length >= (mission.nodeGoal ?? 0) &&
         (!mission.requireReturn || (playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col));
       setMissionResult(hasEnough ? "success" : "fail");
       if (hasEnough) playVictorySound(); else playFailSound();
@@ -553,7 +564,7 @@ export default function PlanetExploration({
     }
     const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, items, mission, deliveredZones.length, playerPos.row, playerPos.col, failRewardMultiplier]);
+  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
 
   // Spawn sparkle burst at a grid position
   const spawnSparkles = useCallback((row: number, col: number) => {
@@ -653,10 +664,12 @@ export default function PlanetExploration({
   const crystalCollected = items.filter((i) => i.collected && i.type !== "robot" && i.type !== "pet").length;
   const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
   const deliveryDone = deliveredZones.length;
+  const nodesDone = activatedNodes.length;
   const goalsMet =
     crystalCollected >= (mission.crystalGoal ?? 0) &&
     petCollected >= (mission.petGoal ?? 0) &&
-    deliveryDone >= (mission.deliveryGoal ?? 0);
+    deliveryDone >= (mission.deliveryGoal ?? 0) &&
+    nodesDone >= (mission.nodeGoal ?? 0);
 
   const checkShipReturn = useCallback((row: number, col: number) => {
     if (row === shipPos.current.row && col === shipPos.current.col && goalsMet && mission.requireReturn) {
@@ -691,6 +704,10 @@ export default function PlanetExploration({
       }
       if (speedTiles.has(cellKey)) {
         setDashReady(true);
+        if (!activatedNodes.includes(cellKey)) {
+          setActivatedNodes((previous) => [...previous, cellKey]);
+          if (mission.bossName) playImpactSound();
+        }
         addCollectEffect("🌀", 0, nextRow, nextCol, "collect");
       }
       const teleportTarget = teleportMap.get(cellKey);
@@ -726,7 +743,7 @@ export default function PlanetExploration({
     }
     playStepSound();
     checkShipReturn(nextRow, nextCol);
-  }, [landing, gameOver, dashReady, mission.slippery, playerPos.row, playerPos.col, walls, hazards, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
+  }, [landing, gameOver, dashReady, mission.slippery, mission.bossName, playerPos.row, playerPos.col, walls, hazards, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
 
   // Keyboard controls
   useEffect(() => {
@@ -850,7 +867,9 @@ export default function PlanetExploration({
     mission.crystalGoal ? `💎 ${crystalCollected}/${mission.crystalGoal}` : null,
     mission.petGoal ? `🐾 ${petCollected}/${mission.petGoal}` : null,
     mission.deliveryGoal ? `📦 ${deliveryDone}/${mission.deliveryGoal}` : null,
+    mission.nodeGoal ? `⚡ ${nodesDone}/${mission.nodeGoal}` : null,
   ].filter(Boolean).join("  •  ");
+  const bossShield = mission.nodeGoal ? Math.max(0, Math.round((1 - nodesDone / mission.nodeGoal) * 100)) : 0;
 
   // Star rating
   const starRating = useMemo(() => {
@@ -925,6 +944,12 @@ export default function PlanetExploration({
         <div className="text-center text-[10px] sm:text-xs font-semibold text-cosmic-cyan">
           {mission.name}: {mission.objective}
         </div>
+        {mission.bossName && (
+          <div className="story-boss-bar" aria-label={`${mission.bossName} shield ${bossShield}%`}>
+            <div><span>Boss encounter</span><strong>{mission.bossName}</strong><small>Shield {bossShield}%</small></div>
+            <i><b style={{ width: `${bossShield}%` }} /></i>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
             <span className="text-sm sm:text-lg">💎</span>
@@ -1038,6 +1063,7 @@ export default function PlanetExploration({
               const isWall = walls.has(coordKey(row, col));
               const isHazard = hazards.has(coordKey(row, col));
               const isSpeedTile = speedTiles.has(coordKey(row, col));
+              const isActivatedNode = activatedNodes.includes(coordKey(row, col));
               const isDropZone = dropZones.some(([r, c]) => r === row && c === col);
               const isTeleport = teleportMap.has(coordKey(row, col));
               const canMove = !gameOver && !landing && !isWall && isAdjacent(playerPos.row, playerPos.col, row, col);
@@ -1053,6 +1079,7 @@ export default function PlanetExploration({
                     ${isShip && !isPlayer && canReturn ? "ring-1 ring-cosmic-green/50 bg-cosmic-green/10" : ""}
                     ${isWall ? "bg-background/50" : ""}
                     ${isHazard ? "ring-1 ring-destructive/50 bg-destructive/10" : ""}
+                    ${isActivatedNode ? "ring-1 ring-cosmic-green/60 bg-cosmic-green/15" : ""}
                   `}
                 >
                   {isWall && !isPlayer && (
@@ -1065,7 +1092,7 @@ export default function PlanetExploration({
                     </span>
                   )}
                   {isHazard && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-70">⚡</span>}
-                  {isSpeedTile && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-70">🌀</span>}
+                  {isSpeedTile && !isPlayer && !isWall && <span className={`absolute text-[10px] sm:text-xs ${isActivatedNode ? "opacity-100" : "opacity-70"}`}>{isActivatedNode ? "⚡" : "🌀"}</span>}
                   {isDropZone && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-80">📦</span>}
                   {isTeleport && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-80">🛸</span>}
 

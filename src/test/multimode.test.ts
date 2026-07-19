@@ -4,6 +4,7 @@ import { getPuriBonuses, getPuriProgress } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
 import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
 import { LocalProfileRepository } from "@/lib/profileRepository";
+import { getLocalPlaytestSummary, savePlaytestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 
 describe("multi-mode progression", () => {
   it("creates migration-safe loadout and mode records", () => {
@@ -22,7 +23,7 @@ describe("multi-mode progression", () => {
       strategyCycles: 0,
       strategyObjectives: 0,
     });
-    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard" });
+    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full" });
   });
 
   it("stacks pilot and tool effects into the shared mission model", () => {
@@ -97,5 +98,14 @@ describe("multi-mode progression", () => {
     expect(repository.supportsAccounts).toBe(false);
     expect(typeof repository.load).toBe("function");
     expect(typeof repository.save).toBe("function");
+  });
+
+  it("keeps anonymous playtest counts and feedback on the local device", () => {
+    localStorage.removeItem("galia-local-playtest-v1");
+    trackModeStart("story");
+    trackModeStart("story");
+    trackModeComplete("story");
+    savePlaytestFeedback("story", 4, "right", "Clear and fun");
+    expect(getLocalPlaytestSummary()).toEqual({ starts: { story: 2 }, completions: { story: 1 }, feedbackCount: 1 });
   });
 });

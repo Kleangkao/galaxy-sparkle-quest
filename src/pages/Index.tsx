@@ -9,7 +9,7 @@ import {
   calcInfluenceGain, simulateRivalInfluence, getPlanetController, INFLUENCE_TO_CAPTURE, canClaimDaily,
 } from "@/lib/gameState";
 import { generateEgg, AlienEgg, AlienPet, ALIEN_PETS } from "@/lib/pets";
-import { playClickSound, playTravelSound } from "@/lib/sounds";
+import { playClickSound, playTravelSound, setSoundMode, startModeAmbience, stopModeAmbience } from "@/lib/sounds";
 import {
   startAutoSave, stopAutoSave, startHealthCheck, stopHealthCheck,
   validateAndRepairState, logError,
@@ -20,6 +20,8 @@ import type { PlayMode } from "@/components/ModeHub";
 import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { profileRepository } from "@/lib/profileRepository";
+import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
+import { FeedbackMode, shouldRequestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 
 type Screen = AppScreen;
 
@@ -44,6 +46,9 @@ const DiscoveryRun = lazy(() => import("@/components/DiscoveryRun"));
 const FrontierControl = lazy(() => import("@/components/FrontierControl"));
 const StoryExpeditionConsole = lazy(() => import("@/components/StoryExpeditionConsole"));
 const SettingsPanel = lazy(() => import("@/components/SettingsPanel"));
+const CaptainProgress = lazy(() => import("@/components/CaptainProgress"));
+const GuidedFlight = lazy(() => import("@/components/GuidedFlight"));
+const PlaytestFeedback = lazy(() => import("@/components/PlaytestFeedback"));
 
 function ScreenLoadingFallback({ label }: { label: string }) {
   return (
@@ -70,6 +75,8 @@ export default function Index() {
   const [captureEvent, setCaptureEvent] = useState<CaptureEvent | null>(null);
   const [hatchingEgg, setHatchingEgg] = useState<AlienEgg | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [guidedOpen, setGuidedOpen] = useState(() => !hasSeenGuidedFlight(gameState.faction));
+  const [feedback, setFeedback] = useState<{ open: boolean; mode: FeedbackMode }>({ open: false, mode: "overall" });
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
@@ -95,6 +102,18 @@ export default function Index() {
     });
   }, [screen]);
 
+  useEffect(() => {
+    setSoundMode(gameState.accessibility.sound);
+    const ambientMode = screen === "map" || screen === "planet" ? "story"
+      : screen === "arcade" || screen === "arcade-select" ? "arcade"
+        : screen === "strategy" ? "strategy"
+          : screen === "progress" ? "progress"
+            : screen === "discovery" ? "discovery"
+              : screen === "swarm" ? "swarm" : "hub";
+    startModeAmbience(ambientMode);
+    return stopModeAmbience;
+  }, [gameState.accessibility.sound, screen]);
+
   const updateState = useCallback((updater: (prev: GameState) => GameState) => {
     setGameState((prev) => {
       const next = updater(prev);
@@ -111,7 +130,9 @@ export default function Index() {
     setCaptureEvent(null);
     setHatchingEgg(null);
     setSettingsOpen(false);
-    setGameState(validateAndRepairState(profileRepository.load(factionId)));
+    const nextState = validateAndRepairState(profileRepository.load(factionId));
+    setGameState(nextState);
+    setGuidedOpen(!hasSeenGuidedFlight(factionId));
   };
 
   const handleReturnToFactionSelect = useCallback(() => {
@@ -119,6 +140,7 @@ export default function Index() {
     setCaptureEvent(null);
     setHatchingEgg(null);
     setSettingsOpen(false);
+    setGuidedOpen(false);
     profileRepository.setActiveFaction(null);
     setScreen("hub");
     setGameState(createNewGameState(null));
@@ -223,6 +245,8 @@ export default function Index() {
           level: newLevel, shipLevel: newShipLevel, influence: newInfluence, eggs: newEggs,
         };
       });
+      trackModeComplete("story");
+      if (shouldRequestFeedback("story")) setFeedback({ open: true, mode: "story" });
     },
     [activePlanet, t, updateState]
   );
@@ -301,6 +325,7 @@ export default function Index() {
 
   const handleChooseMode = (mode: PlayMode) => {
     playClickSound();
+    if (mode !== "arcade") trackModeStart(mode);
     if (mode === "story") setScreen("map");
     else if (mode === "arcade") setScreen("arcade-select");
     else setScreen(mode);
@@ -327,6 +352,8 @@ export default function Index() {
         },
       };
     });
+    trackModeComplete(result.variant);
+    if (shouldRequestFeedback(result.variant)) setFeedback({ open: true, mode: result.variant });
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
@@ -337,6 +364,8 @@ export default function Index() {
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
     toast("Field journal saved. Discovery rewards added.");
+    trackModeComplete("discovery");
+    if (shouldRequestFeedback("discovery")) setFeedback({ open: true, mode: "discovery" });
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
@@ -347,6 +376,21 @@ export default function Index() {
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
     toast("Command cycle saved to the frontier.");
+    trackModeComplete("strategy");
+    if (shouldRequestFeedback("strategy")) setFeedback({ open: true, mode: "strategy" });
+  };
+
+  const dismissGuidedFlight = () => {
+    markGuidedFlightSeen(gameState.faction);
+    setGuidedOpen(false);
+  };
+
+  const navigateFromHud = (next: Screen) => {
+    playClickSound();
+    setActivePlanet(null);
+    const mode: Partial<Record<Screen, FeedbackMode>> = { map: "story", swarm: "swarm", discovery: "discovery", strategy: "strategy" };
+    if (mode[next]) trackModeStart(mode[next]!);
+    setScreen(next);
   };
 
   if (!gameState.faction) {
@@ -366,10 +410,11 @@ export default function Index() {
       <HUD
         gameState={gameState}
         activeScreen={screen}
-        onNavigate={(s) => { playClickSound(); setActivePlanet(null); setScreen(s); }}
+        onNavigate={navigateFromHud}
         onClaimDaily={screen === "map" ? handleClaimDaily : undefined}
         onLogoClick={handleReturnToFactionSelect}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenFeedback={() => setFeedback({ open: true, mode: "overall" })}
       />
 
       <AnimatePresence mode="wait">
@@ -390,7 +435,7 @@ export default function Index() {
             <StoryExpeditionConsole
               gameState={gameState}
               onHome={() => setScreen("hub")}
-              onLaunch={(planet) => { playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
+              onLaunch={(planet) => { trackModeStart("story"); playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
             />
           </Suspense>
         </ScreenErrorBoundary>
@@ -460,7 +505,7 @@ export default function Index() {
               <ArcadeContracts
                 gameState={gameState}
                 onBack={() => setScreen("hub")}
-                onStart={(contract: ArcadeContract) => { setActiveArcadeContract(contract.id); setScreen("arcade"); }}
+                onStart={(contract: ArcadeContract) => { trackModeStart("arcade"); setActiveArcadeContract(contract.id); setScreen("arcade"); }}
               />
             </Suspense>
           </ScreenErrorBoundary>
@@ -516,6 +561,16 @@ export default function Index() {
           </ScreenErrorBoundary>
         </motion.div>
       )}
+
+      {screen === "progress" && (
+        <motion.div key="captain-progress" {...screenTransition}>
+          <ScreenErrorBoundary screenName="captain-progress" onFallback={() => setScreen("hub")}>
+            <Suspense fallback={<ScreenLoadingFallback label="Opening Captain progress..." />}>
+              <CaptainProgress gameState={gameState} onBack={() => setScreen("hub")} onOpenCrew={() => setScreen("shop")} onPlay={handleChooseMode} />
+            </Suspense>
+          </ScreenErrorBoundary>
+        </motion.div>
+      )}
       </AnimatePresence>
 
       <Suspense fallback={null}>
@@ -527,8 +582,21 @@ export default function Index() {
           onChange={(accessibility) => updateState((prev) => ({ ...prev, accessibility }))}
           onSwitchFaction={handleReturnToFactionSelect}
           onResetProgress={handleResetProgress}
+          onReplayOnboarding={() => { setSettingsOpen(false); setGuidedOpen(true); }}
         />
+        <PlaytestFeedback open={feedback.open} mode={feedback.mode} onOpenChange={(open) => setFeedback((current) => ({ ...current, open }))} onSubmitted={() => toast("Thanks! Your local playtest note was saved.")} />
       </Suspense>
+
+      {guidedOpen && (
+        <Suspense fallback={null}>
+          <GuidedFlight
+            gameState={gameState}
+            onStartStory={() => { dismissGuidedFlight(); trackModeStart("story"); setScreen("map"); }}
+            onOpenCrew={() => { dismissGuidedFlight(); setScreen("shop"); }}
+            onDismiss={dismissGuidedFlight}
+          />
+        </Suspense>
+      )}
 
       {captureEvent && (
         <Suspense fallback={null}>

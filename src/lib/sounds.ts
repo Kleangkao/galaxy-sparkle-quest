@@ -1,5 +1,12 @@
 // Playful kid-friendly sound effects using Web Audio API
 let audioCtx: AudioContext | null = null;
+let soundMode: "full" | "quiet" | "off" = "full";
+let ambienceTimer: number | null = null;
+
+export function setSoundMode(mode: "full" | "quiet" | "off") {
+  soundMode = mode;
+  if (mode === "off") stopModeAmbience();
+}
 
 function getCtx(): AudioContext {
   if (!audioCtx) audioCtx = new AudioContext();
@@ -8,13 +15,14 @@ function getCtx(): AudioContext {
 }
 
 function playTone(freq: number, duration: number, type: OscillatorType = "sine", vol = 0.15, ramp = true) {
+  if (soundMode === "off") return;
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.setValueAtTime(vol * (soundMode === "quiet" ? 0.38 : 1), ctx.currentTime);
     if (ramp) gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -23,6 +31,63 @@ function playTone(freq: number, duration: number, type: OscillatorType = "sine",
   } catch {
     // Audio is an enhancement and may be blocked until the first interaction.
   }
+}
+
+export function pulseGamepad(duration = 45, strongMagnitude = 0.25) {
+  try {
+    const pads = navigator.getGamepads?.() ?? [];
+    for (const pad of pads) {
+      const actuator = pad?.vibrationActuator as (GamepadHapticActuator & { playEffect?: (type: string, params: object) => Promise<string> }) | undefined;
+      actuator?.playEffect?.("dual-rumble", { duration, strongMagnitude, weakMagnitude: Math.min(1, strongMagnitude * 0.65) });
+    }
+  } catch {
+    // Haptics are optional and unavailable on many browsers.
+  }
+}
+
+export function stopModeAmbience() {
+  if (ambienceTimer !== null) window.clearInterval(ambienceTimer);
+  ambienceTimer = null;
+}
+
+export function startModeAmbience(mode: "hub" | "story" | "swarm" | "arcade" | "discovery" | "strategy" | "progress") {
+  stopModeAmbience();
+  if (soundMode === "off") return;
+  const palettes = {
+    hub: [220, 330], story: [196, 294], swarm: [110, 165], arcade: [330, 495],
+    discovery: [262, 392], strategy: [147, 220], progress: [247, 370],
+  } as const;
+  const notes = palettes[mode];
+  let flip = false;
+  ambienceTimer = window.setInterval(() => {
+    if (document.hidden || soundMode === "off") return;
+    playTone(flip ? notes[0] : notes[1], 1.6, "sine", 0.012);
+    flip = !flip;
+  }, 4200);
+}
+
+export function playLaserSound() {
+  if (soundMode === "off") return;
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(760, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(190, ctx.currentTime + 0.09);
+    gain.gain.setValueAtTime((soundMode === "quiet" ? 0.025 : 0.06), ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.1);
+  } catch { /* Audio is optional. */ }
+}
+
+export function playImpactSound() {
+  playNotes([{ freq: 130, delay: 0, dur: 0.08, type: "square", vol: 0.08 }, { freq: 520, delay: 0.035, dur: 0.07, type: "triangle", vol: 0.05 }]);
+  pulseGamepad(42, 0.22);
+}
+
+export function playReloadSound() {
+  playNotes([{ freq: 260, delay: 0, dur: 0.05, type: "square", vol: 0.035 }, { freq: 420, delay: 0.12, dur: 0.06, type: "square", vol: 0.04 }]);
 }
 
 function playNotes(notes: { freq: number; delay: number; dur: number; type?: OscillatorType; vol?: number }[]) {

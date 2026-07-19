@@ -118,7 +118,7 @@ export interface ShipUpgrade {
 }
 
 export const SHIP_UPGRADES: ShipUpgrade[] = [
-  { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Permanent passive safety system.", effect: "Failed missions now keep at least 60% of rewards.", cost: 15, requiredLevel: 1 },
+  { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Your first permanent safety upgrade.", effect: "Failed missions now keep at least 60% of rewards.", cost: 8, requiredLevel: 1 },
   { id: "booster", name: "Turbo Booster", emoji: "⚡", description: "Permanent passive engine upgrade.", effect: "+5 seconds on every mission timer.", cost: 25, requiredLevel: 2 },
   { id: "scanner", name: "Crystal Scanner", emoji: "📡", description: "Permanent passive scan module.", effect: "+15% crystals from missions.", cost: 40, requiredLevel: 3 },
   { id: "garden", name: "Pet Garden", emoji: "🌿", description: "Permanent passive habitat support.", effect: "+15% alien pet discovery chance.", cost: 50, requiredLevel: 4 },
@@ -278,6 +278,7 @@ export interface GameState {
     effects: "full" | "reduced";
     aimHelp: "standard" | "wide";
     contrast: "standard" | "high";
+    sound: "full" | "quiet" | "off";
   };
 }
 
@@ -471,6 +472,7 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
       effects: source?.accessibility?.effects === "reduced" ? "reduced" : "full",
       aimHelp: source?.accessibility?.aimHelp === "wide" ? "wide" : "standard",
       contrast: source?.accessibility?.contrast === "high" ? "high" : "standard",
+      sound: source?.accessibility?.sound === "off" ? "off" : source?.accessibility?.sound === "quiet" ? "quiet" : "full",
     },
   };
 }

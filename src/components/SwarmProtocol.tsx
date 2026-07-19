@@ -4,6 +4,7 @@ import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { useCombatInput } from "@/hooks/useCombatInput";
+import { playImpactSound, pulseGamepad } from "@/lib/sounds";
 
 type Point = { x: number; y: number };
 type EnemyKind = "chaser" | "dasher" | "orbiter" | "boss";
@@ -79,6 +80,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     state.enemies = state.enemies.map((enemy) => distance(enemy, state.player) < radius ? { ...enemy, hp: enemy.hp - 45 } : enemy);
     state.hazards = state.hazards.filter((hazard) => distance(hazard, state.player) >= radius);
     state.pulseCooldown = 9;
+    playImpactSound();
   }, [gameState.accessibility.aimHelp, paused, running]);
   const combatInput = useCombatInput(activatePulse);
   const inputVector = combatInput.vector;
@@ -142,6 +144,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     if (kind === "repair") arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32);
     else upgrades.current[kind] *= kind === "damage" ? 1.3 : kind === "fireRate" ? 1.2 : 1.22;
     setUpgradeLevel(null);
+    pulseGamepad(70, 0.3);
   };
   const boss = frame.enemies.find((enemy) => enemy.kind === "boss");
   const resultReward = useMemo(() => ({ crystals: Math.ceil(Math.max(3, Math.floor(frame.score / 420) + (won ? 10 : 3)) * puri.rewardMultiplier), xp: Math.max(3, Math.floor(frame.elapsed / 6) + (won ? 12 : 3)) }), [frame.elapsed, frame.score, puri.rewardMultiplier, won]);

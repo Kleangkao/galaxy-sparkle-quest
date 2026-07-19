@@ -1,6 +1,8 @@
-import { Gauge, RotateCcw, Settings2, Sparkles, Target, Users, Contrast } from "lucide-react";
+import { useState } from "react";
+import { ClipboardCheck, Copy, Gauge, RotateCcw, Settings2, Sparkles, Target, Users, Contrast, Volume2 } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getLocalPlaytestReport } from "@/lib/playtestFeedback";
 
 interface Props {
   open: boolean;
@@ -10,9 +12,14 @@ interface Props {
   onChange: (settings: GameState["accessibility"]) => void;
   onSwitchFaction: () => void;
   onResetProgress: () => void;
+  onReplayOnboarding: () => void;
 }
 
-export default function SettingsPanel({ open, factionName, settings, onOpenChange, onChange, onSwitchFaction, onResetProgress }: Props) {
+export default function SettingsPanel({ open, factionName, settings, onOpenChange, onChange, onSwitchFaction, onResetProgress, onReplayOnboarding }: Props) {
+  const [reportCopied, setReportCopied] = useState(false);
+  const copyReport = async () => {
+    try { await navigator.clipboard.writeText(getLocalPlaytestReport()); setReportCopied(true); window.setTimeout(() => setReportCopied(false), 1800); } catch { setReportCopied(false); }
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onOpenAutoFocus={(event) => event.preventDefault()} className="game-settings max-h-[88vh] max-w-2xl overflow-y-auto border-border/70 bg-card/95 p-0 text-foreground shadow-2xl backdrop-blur-xl">
@@ -42,6 +49,16 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             </SettingRow>
           </SettingsGroup>
 
+          <SettingsGroup icon={Volume2} title="Audio & feedback" description="Control generated game sounds and controller vibration cues.">
+            <SettingRow label="Game audio" detail="Quiet keeps important cues at a softer volume. Off mutes all game audio.">
+              <SegmentedControl
+                value={settings.sound}
+                options={[{ value: "full", label: "Full" }, { value: "quiet", label: "Quiet" }, { value: "off", label: "Off" }]}
+                onChange={(sound) => onChange({ ...settings, sound: sound as GameState["accessibility"]["sound"] })}
+              />
+            </SettingRow>
+          </SettingsGroup>
+
           <SettingsGroup icon={Sparkles} title="Visual comfort" description="Reduce visual intensity or increase interface clarity.">
             <SettingRow label="Screen effects" detail="Reduced removes nonessential motion and glow effects.">
               <SegmentedControl
@@ -63,8 +80,14 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             <div className="game-settings__section-title"><Users className="h-4 w-4" /><div><strong>Profile & progress</strong><small>Manage the current faction save.</small></div></div>
             <div className="game-settings__profile-actions">
               <button onClick={onSwitchFaction}><Users className="h-4 w-4" /><span>Switch faction<small>Your {factionName} save stays safe</small></span></button>
+              <button onClick={onReplayOnboarding}><Sparkles className="h-4 w-4" /><span>Replay guided flight<small>Review the first-session path</small></span></button>
               <button className="is-danger" onClick={onResetProgress}><RotateCcw className="h-4 w-4" /><span>Reset {factionName} progress<small>Requires confirmation</small></span></button>
             </div>
+          </section>
+
+          <section className="game-settings__section">
+            <div className="game-settings__section-title"><Copy className="h-4 w-4" /><div><strong>Tester tools</strong><small>Share anonymous results from this browser with the development team.</small></div></div>
+            <div className="game-settings__profile-actions"><button onClick={copyReport}>{reportCopied ? <ClipboardCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}<span>{reportCopied ? "Report copied" : "Copy local test report"}<small>Includes mode counts and submitted notes</small></span></button></div>
           </section>
 
           <div className="game-settings__note"><Contrast className="h-4 w-4" /><span>Preferences save automatically for this faction and can be changed anytime.</span></div>

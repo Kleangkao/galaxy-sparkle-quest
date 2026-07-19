@@ -4,6 +4,7 @@ import { GameState } from "@/lib/gameState";
 import { getArcadeContract } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
+import { playImpactSound, playLaserSound, playReloadSound, pulseGamepad } from "@/lib/sounds";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
@@ -89,6 +90,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     const state = stateRef.current;
     if (!running || paused || state.reloading > 0 || state.ammo === MAGAZINE) return;
     state.reloading = 1.05;
+    playReloadSound();
     setFrame({ ...state, targets: [...state.targets] });
   }, [paused, running]);
 
@@ -97,6 +99,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     if (!running || paused || state.reloading > 0) return;
     if (state.ammo <= 0) { reload(); return; }
     state.ammo -= 1;
+    playLaserSound();
     const target = targetId === undefined ? null : state.targets.find((item) => item.id === targetId) ?? null;
     if (!target) {
       state.combo = 0;
@@ -104,7 +107,9 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       state.score = Math.max(0, state.score - 75);
       state.combo = 0;
       state.targets = state.targets.filter((item) => item.id !== target.id);
+      pulseGamepad(80, 0.35);
     } else {
+      playImpactSound();
       target.hp -= 1;
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);

@@ -4,6 +4,7 @@ import {
   Crosshair,
   Gamepad2,
   Info,
+  MessageCircleHeart,
   Map,
   PawPrint,
   RefreshCw,
@@ -11,13 +12,14 @@ import {
   Shield,
   Sparkles,
   Swords,
+  Trophy,
   Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { GameState, getRank, getXPProgress, getFaction, canClaimDaily, countControlled, PLANETS } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
 
-export type AppScreen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy";
+export type AppScreen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy" | "progress";
 
 interface Props {
   gameState: GameState;
@@ -26,6 +28,7 @@ interface Props {
   onClaimDaily?: () => void;
   onLogoClick?: () => void;
   onOpenSettings?: () => void;
+  onOpenFeedback?: () => void;
 }
 
 interface DockItem {
@@ -42,10 +45,11 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Arcade", icon: Crosshair, screen: "arcade-select", active: (screen) => screen === "arcade" || screen === "arcade-select" },
   { label: "Discover", icon: Binoculars, screen: "discovery", active: (screen) => screen === "discovery" },
   { label: "Control", icon: Shield, screen: "strategy", active: (screen) => screen === "strategy" },
+  { label: "Progress", icon: Trophy, screen: "progress", active: (screen) => screen === "progress" },
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
 
-export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings }: Props) {
+export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings, onOpenFeedback }: Props) {
   const { t } = useI18n();
   const rank = getRank(gameState.level);
   const xpInfo = getXPProgress(gameState.xp, gameState.level);
@@ -88,6 +92,9 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
           </button>
           <button className="status-icon-button" onClick={onOpenSettings} aria-label="Game settings" title="Game settings">
             <Settings className="h-4 w-4" />
+          </button>
+          <button className="status-icon-button" onClick={onOpenFeedback} aria-label="Send playtest feedback" title="Playtest feedback">
+            <MessageCircleHeart className="h-4 w-4" />
           </button>
         </div>
       </header>
