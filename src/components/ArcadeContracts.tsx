@@ -13,14 +13,14 @@ export default function ArcadeContracts({ gameState, onBack, onStart }: Props) {
     <main className="arcade-contracts relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
       <header className="arcade-contracts__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button>
-        <div><div className="command-kicker">Arcade operations board</div><h1>Pick today’s challenge.</h1><p>Each assignment has its own objective, timer, record, and reward route.</p></div>
+        <div><div className="command-kicker">Arcade operations board · Aim & shoot</div><h1>Pick your shooting challenge.</h1><p>Mouse aim, click to fire, six-shot magazines, moving targets, and accuracy combos. This is a different game from Swarm.</p></div>
         <div className="arcade-contracts__bond"><img src="/assets/galia-soft-tech/puri-companion-v1.png" alt="PURI companion" /><span>PURI bond<strong>{gameState.modeRecords.puriBond}</strong></span></div>
       </header>
 
       <section className="arcade-contract-grid">
         {ARCADE_CONTRACTS.map((contract) => {
           const record = gameState.modeRecords.arcadeContracts[contract.id] ?? { bestScore: 0, clears: 0 };
-          const objective = contract.objective === "boss" ? "Defeat Ahr" : contract.objective === "energy" ? `Collect ${contract.target} energy` : `Reach ${contract.target.toLocaleString()} points`;
+          const objective = contract.objective === "boss" ? "Break the Ahr core" : contract.objective === "energy" ? `Tag ${contract.target} crystal signals` : `Reach ${contract.target.toLocaleString()} points`;
           return (
             <article key={contract.id} className={`arcade-contract arcade-contract--${contract.accent}`}>
               <div className="arcade-contract__art"><img src={contract.image} alt="" /><span>{contract.subtitle}</span></div>

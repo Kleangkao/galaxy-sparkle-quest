@@ -1,5 +1,5 @@
 import { Planet, FactionId, PLANETS, isPlanetUnlocked, getPlanetDisplayName, PlanetInfluence, getPlanetController, getPlanetLeader, getPlanetStatus } from "@/lib/gameState";
-import { Lock } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
@@ -10,9 +10,10 @@ interface Props {
   visited: boolean;
   influence?: PlanetInfluence;
   hasUndiscoveredPet?: boolean;
+  onLaunch?: (planet: Planet) => void;
 }
 
-export default function PlanetCard({ planet, level, faction, visited, influence, hasUndiscoveredPet }: Props) {
+export default function PlanetCard({ planet, level, faction, visited, influence, hasUndiscoveredPet, onLaunch }: Props) {
   const { t } = useI18n();
   const planetIndex = PLANETS.findIndex((candidate) => candidate.id === planet.id);
   const unlocked = isPlanetUnlocked(planet, level, faction);
@@ -60,9 +61,7 @@ export default function PlanetCard({ planet, level, faction, visited, influence,
         <span className="rounded-full border border-border/60 bg-background/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           {headerLabel}
         </span>
-        <span className="text-[10px] font-semibold text-muted-foreground">
-          {unlocked ? "Launch from Galaxy Map" : "Preview dossier"}
-        </span>
+        <span className="text-[10px] font-semibold text-muted-foreground">{unlocked ? `Chapter ${planetIndex + 1}` : "Preview dossier"}</span>
       </div>
 
       <div className="flex items-center w-full">
@@ -133,17 +132,15 @@ export default function PlanetCard({ planet, level, faction, visited, influence,
         </div>
       )}
 
-      {!unlocked && (
+      {unlocked && onLaunch ? (
+        <button className="planet-card-launch" onClick={() => onLaunch(planet)}>
+          <span>{visited ? "Replay survey" : "Play story chapter"}</span><ArrowRight className="h-4 w-4" />
+        </button>
+      ) : (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/20 px-3 py-2 text-[11px] text-muted-foreground">
-          <span>Rewards Preview</span>
-          <span className="font-semibold text-foreground/80">Unlocks at Level {planet.unlockLevel}</span>
+          <span>Rewards preview</span><span className="font-semibold text-foreground/80">Unlocks at Level {planet.unlockLevel}</span>
         </div>
       )}
-
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/20 px-3 py-2 text-[11px] text-muted-foreground">
-        <span>{unlocked ? "Launch from Galaxy Map" : "Rewards Preview"}</span>
-        <span className="font-semibold text-foreground/80">{unlocked ? "Primary play area: map above" : `Unlocks at Level ${planet.unlockLevel}`}</span>
-      </div>
     </motion.div>
   );
 }

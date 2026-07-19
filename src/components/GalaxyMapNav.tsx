@@ -1,4 +1,4 @@
-import { useI18n } from "@/lib/i18n";
+import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { playClickSound } from "@/lib/sounds";
 
 interface Props {
@@ -6,16 +6,15 @@ interface Props {
 }
 
 export default function GalaxyMapNav({ onHome }: Props) {
-  const { t } = useI18n();
-
   return (
     <button
       onClick={() => { playClickSound(); onHome(); }}
-      className="fixed left-4 top-24 z-[60] flex min-h-[48px] items-center gap-2 rounded-2xl border border-border/60 bg-card/92 px-3.5 py-2.5 text-foreground shadow-lg transition-all hover:bg-primary/20 active:scale-95 sm:top-24"
-      style={{ fontFamily: "var(--font-display)" }}
+      className="story-back-button"
+      aria-label="Return to all game modes"
     >
-      <span className="text-lg sm:text-xl" aria-hidden="true">🛡️</span>
-      <span className="text-xs font-bold sm:text-sm">{t("backHome")}</span>
+      <ArrowLeft className="h-4 w-4" />
+      <Gamepad2 className="h-4 w-4 text-cosmic-cyan" />
+      <span>All modes</span>
     </button>
   );
 }

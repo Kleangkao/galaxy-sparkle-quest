@@ -127,20 +127,9 @@ describe("public test release hardening", () => {
         <FrontierControl
           gameState={state}
           onBack={() => undefined}
-          onAction={(planetId, action) => {
-            setState((current) => {
-              if (action !== "reinforce" || !current.faction) return current;
-              return {
-                ...current,
-                influence: {
-                  ...current.influence,
-                  [planetId]: { ...current.influence[planetId], [current.faction]: 100 },
-                },
-              };
-            });
-          }}
-          onComplete={() => setState((current) => ({
+          onComplete={({ influence }) => setState((current) => ({
             ...current,
+            influence,
             modeRecords: { ...current.modeRecords, strategyCycles: current.modeRecords.strategyCycles + 1 },
           }))}
         />
@@ -148,12 +137,13 @@ describe("public test release hardening", () => {
     }
 
     render(<Harness />);
-    const reinforce = screen.getByRole("button", { name: "Reinforce sector +34 influence · rivals react" });
+    fireEvent.click(screen.getByRole("button", { name: "Start command cycle" }));
+    const reinforce = screen.getByRole("button", { name: /Reinforce strongly/ });
     for (let index = 0; index < 4; index += 1) fireEvent.click(reinforce);
-    fireEvent.click(screen.getByRole("button", { name: "End command cycle" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bank this command cycle" }));
 
     expect(screen.getByText("Secure a sector")).toBeInTheDocument();
-    expect(screen.getByText("Complete · bonus secured")).toBeInTheDocument();
+    expect(screen.getByText(/Complete.*bonus secured/)).toBeInTheDocument();
     expect(screen.queryByText("Stabilize Prism Reach")).not.toBeInTheDocument();
   });
 });

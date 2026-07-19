@@ -52,7 +52,7 @@ export default function FactionSelect({ onSelect }: Props) {
           Guardians of Galia
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
-          A signal vanished beyond the map. Choose the crew that will bring it home.
+          Choose who you want to play today. You can switch factions anytime without deleting another faction’s progress.
         </p>
       </div>
 
@@ -110,9 +110,10 @@ export default function FactionSelect({ onSelect }: Props) {
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.1 }}
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
           />
-          <span className="relative z-10">Begin as a {selectedFaction.name} cadet →</span>
+          <span className="relative z-10">Continue with {selectedFaction.name} →</span>
         </motion.button>
       )}
+      <p className="mt-3 max-w-xl text-center text-xs text-muted-foreground">Each faction keeps its own local save, crew, rewards, and campaign progress.</p>
     </div>
   );
 }

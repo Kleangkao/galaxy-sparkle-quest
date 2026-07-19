@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, PLANETS, getPlanetDisplayName, getSectorLore } from "@/lib/gameState";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock3, Gem, Route, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PlanetExploration from "@/components/PlanetExploration";
 import CelebrationScreen from "@/components/CelebrationScreen";
@@ -19,6 +19,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const planetIndex = PLANETS.findIndex(p => p.id === planet.id);
   const displayName = getPlanetDisplayName(planetIndex, gameState.faction);
   const [phase, setPhase] = useState<"landing" | "exploring" | "celebration">("landing");
+  const [approachId, setApproachId] = useState<"scout" | "steady" | "salvage">("steady");
   const [bonusCrystals, setBonusCrystals] = useState(0);
   const rewardsClaimed = useRef(false);
   const alreadyVisited = gameState.visitedPlanets.includes(planet.id);
@@ -30,6 +31,12 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const [willFindPet] = useState(() => Boolean(!hasPet && planet.pet && Math.random() < petChance));
   const missionBrief = getMissionBrief(planet.id);
   const lore = getSectorLore(planet.id);
+  const approaches = {
+    scout: { id: "scout" as const, name: "Scout route", detail: "+8 seconds · 90% crystals", timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
+    steady: { id: "steady" as const, name: "Steady route", detail: "Standard time · standard rewards", timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
+    salvage: { id: "salvage" as const, name: "Salvage route", detail: "-4 seconds · +25% crystals", timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
+  };
+  const approach = approaches[approachId];
 
   const handleExplorationComplete = useCallback((bonus: number) => {
     setBonusCrystals(bonus);
@@ -38,7 +45,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
 
   const baseCrystals = alreadyVisited ? Math.floor(planet.crystals / 3) : planet.crystals;
   const totalCrystals = Math.floor(
-    getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier
+    getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * approach.crystalMultiplier
   );
   const totalXP = alreadyVisited ? Math.floor(planet.xp / 2) : planet.xp;
   const petToCollect = willFindPet && planet.pet ? planet.pet.name : null;
@@ -59,13 +66,14 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   return (
     <div className="relative z-10 flex min-h-screen flex-col items-center justify-center overflow-visible px-3 pb-24 pt-28 sm:px-4 sm:pb-28 sm:pt-32">
       <button onClick={onBack}
-        className="fixed left-4 top-20 z-[60] flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-all hover:bg-card sm:top-20">
+        className="fixed left-4 top-28 z-[60] flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-all hover:bg-card">
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         <span className="text-xs sm:text-sm font-bold">{t("galaxyMap")}</span>
       </button>
 
       {phase === "landing" && (
-        <div className="animate-slide-up flex flex-col items-center gap-3 sm:gap-5 text-center max-w-xs sm:max-w-md">
+        <div className="story-landing animate-slide-up">
+          <div className="story-landing__hero">
           <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full ${planet.color} ${planet.glowClass} flex items-center justify-center text-3xl sm:text-4xl md:text-5xl animate-float`}>
             {planet.emoji}
           </div>
@@ -75,6 +83,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
           <p className="text-xs sm:text-sm text-muted-foreground">{planet.description}</p>
           <div className="command-kicker">{lore.chapter} · Threat: {lore.threat}</div>
           <p className="max-w-md text-sm leading-relaxed text-cyan-50/80">{lore.story}</p>
+          </div>
+          <div className="story-landing__mission">
           <div className="w-full rounded-2xl border border-border/50 bg-card/35 px-4 py-3 text-left shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-border/50 bg-background/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
@@ -112,6 +122,19 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
               </p>
             </div>
           )}
+          <div className="story-approach" aria-label="Choose mission approach">
+            <div className="story-approach__title"><Route className="h-4 w-4" /><span>Choose how to play this chapter</span></div>
+            <div className="story-approach__grid">
+              {Object.values(approaches).map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button key={option.id} className={approachId === option.id ? "is-active" : ""} onClick={() => setApproachId(option.id)}>
+                    <Icon className="h-4 w-4" /><strong>{option.name}</strong><small>{option.detail}</small>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           {alreadyVisited && (
             <div className="rounded-2xl border border-cosmic-cyan/20 bg-cosmic-cyan/5 px-4 py-3 text-left">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cosmic-cyan sm:text-xs">{t("surveyRun")}</div>
@@ -129,8 +152,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             className="bg-primary hover:bg-primary/80 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}>
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            {t("explore")}
+            Launch {approach.name}
           </Button>
+          </div>
         </div>
       )}
 
@@ -147,7 +171,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
           <PlanetExploration
             planetId={planet.id}
             onComplete={handleExplorationComplete}
-            missionTimeBonus={modifiers.missionTimeBonus}
+            missionTimeBonus={modifiers.missionTimeBonus + approach.timeBonus}
             failRewardMultiplier={modifiers.failRewardMultiplier}
             shipEmoji={shipEmoji}
           />

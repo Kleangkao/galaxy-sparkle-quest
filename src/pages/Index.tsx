@@ -4,6 +4,7 @@ import SpaceBackground from "@/components/SpaceBackground";
 import SwipeableGalaxyMap from "@/components/SwipeableGalaxyMap";
 import PlanetCard from "@/components/PlanetCard";
 import HUD from "@/components/HUD";
+import type { AppScreen } from "@/components/HUD";
 import GalaxyMapNav from "@/components/GalaxyMapNav";
 import ScreenErrorBoundary from "@/components/ScreenErrorBoundary";
 import {
@@ -22,10 +23,9 @@ import CommandBriefing from "@/components/CommandBriefing";
 import type { PlayMode } from "@/components/ModeHub";
 import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { getPuriBonuses } from "@/lib/puriBond";
-import { StrategyAction, getStrategyActionValues } from "@/lib/strategyMissions";
 import { profileRepository } from "@/lib/profileRepository";
 
-type Screen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy";
+type Screen = AppScreen;
 
 interface CaptureEvent {
   factionId: FactionId;
@@ -43,6 +43,7 @@ const EggHatchOverlay = lazy(() => import("@/components/EggHatchOverlay"));
 const ModeHub = lazy(() => import("@/components/ModeHub"));
 const ArcadeContracts = lazy(() => import("@/components/ArcadeContracts"));
 const SwarmProtocol = lazy(() => import("@/components/SwarmProtocol"));
+const ArcadeShooter = lazy(() => import("@/components/ArcadeShooter"));
 const DiscoveryRun = lazy(() => import("@/components/DiscoveryRun"));
 const FrontierControl = lazy(() => import("@/components/FrontierControl"));
 
@@ -119,7 +120,8 @@ export default function Index() {
     setActivePlanet(null);
     setCaptureEvent(null);
     setHatchingEgg(null);
-    setScreen("map");
+    profileRepository.setActiveFaction(null);
+    setScreen("hub");
     setGameState(createNewGameState(null));
   }, []);
 
@@ -337,38 +339,12 @@ export default function Index() {
     toast("Field journal saved. Discovery rewards added.");
   };
 
-  const handleStrategyAction = (planetId: string, action: StrategyAction) => {
-    updateState((prev) => {
-      if (!prev.faction) return prev;
-      const planet = PLANETS.find((candidate) => candidate.id === planetId);
-      if (!planet) return prev;
-      const current = prev.influence[planetId] || { mud: 0, oni: 0, ustur: 0 };
-      const values = getStrategyActionValues(planetId);
-      let next = { ...current };
-      if (action === "disrupt") {
-        const rival = (["mud", "oni", "ustur"] as FactionId[]).filter((id) => id !== prev.faction).sort((a, b) => next[b] - next[a])[0];
-        next[rival] = Math.max(0, next[rival] - values.disrupt);
-        next[prev.faction] = Math.min(INFLUENCE_TO_CAPTURE, next[prev.faction] + 8);
-      } else {
-        next[prev.faction] = Math.min(INFLUENCE_TO_CAPTURE, next[prev.faction] + values[action]);
-        if (action === "reinforce") {
-          next = simulateRivalInfluence(next, prev.faction, planet);
-          if (values.rivalPressure > 1) {
-            const rival = (["mud", "oni", "ustur"] as FactionId[]).filter((id) => id !== prev.faction).sort((a, b) => next[b] - next[a])[0];
-            next[rival] = Math.min(INFLUENCE_TO_CAPTURE - 1, next[rival] + 5);
-          }
-        }
-      }
-      return { ...prev, influence: { ...prev.influence, [planetId]: next } };
-    });
-  };
-
-  const handleStrategyComplete = ({ captures, objectiveComplete }: { captures: number; objectiveComplete: boolean }) => {
+  const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
     updateState((prev) => {
       const xpReward = 6 + (objectiveComplete ? 4 : 0);
       const xp = prev.xp + xpReward;
       const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier);
-      return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
+      return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
     toast("Command cycle saved to the frontier.");
   };
@@ -417,7 +393,7 @@ export default function Index() {
         <ScreenErrorBoundary screenName="galaxy-map" onFallback={() => setScreen("map")}>
           <div className="relative z-10 pt-28 sm:pt-32 pb-24 sm:pb-28 px-3 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-screen flex flex-col gap-4 sm:gap-6">
             <GalaxyMapNav
-              onHome={handleReturnToFactionSelect}
+              onHome={() => setScreen("hub")}
             />
             {/* Title */}
             <div className="text-center animate-slide-up shrink-0">
@@ -426,9 +402,15 @@ export default function Index() {
                 The Galia Frontier
               </h1>
               <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                Trace the lost signal, assemble your crew, and decide which faction will shape the frontier.
+                A ten-chapter adventure. Pick a mission, choose your approach, play a short objective, then upgrade for the next sector.
               </p>
             </div>
+
+            <section className="story-loop" aria-label="How Story Expeditions work">
+              <span><strong>1</strong>Choose an unlocked chapter</span>
+              <span><strong>2</strong>Pick Scout, Steady, or Salvage route</span>
+              <span><strong>3</strong>Complete the mission and grow your crew</span>
+            </section>
 
             <CommandBriefing
               gameState={gameState}
@@ -515,6 +497,7 @@ export default function Index() {
                         visited={gameState.visitedPlanets.includes(planet.id)}
                         influence={gameState.influence[planet.id]}
                         hasUndiscoveredPet={Boolean(planet.pet && !gameState.pets.includes(planet.pet.name))}
+                        onLaunch={(mission) => { playTravelSound(); setActivePlanet(mission); setScreen("planet"); }}
                       />
                     ))}
                   </div>
@@ -628,15 +611,29 @@ export default function Index() {
         </motion.div>
       )}
 
-      {(screen === "swarm" || screen === "arcade") && (
-        <motion.div key={screen} {...screenTransition}>
-          <ScreenErrorBoundary screenName={screen} onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Loading combat simulation..." />}>
+      {screen === "swarm" && (
+        <motion.div key="swarm" {...screenTransition}>
+          <ScreenErrorBoundary screenName="swarm" onFallback={() => setScreen("hub")}>
+            <Suspense fallback={<ScreenLoadingFallback label="Loading survival simulation..." />}>
               <SwarmProtocol
                 gameState={gameState}
-                variant={screen}
-                contractId={screen === "arcade" ? activeArcadeContract : undefined}
-                onBack={() => setScreen(screen === "arcade" ? "arcade-select" : "hub")}
+                onBack={() => setScreen("hub")}
+                onOpenHangar={() => setScreen("shop")}
+                onComplete={handleCombatComplete}
+              />
+            </Suspense>
+          </ScreenErrorBoundary>
+        </motion.div>
+      )}
+
+      {screen === "arcade" && (
+        <motion.div key="arcade" {...screenTransition}>
+          <ScreenErrorBoundary screenName="arcade" onFallback={() => setScreen("arcade-select")}>
+            <Suspense fallback={<ScreenLoadingFallback label="Loading shooting range..." />}>
+              <ArcadeShooter
+                gameState={gameState}
+                contractId={activeArcadeContract}
+                onBack={() => setScreen("arcade-select")}
                 onComplete={handleCombatComplete}
               />
             </Suspense>
@@ -658,7 +655,7 @@ export default function Index() {
         <motion.div key="strategy" {...screenTransition}>
           <ScreenErrorBoundary screenName="strategy" onFallback={() => setScreen("hub")}>
             <Suspense fallback={<ScreenLoadingFallback label="Opening tactical grid..." />}>
-              <FrontierControl gameState={gameState} onBack={() => setScreen("hub")} onAction={handleStrategyAction} onComplete={handleStrategyComplete} />
+              <FrontierControl gameState={gameState} onBack={() => setScreen("hub")} onComplete={handleStrategyComplete} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>

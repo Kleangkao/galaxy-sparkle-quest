@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Compass, Leaf, RotateCcw, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, BookOpen, Compass, Gift, Leaf, MousePointerClick, RotateCcw, ScanLine, Sparkles } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { getPilot } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
@@ -21,19 +21,35 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const [found, setFound] = useState<number[]>([]);
   const [selected, setSelected] = useState<(typeof points)[number] | null>(null);
   const [claimed, setClaimed] = useState(false);
+  const [scanCharges, setScanCharges] = useState(3);
+  const [scanActive, setScanActive] = useState(false);
+  const scanTimer = useRef<number | null>(null);
   const complete = points.length > 0 && found.length === points.length;
   const guidedId = puri.discoveryHint ? points.find((item) => !found.includes(item.id))?.id : undefined;
   const crystalReward = Math.ceil(found.length * puri.rewardMultiplier);
   const masteryGain = complete ? 12 : found.length;
 
-  const chooseBiome = (next: DiscoveryBiome) => { setBiome(next); setFound([]); setSelected(null); setClaimed(false); };
+  useEffect(() => () => { if (scanTimer.current !== null) window.clearTimeout(scanTimer.current); }, []);
+
+  const chooseBiome = (next: DiscoveryBiome) => { setBiome(next); setFound([]); setSelected(null); setClaimed(false); setScanCharges(3); };
   const find = (item: (typeof points)[number]) => { if (!found.includes(item.id)) setFound((current) => [...current, item.id]); setSelected(item); };
   const claim = () => { if (claimed || !biome || !complete) return; setClaimed(true); onComplete({ biomeId: biome.id, finds: found.length, mastery: masteryGain }); };
-  const reset = () => { setRunNumber((value) => value + 1); setFound([]); setSelected(null); setClaimed(false); };
+  const reset = () => {
+    if (found.length > 0 && !window.confirm("Start a new signal layout? Unclaimed discoveries from this run will be cleared.")) return;
+    setRunNumber((value) => value + 1); setFound([]); setSelected(null); setClaimed(false); setScanCharges(3);
+  };
+  const scan = () => {
+    if (scanCharges <= 0 || scanActive) return;
+    setScanCharges((value) => value - 1);
+    setScanActive(true);
+    if (scanTimer.current !== null) window.clearTimeout(scanTimer.current);
+    scanTimer.current = window.setTimeout(() => setScanActive(false), 1800);
+  };
 
   if (!biome) return (
     <main className="discovery-mode discovery-select relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
-      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><div className="command-kicker">Discovery network</div><h1>Where should we explore?</h1><p>Every biome rotates its field finds. Complete journals to raise biome mastery.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} total finds</small></span></div></header>
+      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><div className="command-kicker">Discovery network · Relaxed hidden-object mode</div><h1>Explore, spot signals, fill your journal.</h1><p>There is no timer and no failure. Pick a biome, click six glowing signal markers, then claim the journal rewards.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} total finds</small></span></div></header>
+      <section className="discovery-how"><span><strong>1</strong><Compass className="h-4 w-4" /> Pick a biome</span><span><strong>2</strong><MousePointerClick className="h-4 w-4" /> Click glowing signals</span><span><strong>3</strong><Gift className="h-4 w-4" /> Claim crystals + mastery</span></section>
       <section className="discovery-biome-grid">
         {DISCOVERY_BIOMES.map((item) => { const mastery = gameState.modeRecords.discoveryMastery[item.id] || 0; return <button key={item.id} className={`discovery-biome discovery-biome--${item.accent}`} onClick={() => chooseBiome(item)}><img src={item.backdrop} alt="" /><i /><div><span>{item.subtitle}</span><h2>{item.name}</h2><p>{item.description}</p><strong><Compass className="h-4 w-4" /> Explore rotation</strong><small>{getMasteryTier(mastery)} · {mastery}/100 mastery</small></div></button>; })}
       </section>
@@ -43,10 +59,11 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const currentMastery = gameState.modeRecords.discoveryMastery[biome.id] || 0;
   return (
     <main className="discovery-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
-      <header className="discovery-header"><button onClick={() => setBiome(null)}><ArrowLeft className="h-4 w-4" /> Biomes</button><div><div className="command-kicker">Discovery Run · {biome.name}</div><h1>No timer. No failure. Just explore.</h1><p>Objective: catalogue all six rotating signals.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery)}<small>{found.length}/{points.length} discoveries</small></span></div></header>
+      <header className="discovery-header"><button onClick={() => setBiome(null)}><ArrowLeft className="h-4 w-4" /> Biomes</button><div><div className="command-kicker">Discovery Run · {biome.name}</div><h1>Find the six pulsing markers.</h1><p>Click a signal in the picture to reveal its object and story. Use Scan if one is hard to spot.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery)}<small>{found.length}/{points.length} discoveries</small></span></div></header>
+      <section className="discovery-run-guide"><div><MousePointerClick className="h-4 w-4" /><span>Current task<strong>Click {points.length - found.length} more glowing {points.length - found.length === 1 ? "signal" : "signals"}</strong></span></div><div><Gift className="h-4 w-4" /><span>Full journal reward<strong>+{Math.ceil(points.length * puri.rewardMultiplier)} crystals · +{points.length} XP · +12 mastery</strong></span></div><button onClick={scan} disabled={scanCharges <= 0 || scanActive}><ScanLine className="h-4 w-4" /> Scan field · {scanCharges} left</button></section>
       <section className="discovery-layout">
         <div className="discovery-scene"><img className="discovery-scene__backdrop" src={biome.backdrop} alt={`${biome.name} landscape`} /><div className="discovery-scene__wash" /><div className="discovery-scene__hint"><Leaf className="h-4 w-4" /> {puri.discoveryHint ? "PURI found a warm signal. Look for the pulsing marker!" : "Search the scene. Signals glow gently when you move near them."}</div>
-          {points.map((item) => { const isFound = found.includes(item.id); return <button key={item.id} aria-label={`Discover ${item.name}`} onClick={() => find(item)} className={`discovery-point ${isFound ? "is-found" : ""} ${guidedId === item.id ? "is-guided" : ""}`} style={{ left: `${item.x}%`, top: `${item.y}%` }}>{item.icon}</button>; })}
+          {points.map((item) => { const isFound = found.includes(item.id); return <button key={item.id} aria-label={`Discover ${item.name}`} onClick={() => find(item)} className={`discovery-point ${isFound ? "is-found" : ""} ${guidedId === item.id || (scanActive && !isFound) ? "is-guided" : ""}`} style={{ left: `${item.x}%`, top: `${item.y}%` }}>{isFound ? item.icon : "?"}</button>; })}
           {complete && <div className="discovery-complete"><Sparkles className="h-5 w-5" /> Rotation complete · +{masteryGain} mastery</div>}
         </div>
         <aside className="discovery-journal"><div className="discovery-journal__title"><BookOpen className="h-5 w-5" /><div><span>Field journal</span><strong>{biome.name} · Rotation {runNumber + 1}</strong></div></div>
@@ -54,7 +71,7 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
           <div className="discovery-journal__list">{points.map((item) => <div key={item.id} className={found.includes(item.id) ? "is-found" : ""}><span>{found.includes(item.id) ? item.icon : "?"}</span><strong>{found.includes(item.id) ? item.name : "Undiscovered"}</strong></div>)}</div>
           {complete && !claimed && <button className="discovery-claim" onClick={claim}>Claim journal rewards</button>}
           {claimed && <div className="discovery-claimed">+{crystalReward} crystals · +{found.length} XP · +{masteryGain} mastery</div>}
-          <button className="discovery-reset" onClick={reset}><RotateCcw className="h-4 w-4" /> Rotate field finds</button>
+          <button className="discovery-reset" onClick={reset}><RotateCcw className="h-4 w-4" /> Start a new signal layout</button>
         </aside>
       </section>
     </main>

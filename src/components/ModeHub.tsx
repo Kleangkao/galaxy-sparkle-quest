@@ -20,31 +20,38 @@ const MODES: Array<{
   icon: typeof Gamepad2;
   color: string;
   status: string;
+  play: string;
+  progress: string;
 }> = [
   {
     id: "story", name: "Story Expeditions", label: "Campaign", icon: Map,
     description: "Trace the lost signal across ten connected chapters. Explore, upgrade, and shape the frontier.",
     image: "/assets/star-atlas/kQLooz/01-vitaly-tyukin-sand-punaab-fire3.webp", color: "cyan", status: "10 chapters",
+    play: "Choose route · complete short missions", progress: "XP · crystals · pets · sector control",
   },
   {
     id: "swarm", name: "Swarm Protocol", label: "Survival", icon: Swords,
-    description: "Move, dodge, auto-fire, collect energy, build your pilot, and survive the Ahr incursion.",
-    image: "/assets/star-atlas/14NRqo/01-joao-lira-ahr.webp", color: "pink", status: "Boss run",
+    description: "A gentler 60-second survival run. Dodge, auto-fire, collect energy, and choose perks before the Ahr boss.",
+    image: "/assets/star-atlas/14NRqo/01-joao-lira-ahr.webp", color: "pink", status: "Run perks",
+    play: "Move · auto-fire · build perks", progress: "Crystals · XP · PURI bond every run",
   },
   {
     id: "arcade", name: "Arcade Ops", label: "Action", icon: Crosshair,
-    description: "Short high-energy assignments built around movement, hazards, tools, and score chasing.",
-    image: "/assets/star-atlas/bgenAm/01-joao-lira-cc-ust-m-combat-001.webp", color: "orange", status: "Quick play",
+    description: "Real mouse-aim shooting assignments with moving targets, reload timing, decoys, combos, and boss weak points.",
+    image: "/assets/star-atlas/bgenAm/01-joao-lira-cc-ust-m-combat-001.webp", color: "orange", status: "Aim & shoot",
+    play: "Mouse aim · click fire · R reload", progress: "Contract records · crystals · XP",
   },
   {
     id: "discovery", name: "Discovery Runs", label: "Relax", icon: Binoculars,
-    description: "No countdown and no failure. Search beautiful sectors for lifeforms, relics, and hidden lore.",
-    image: "/assets/star-atlas/bgo63m/01-ethan-pflugh-treerender-02.webp", color: "green", status: "No timer",
+    description: "A relaxed hidden-object hunt. Click six pulsing signals, reveal their stories, and complete a field journal.",
+    image: "/assets/star-atlas/bgo63m/01-ethan-pflugh-treerender-02.webp", color: "green", status: "Hidden objects",
+    play: "Pick biome · find signals · claim journal", progress: "Biome mastery · lore · crystals",
   },
   {
     id: "strategy", name: "Frontier Control", label: "Strategy-lite", icon: Sparkles,
-    description: "Read sector traits, complete rotating objectives, and out-plan rival expeditions without complicated menus.",
-    image: "/assets/star-atlas/1NvkdG/01-joao-lira-old-leaders1.webp", color: "yellow", status: "Command cycle",
+    description: "A four-turn map puzzle. Pick sectors, spend simple actions, and complete one clear objective for a bonus.",
+    image: "/assets/star-atlas/1NvkdG/01-joao-lira-old-leaders1.webp", color: "yellow", status: "4-turn puzzle",
+    play: "Pick sector · spend four moves", progress: "Influence · captures · command rewards",
   },
 ];
 
@@ -95,7 +102,7 @@ export default function ModeHub({ gameState, onChoose, onAccessibilityChange }: 
               <img src={mode.image} alt="" />
               <div className="mode-card__shade" />
               <div className="mode-card__topline"><span><Icon className="h-4 w-4" />{mode.label}</span><small>{mode.status}</small></div>
-              <div className="mode-card__copy"><h2>{mode.name}</h2><p>{mode.description}</p><strong>Play mode <ArrowRight className="h-4 w-4" /></strong></div>
+              <div className="mode-card__copy"><h2>{mode.name}</h2><p>{mode.description}</p><div className="mode-card__facts"><span>Play: {mode.play}</span><span>Earn: {mode.progress}</span></div><strong>Play mode <ArrowRight className="h-4 w-4" /></strong></div>
             </button>
           );
         })}
