@@ -8,7 +8,6 @@ export type PlayMode = "story" | "arcade" | "discovery" | "strategy" | "swarm";
 interface Props {
   gameState: GameState;
   onChoose: (mode: PlayMode) => void;
-  onAccessibilityChange: (settings: GameState["accessibility"]) => void;
 }
 
 const MODES: Array<{
@@ -55,7 +54,7 @@ const MODES: Array<{
   },
 ];
 
-export default function ModeHub({ gameState, onChoose, onAccessibilityChange }: Props) {
+export default function ModeHub({ gameState, onChoose }: Props) {
   const pilot = getPilot(gameState.activePilot);
   const records = gameState.modeRecords;
   const autoMode = (["discovery", "arcade", "swarm", "strategy"] as PlayMode[])[new Date().getDay() % 4];
@@ -82,14 +81,6 @@ export default function ModeHub({ gameState, onChoose, onAccessibilityChange }: 
         <div><span>Discoveries</span><strong>{records.discoveryFinds}</strong></div>
         <div><span>Control wins</span><strong>{records.strategyWins}</strong></div>
         <div><span>Arcade best</span><strong>{records.arcadeHighScore.toLocaleString()}</strong></div>
-      </section>
-
-      <section className="play-assists" aria-label="Play assists">
-        <div><span>Combat pace</span>{([0.75, 1, 1.15] as const).map((speed) => <button key={speed} className={gameState.accessibility.combatSpeed === speed ? "is-active" : ""} onClick={() => onAccessibilityChange({ ...gameState.accessibility, combatSpeed: speed })}>{speed === 0.75 ? "Calm" : speed === 1 ? "Standard" : "Fast"}</button>)}</div>
-        <div><span>Screen effects</span>{(["full", "reduced"] as const).map((effects) => <button key={effects} className={gameState.accessibility.effects === effects ? "is-active" : ""} onClick={() => onAccessibilityChange({ ...gameState.accessibility, effects })}>{effects === "full" ? "Full" : "Reduced"}</button>)}</div>
-        <div><span>Aim help</span>{(["standard", "wide"] as const).map((aimHelp) => <button key={aimHelp} className={gameState.accessibility.aimHelp === aimHelp ? "is-active" : ""} onClick={() => onAccessibilityChange({ ...gameState.accessibility, aimHelp })}>{aimHelp === "wide" ? "Wide" : "Standard"}</button>)}</div>
-        <div><span>Contrast</span>{(["standard", "high"] as const).map((contrast) => <button key={contrast} className={gameState.accessibility.contrast === contrast ? "is-active" : ""} onClick={() => onAccessibilityChange({ ...gameState.accessibility, contrast })}>{contrast === "high" ? "High" : "Standard"}</button>)}</div>
-        <small>These assists change presentation and pace, never rewards.</small>
       </section>
 
       <PuriBondPanel bond={records.puriBond} />

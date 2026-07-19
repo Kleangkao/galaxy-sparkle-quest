@@ -10,6 +10,7 @@ import {
 } from "@/lib/gameState";
 import { useCombatInput } from "@/hooks/useCombatInput";
 import FrontierControl from "@/components/FrontierControl";
+import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
 const ONI_SAVE_KEY = "cosmic-explorer-save-v2:oni";
@@ -145,5 +146,21 @@ describe("public test release hardening", () => {
     expect(screen.getByText("Secure a sector")).toBeInTheDocument();
     expect(screen.getByText(/Complete.*bonus secured/)).toBeInTheDocument();
     expect(screen.queryByText("Stabilize Prism Reach")).not.toBeInTheDocument();
+  });
+
+  it("lets players preview locked Story chapters without launching them", () => {
+    render(
+      <StoryExpeditionConsole
+        gameState={createNewGameState("mud")}
+        onHome={() => undefined}
+        onLaunch={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "04 Verdant Vault Level 4" }));
+
+    expect(screen.getByRole("heading", { name: "Verdant Vault" })).toBeInTheDocument();
+    expect(screen.getByText("Threat detected: Guardian drones")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reach level 4" })).toBeDisabled();
   });
 });

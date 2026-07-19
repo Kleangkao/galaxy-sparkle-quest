@@ -230,7 +230,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
             <button
               key={target.id}
               className={`arcade-target is-${target.kind}`}
-              style={{ left: `${target.x / WIDTH * 100}%`, top: `${target.y / HEIGHT * 100}%`, width: target.size * 2, height: target.size * 2 }}
+              style={{ left: `${target.x / WIDTH * 100}%`, top: `${target.y / HEIGHT * 100}%`, width: target.size * 2 + (gameState.accessibility.aimHelp === "wide" ? 14 : 0), height: target.size * 2 + (gameState.accessibility.aimHelp === "wide" ? 14 : 0) }}
               onPointerDown={(event) => { event.stopPropagation(); shootTarget(target.id); }}
               aria-label={target.kind === "decoy" ? "Do not shoot decoy" : `Shoot ${target.kind}`}
             >

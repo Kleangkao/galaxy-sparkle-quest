@@ -1,25 +1,21 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import SpaceBackground from "@/components/SpaceBackground";
-import SwipeableGalaxyMap from "@/components/SwipeableGalaxyMap";
-import PlanetCard from "@/components/PlanetCard";
 import HUD from "@/components/HUD";
 import type { AppScreen } from "@/components/HUD";
-import GalaxyMapNav from "@/components/GalaxyMapNav";
 import ScreenErrorBoundary from "@/components/ScreenErrorBoundary";
 import {
   PLANETS, Planet, GameState, FactionId, createNewGameState, getLevelFromXP,
-  calcInfluenceGain, simulateRivalInfluence, getPlanetController, INFLUENCE_TO_CAPTURE, countControlled, isPlanetUnlocked, canClaimDaily,
+  calcInfluenceGain, simulateRivalInfluence, getPlanetController, INFLUENCE_TO_CAPTURE, canClaimDaily,
 } from "@/lib/gameState";
 import { generateEgg, AlienEgg, AlienPet, ALIEN_PETS } from "@/lib/pets";
 import { playClickSound, playTravelSound } from "@/lib/sounds";
 import {
   startAutoSave, stopAutoSave, startHealthCheck, stopHealthCheck,
-  validateAndRepairState, detectLowPerformance, logError,
+  validateAndRepairState, logError,
 } from "@/lib/selfHealing";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
-import CommandBriefing from "@/components/CommandBriefing";
 import type { PlayMode } from "@/components/ModeHub";
 import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { getPuriBonuses } from "@/lib/puriBond";
@@ -46,6 +42,8 @@ const SwarmProtocol = lazy(() => import("@/components/SwarmProtocol"));
 const ArcadeShooter = lazy(() => import("@/components/ArcadeShooter"));
 const DiscoveryRun = lazy(() => import("@/components/DiscoveryRun"));
 const FrontierControl = lazy(() => import("@/components/FrontierControl"));
+const StoryExpeditionConsole = lazy(() => import("@/components/StoryExpeditionConsole"));
+const SettingsPanel = lazy(() => import("@/components/SettingsPanel"));
 
 function ScreenLoadingFallback({ label }: { label: string }) {
   return (
@@ -71,7 +69,7 @@ export default function Index() {
   const [screen, setScreen] = useState<Screen>("hub");
   const [captureEvent, setCaptureEvent] = useState<CaptureEvent | null>(null);
   const [hatchingEgg, setHatchingEgg] = useState<AlienEgg | null>(null);
-  const [lowPerf, setLowPerf] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
@@ -79,7 +77,6 @@ export default function Index() {
 
   // Self-healing: auto-save, health check, performance detection
   useEffect(() => {
-    setLowPerf(detectLowPerformance());
     startAutoSave(() => gameStateRef.current);
     startHealthCheck((issue) => {
       logError(new Error(`Health check: ${issue}`), "health-check");
@@ -113,6 +110,7 @@ export default function Index() {
     setScreen("hub");
     setCaptureEvent(null);
     setHatchingEgg(null);
+    setSettingsOpen(false);
     setGameState(validateAndRepairState(profileRepository.load(factionId)));
   };
 
@@ -120,6 +118,7 @@ export default function Index() {
     setActivePlanet(null);
     setCaptureEvent(null);
     setHatchingEgg(null);
+    setSettingsOpen(false);
     profileRepository.setActiveFaction(null);
     setScreen("hub");
     setGameState(createNewGameState(null));
@@ -135,6 +134,7 @@ export default function Index() {
     setActivePlanet(null);
     setCaptureEvent(null);
     setHatchingEgg(null);
+    setSettingsOpen(false);
     setScreen("map");
     setGameState(validateAndRepairState(profileRepository.reset(gameState.faction)));
     toast("Progress reset. You can start fresh now.", { duration: 2500 });
@@ -349,12 +349,6 @@ export default function Index() {
     toast("Command cycle saved to the frontier.");
   };
 
-  const unlockedPlanets = PLANETS.filter((planet) => isPlanetUnlocked(planet, gameState.level, gameState.faction));
-  const lockedPlanets = PLANETS.filter((planet) => !isPlanetUnlocked(planet, gameState.level, gameState.faction));
-  const nextLockedPlanet = lockedPlanets[0] ?? null;
-  const activeIntelCount = Object.values(gameState.influence).filter((sector) => sector.mud + sector.oni + sector.ustur > 0).length;
-  const controlledCount = gameState.faction ? countControlled(gameState.influence, gameState.faction) : 0;
-
   if (!gameState.faction) {
     return (
       <div className="relative">
@@ -367,7 +361,7 @@ export default function Index() {
   }
 
   return (
-    <div className={`space-bg min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""}`}>
+    <div className={`space-bg min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
       <SpaceBackground />
       <HUD
         gameState={gameState}
@@ -375,6 +369,7 @@ export default function Index() {
         onNavigate={(s) => { playClickSound(); setActivePlanet(null); setScreen(s); }}
         onClaimDaily={screen === "map" ? handleClaimDaily : undefined}
         onLogoClick={handleReturnToFactionSelect}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <AnimatePresence mode="wait">
@@ -382,7 +377,7 @@ export default function Index() {
         <motion.div key="mode-hub" {...screenTransition}>
           <ScreenErrorBoundary screenName="mode-hub" onFallback={() => setScreen("map")}>
             <Suspense fallback={<ScreenLoadingFallback label="Opening activity network..." />}>
-              <ModeHub gameState={gameState} onChoose={handleChooseMode} onAccessibilityChange={(accessibility) => updateState((prev) => ({ ...prev, accessibility }))} />
+              <ModeHub gameState={gameState} onChoose={handleChooseMode} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>
@@ -391,152 +386,13 @@ export default function Index() {
       {screen === "map" && (
         <motion.div key="map-screen" {...screenTransition}>
         <ScreenErrorBoundary screenName="galaxy-map" onFallback={() => setScreen("map")}>
-          <div className="relative z-10 pt-28 sm:pt-32 pb-24 sm:pb-28 px-3 sm:px-6 md:px-8 max-w-6xl mx-auto min-h-screen flex flex-col gap-4 sm:gap-6">
-            <GalaxyMapNav
-              onHome={() => setScreen("hub")}
-            />
-            {/* Title */}
-            <div className="text-center animate-slide-up shrink-0">
-              <div className="command-kicker mb-2">Guardians of Galia · Expedition command</div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-[-0.03em] text-white" style={{ fontFamily: "var(--font-hero)" }}>
-                The Galia Frontier
-              </h1>
-              <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                A ten-chapter adventure. Pick a mission, choose your approach, play a short objective, then upgrade for the next sector.
-              </p>
-            </div>
-
-            <section className="story-loop" aria-label="How Story Expeditions work">
-              <span><strong>1</strong>Choose an unlocked chapter</span>
-              <span><strong>2</strong>Pick Scout, Steady, or Salvage route</span>
-              <span><strong>3</strong>Complete the mission and grow your crew</span>
-            </section>
-
-            <CommandBriefing
+          <Suspense fallback={<ScreenLoadingFallback label="Opening expedition console..." />}>
+            <StoryExpeditionConsole
               gameState={gameState}
-              controlledCount={controlledCount}
-              activeIntelCount={activeIntelCount}
-              onLaunch={(planetId) => {
-                const planet = PLANETS.find((candidate) => candidate.id === planetId);
-                if (!planet) return;
-                playTravelSound();
-                setActivePlanet(planet);
-                setScreen("planet");
-              }}
+              onHome={() => setScreen("hub")}
+              onLaunch={(planet) => { playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
             />
-
-            {/* Galaxy Map */}
-            <div className="w-full max-w-5xl mx-auto">
-              <SwipeableGalaxyMap
-                level={gameState.level}
-                faction={gameState.faction}
-                visitedPlanets={gameState.visitedPlanets}
-                onPlanetClick={(planet) => { playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
-                influence={gameState.influence}
-                activePet={gameState.activePet}
-                reducedMotion={lowPerf}
-              />
-            </div>
-
-            {/* Planet Cards */}
-            <div className="w-full max-w-5xl mx-auto">
-              <div className="rounded-[1.75rem] border border-border/50 bg-card/35 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-sm sm:p-5">
-                <div className="mb-4 flex flex-col gap-3 sm:mb-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-foreground/90" style={{ fontFamily: "var(--font-hero)" }}>
-                        {t("missionBoard")}
-                      </h2>
-                    </div>
-                    <button
-                      onClick={handleResetProgress}
-                      className="min-h-[44px] rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-destructive transition-colors hover:bg-destructive/15 active:scale-[0.98] sm:text-sm"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      Reset Progress
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-200">{t("availableMissions")}</div>
-                      <div className="mt-1 text-2xl font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{unlockedPlanets.length}</div>
-                    </div>
-                    <div className="rounded-2xl border border-cyan-300/15 bg-cyan-400/5 px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-100">Active Intel</div>
-                      <div className="mt-1 text-2xl font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{activeIntelCount}</div>
-                    </div>
-                    <div className="rounded-2xl border border-fuchsia-300/15 bg-fuchsia-400/5 px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-fuchsia-100">Local Control</div>
-                      <div className="mt-1 text-2xl font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{controlledCount}/{PLANETS.length}</div>
-                    </div>
-                    <div className="rounded-2xl border border-amber-300/15 bg-amber-400/5 px-4 py-3">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-100">{t("nextUnlock")}</div>
-                      <div className="mt-1 text-sm font-bold text-white sm:text-base" style={{ fontFamily: "var(--font-display)" }}>
-                        {nextLockedPlanet ? `Level ${nextLockedPlanet.unlockLevel}` : "All sectors open"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <h3 className="text-base font-bold text-foreground/85 sm:text-lg" style={{ fontFamily: "var(--font-hero)" }}>
-                      {t("availableMissions")}
-                    </h3>
-                    <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100">
-                      {unlockedPlanets.length} ready now
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 lg:gap-5">
-                    {unlockedPlanets.map((planet) => (
-                      <PlanetCard
-                        key={planet.id}
-                        planet={planet}
-                        level={gameState.level}
-                        faction={gameState.faction}
-                        visited={gameState.visitedPlanets.includes(planet.id)}
-                        influence={gameState.influence[planet.id]}
-                        hasUndiscoveredPet={Boolean(planet.pet && !gameState.pets.includes(planet.pet.name))}
-                        onLaunch={(mission) => { playTravelSound(); setActivePlanet(mission); setScreen("planet"); }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {lockedPlanets.length > 0 && (
-                  <div>
-                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                      <h3 className="text-base font-bold text-foreground/75 sm:text-lg" style={{ fontFamily: "var(--font-hero)" }}>
-                        {t("lockedDossiers")}
-                      </h3>
-                      <span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-100">
-                        {lockedPlanets.length} still gated
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 lg:gap-5">
-                      {lockedPlanets.map((planet) => (
-                        <PlanetCard
-                          key={planet.id}
-                          planet={planet}
-                          level={gameState.level}
-                          faction={gameState.faction}
-                          visited={gameState.visitedPlanets.includes(planet.id)}
-                          influence={gameState.influence[planet.id]}
-                          hasUndiscoveredPet={Boolean(planet.pet && !gameState.pets.includes(planet.pet.name))}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {lockedPlanets.length === 0 && (
-                  <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-4 text-sm text-emerald-50/85">
-                    All dossiers are open. Your progression loop is now about survey runs, pet completion, and expanding local control.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          </Suspense>
         </ScreenErrorBoundary>
         </motion.div>
       )}
@@ -661,6 +517,18 @@ export default function Index() {
         </motion.div>
       )}
       </AnimatePresence>
+
+      <Suspense fallback={null}>
+        <SettingsPanel
+          open={settingsOpen}
+          factionName={gameState.faction.toUpperCase()}
+          settings={gameState.accessibility}
+          onOpenChange={setSettingsOpen}
+          onChange={(accessibility) => updateState((prev) => ({ ...prev, accessibility }))}
+          onSwitchFaction={handleReturnToFactionSelect}
+          onResetProgress={handleResetProgress}
+        />
+      </Suspense>
 
       {captureEvent && (
         <Suspense fallback={null}>

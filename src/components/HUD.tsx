@@ -7,6 +7,7 @@ import {
   Map,
   PawPrint,
   RefreshCw,
+  Settings,
   Shield,
   Sparkles,
   Swords,
@@ -24,6 +25,7 @@ interface Props {
   onNavigate: (screen: AppScreen) => void;
   onClaimDaily?: () => void;
   onLogoClick?: () => void;
+  onOpenSettings?: () => void;
 }
 
 interface DockItem {
@@ -43,7 +45,7 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
 
-export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick }: Props) {
+export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings }: Props) {
   const { t } = useI18n();
   const rank = getRank(gameState.level);
   const xpInfo = getXPProgress(gameState.xp, gameState.level);
@@ -83,6 +85,9 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
           </button>
           <button className="status-icon-button" onClick={() => onNavigate("info")} aria-label="Game guide" title="Game guide">
             <Info className="h-4 w-4" />
+          </button>
+          <button className="status-icon-button" onClick={onOpenSettings} aria-label="Game settings" title="Game settings">
+            <Settings className="h-4 w-4" />
           </button>
         </div>
       </header>

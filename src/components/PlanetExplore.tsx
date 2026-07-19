@@ -64,7 +64,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   };
 
   return (
-    <div className="relative z-10 flex min-h-screen flex-col items-center justify-center overflow-visible px-3 pb-24 pt-28 sm:px-4 sm:pb-28 sm:pt-32">
+    <div className="story-mission-screen relative z-10 flex min-h-screen flex-col items-center justify-center overflow-visible px-3 pb-24 pt-28 sm:px-4 sm:pb-28 sm:pt-32">
       <button onClick={onBack}
         className="fixed left-4 top-28 z-[60] flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-all hover:bg-card">
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -149,7 +149,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             {planet.pet && <span>🐾 {planet.pet.emoji} {planet.pet.name}</span>}
           </div>
           <Button onClick={() => setPhase("exploring")}
-            className="bg-primary hover:bg-primary/80 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-bold"
+            className="story-mission-launch text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}>
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Launch {approach.name}
