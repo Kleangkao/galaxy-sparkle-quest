@@ -30,11 +30,16 @@ export function useCombatInput(onPulse: () => void) {
 
   useEffect(() => {
     const directional = new Set(["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"]);
+    const normalizeKey = (event: KeyboardEvent) => {
+      const byCode: Record<string, string> = { KeyW: "w", KeyA: "a", KeyS: "s", KeyD: "d", ArrowUp: "arrowup", ArrowDown: "arrowdown", ArrowLeft: "arrowleft", ArrowRight: "arrowright", Space: " " };
+      return byCode[event.code] ?? event.key.toLowerCase();
+    };
     const updateKeyboard = () => { sourceRef.current = "keyboard"; vector.current = { x: (keyboard.current.has("d") || keyboard.current.has("arrowright") ? 1 : 0) - (keyboard.current.has("a") || keyboard.current.has("arrowleft") ? 1 : 0), y: (keyboard.current.has("s") || keyboard.current.has("arrowdown") ? 1 : 0) - (keyboard.current.has("w") || keyboard.current.has("arrowup") ? 1 : 0) }; };
-    const down = (event: KeyboardEvent) => { const key = event.key.toLowerCase(); if (directional.has(key) || key === " ") event.preventDefault(); if (key === " ") pulseRef.current(); else if (directional.has(key)) { keyboard.current.add(key); updateKeyboard(); setSource("keyboard"); } };
-    const up = (event: KeyboardEvent) => { const key = event.key.toLowerCase(); if (!directional.has(key)) return; keyboard.current.delete(key); updateKeyboard(); };
-    window.addEventListener("keydown", down); window.addEventListener("keyup", up);
-    return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
+    const down = (event: KeyboardEvent) => { const key = normalizeKey(event); if (directional.has(key) || key === " ") event.preventDefault(); if (key === " ") pulseRef.current(); else if (directional.has(key)) { keyboard.current.add(key); updateKeyboard(); setSource("keyboard"); } };
+    const up = (event: KeyboardEvent) => { const key = normalizeKey(event); if (!directional.has(key)) return; keyboard.current.delete(key); updateKeyboard(); };
+    const clear = () => { keyboard.current.clear(); updateKeyboard(); };
+    window.addEventListener("keydown", down); window.addEventListener("keyup", up); window.addEventListener("blur", clear);
+    return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); window.removeEventListener("blur", clear); };
   }, []);
 
   useEffect(() => {

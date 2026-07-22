@@ -22,7 +22,7 @@ import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { profileRepository } from "@/lib/profileRepository";
 import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
-import { FeedbackMode, shouldRequestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
+import { FeedbackMode, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 
 type Screen = AppScreen;
 
@@ -247,7 +247,6 @@ export default function Index() {
         };
       });
       trackModeComplete("story");
-      if (shouldRequestFeedback("story")) setFeedback({ open: true, mode: "story" });
     },
     [activePlanet, t, updateState]
   );
@@ -355,7 +354,6 @@ export default function Index() {
       };
     });
     trackModeComplete(result.variant);
-    if (shouldRequestFeedback(result.variant)) setFeedback({ open: true, mode: result.variant });
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
@@ -367,7 +365,6 @@ export default function Index() {
     });
     toast("Field journal saved. Discovery rewards added.");
     trackModeComplete("discovery");
-    if (shouldRequestFeedback("discovery")) setFeedback({ open: true, mode: "discovery" });
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
@@ -379,7 +376,6 @@ export default function Index() {
     });
     toast("Command cycle saved to the frontier.");
     trackModeComplete("strategy");
-    if (shouldRequestFeedback("strategy")) setFeedback({ open: true, mode: "strategy" });
   };
 
   const dismissGuidedFlight = () => {

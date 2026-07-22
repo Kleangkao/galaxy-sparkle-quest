@@ -108,13 +108,14 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
         <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button>
         <div className="command-kicker">Frontier Control · Four-turn map puzzle</div>
         <h1>Win the objective in {startingActions} moves.</h1>
-        <p>You are not controlling a real-time war. Pick sectors, spend command actions, and raise your faction’s influence before the cycle ends.</p>
+        <p>This is a short turn-based puzzle, not real-time combat. Complete the single objective shown below using all your command moves, then bank the cycle.</p>
         <section className="strategy-how">
           <div><strong>1</strong><Flag className="h-5 w-5" /><span>Pick a sector<small>Yellow outline marks the objective target.</small></span></div>
           <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>Spend {startingActions} actions<small>Relay is safe, Reinforce is strong, Disrupt slows a rival.</small></span></div>
           <div><strong>3</strong><Gift className="h-5 w-5" /><span>Bank the cycle<small>Earn 6+ crystals, 6+ XP, PURI bond, and capture bonuses.</small></span></div>
         </section>
         <section className="strategy-intro__mission"><Radio className="h-6 w-6" /><div><span>This cycle’s objective</span><h2>{objective.name}</h2><p>{objective.description}</p></div><b>{startingActions} moves</b></section>
+        <section className="strategy-intro__mission"><Gift className="h-6 w-6" /><div><span>Why play Frontier Control?</span><h2>Turn Story influence into a strategic advantage</h2><p>Every cycle gives crystals, XP, and PURI bond. Complete 2 objectives to permanently earn +10% crystals in every mode.</p></div><b>{Math.min(gameState.modeRecords.strategyObjectives, 2)}/2</b></section>
         <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> Start command cycle</button>
       </main>
     );
@@ -123,7 +124,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   return (
     <main className="strategy-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <header className="strategy-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><div className="command-kicker">Four-turn map puzzle · Cycle {cycle + 1}</div><h1>Frontier Control</h1><p>Turn {Math.min(turn, startingActions)} of {startingActions}: select a sector, then choose one action.</p></div><div className="strategy-actions"><span>Moves left</span><strong>{actions}</strong></div></header>
-      <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>Win condition</span><strong>{objective.name}</strong><p>{objective.description}</p></div><b>{objectiveComplete ? "Complete · bonus secured" : objective.id === "survey" ? `${new Set(touched).size}/3 sectors` : "In progress"}</b></section>
+      <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>Your only win condition this cycle</span><strong>{objective.name}</strong><p>{objective.description} Follow the highlighted recommendation, use every move, then press Bank this command cycle.</p></div><b>{objectiveComplete ? "Complete · bonus secured" : objective.id === "survey" ? `${new Set(touched).size}/3 sectors` : "In progress"}</b></section>
       <section className="strategy-layout">
         <div className="strategy-map"><div className="strategy-map__header"><span>Choose a sector</span><small>{controlledNow}/10 under {faction.name} control</small></div><div className="strategy-sector-grid">
           {PLANETS.map((planet, index) => { const sectorController = getPlanetController(workingInfluence[planet.id]); const leader = FACTIONS.find((item) => item.id === sectorController); const target = objective.targetPlanetId === planet.id && objective.id === "focus"; return <button key={planet.id} onClick={() => setSelectedId(planet.id)} className={`${selected.id === planet.id ? "is-selected" : ""} ${sectorController ? `is-${sectorController}` : ""} ${target ? "is-objective" : ""}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{planet.emoji} {getSectorLore(planet.id).name}</strong><small>{leader ? `${leader.name} control` : SECTOR_TRAITS[planet.id].name}</small></button>; })}

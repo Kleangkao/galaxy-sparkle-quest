@@ -9,6 +9,7 @@ import {
   saveGame,
 } from "@/lib/gameState";
 import { useCombatInput } from "@/hooks/useCombatInput";
+import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 
@@ -119,6 +120,23 @@ describe("public test release hardening", () => {
     });
     expect(result.current.vector.current).toEqual({ x: 1, y: 0 });
     unmount();
+  });
+
+  it("supports physical WASD keys on non-Latin keyboard layouts", () => {
+    const { result, unmount } = renderHook(() => useCombatInput(vi.fn()));
+    act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "ไ", code: "KeyW" })));
+    expect(result.current.vector.current).toEqual({ x: 0, y: -1 });
+    act(() => window.dispatchEvent(new KeyboardEvent("keyup", { key: "ไ", code: "KeyW" })));
+    expect(result.current.vector.current).toEqual({ x: 0, y: 0 });
+    unmount();
+  });
+
+  it("keeps Story movement to one tile unless the player deliberately requests a charged dash", () => {
+    expect(getStoryStepCount(false, false)).toBe(1);
+    expect(getStoryStepCount(true, false)).toBe(1);
+    expect(getStoryStepCount(true, true)).toBe(2);
+    expect(isOrthogonallyAdjacent(2, 2, 2, 3)).toBe(true);
+    expect(isOrthogonallyAdjacent(2, 2, 3, 3)).toBe(false);
   });
 
   it("keeps the completed Strategy objective visible after the parent advances the cycle", () => {

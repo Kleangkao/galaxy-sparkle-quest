@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound, playImpactSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
+import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 
 // ─── Types ───────────────────────────────────────────────────────
 interface ExplorationItem {
@@ -43,7 +44,6 @@ interface MissionProfile {
   dropZones?: Coord[];
   teleportPairs?: [Coord, Coord][];
   enemyCount?: number;
-  slippery?: boolean;
   nodeGoal?: number;
   bossName?: string;
 }
@@ -104,11 +104,10 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
   },
   "frosty-star": {
     name: "Slipstream Route",
-    objective: "Master two-cell ice slides and collect 8 navigation shards.",
+    objective: "Navigate the ice lanes one tile at a time and collect 8 navigation shards.",
     duration: 45,
     crystalGoal: 8,
     requireReturn: false,
-    slippery: true,
     walls: [[1, 3], [2, 3], [4, 4], [5, 4]],
   },
   "jungle-world": {
@@ -609,7 +608,7 @@ export default function PlanetExploration({
   }, []);
 
   const isAdjacent = (r1: number, c1: number, r2: number, c2: number) => {
-    return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
+    return isOrthogonallyAdjacent(r1, c1, r2, c2);
   };
 
   // Robot helper: reveals hidden items in 2-cell radius
@@ -690,10 +689,12 @@ export default function PlanetExploration({
     }
   }, [completeOnce, goalsMet, mission.requireReturn]);
 
-  const movePlayer = useCallback((deltaRow: number, deltaCol: number) => {
+  const movePlayer = useCallback((deltaRow: number, deltaCol: number, useDash = false) => {
     if (landing || gameOver) return;
-    const stepCount = dashReady ? 2 : mission.slippery ? 2 : 1;
-    setDashReady(false);
+    // Normal inputs always move exactly one tile. A stored dash is only consumed
+    // when the player deliberately holds Shift, preventing surprise two-tile jumps.
+    const stepCount = getStoryStepCount(dashReady, useDash);
+    if (useDash && dashReady) setDashReady(false);
     let nextRow = playerPos.row;
     let nextCol = playerPos.col;
     let payloadBuffer = carriedPayload;
@@ -753,7 +754,7 @@ export default function PlanetExploration({
     }
     playStepSound();
     checkShipReturn(nextRow, nextCol);
-  }, [landing, gameOver, dashReady, mission.slippery, mission.bossName, playerPos.row, playerPos.col, walls, hazards, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
+  }, [landing, gameOver, dashReady, mission.bossName, playerPos.row, playerPos.col, walls, hazards, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
 
   // Keyboard controls
   useEffect(() => {
@@ -815,16 +816,16 @@ export default function PlanetExploration({
       e.preventDefault();
       switch (direction) {
         case "up":
-          movePlayer(-1, 0);
+          movePlayer(-1, 0, e.shiftKey);
           break;
         case "down":
-          movePlayer(1, 0);
+          movePlayer(1, 0, e.shiftKey);
           break;
         case "left":
-          movePlayer(0, -1);
+          movePlayer(0, -1, e.shiftKey);
           break;
         case "right":
-          movePlayer(0, 1);
+          movePlayer(0, 1, e.shiftKey);
           break;
       }
     };
@@ -874,10 +875,10 @@ export default function PlanetExploration({
   const canReturn = goalsMet;
   const atShip = playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col;
   const goalBits = [
-    mission.crystalGoal ? `💎 ${crystalCollected}/${mission.crystalGoal}` : null,
-    mission.petGoal ? `🐾 ${petCollected}/${mission.petGoal}` : null,
-    mission.deliveryGoal ? `📦 ${deliveryDone}/${mission.deliveryGoal}` : null,
-    mission.nodeGoal ? `⚡ ${nodesDone}/${mission.nodeGoal}` : null,
+    mission.crystalGoal ? `Crystals ${crystalCollected}/${mission.crystalGoal}` : null,
+    mission.petGoal ? `Companion ${petCollected}/${mission.petGoal}` : null,
+    mission.deliveryGoal ? `Deliveries ${deliveryDone}/${mission.deliveryGoal}` : null,
+    mission.nodeGoal ? `Glow nodes ${nodesDone}/${mission.nodeGoal}` : null,
   ].filter(Boolean).join("  •  ");
   const bossShield = mission.nodeGoal ? Math.max(0, Math.round((1 - nodesDone / mission.nodeGoal) * 100)) : 0;
 
@@ -954,6 +955,9 @@ export default function PlanetExploration({
         <div className="text-center text-[10px] sm:text-xs font-semibold text-cosmic-cyan">
           {mission.name}: {mission.objective}
         </div>
+        <div className="text-center text-[10px] font-bold text-white/80 sm:text-xs">
+          Finish rule: {mission.requireReturn ? "Complete every counter below, then walk back onto the ship tile." : "Complete every counter below; extraction happens automatically. No return trip needed."}
+        </div>
         {mission.bossName && (
           <div className="story-boss-bar" aria-label={`${mission.bossName} shield ${bossShield}%`}>
             <div><span>Boss encounter</span><strong>{mission.bossName}</strong><small>Shield {bossShield}%</small></div>
@@ -1022,7 +1026,7 @@ export default function PlanetExploration({
           <span className="text-[8px] sm:text-[10px] opacity-60">({GRID_COLS}×{GRID_ROWS})</span>
         </span>
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">
-          Tap adjacent cells or use WASD / arrows
+          One tile per move · WASD / arrows · {dashReady ? "Hold Shift + direction to use your 2-tile dash" : "cross a swirl node to charge a dash"}
         </span>
       </div>
 

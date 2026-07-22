@@ -9,7 +9,7 @@ const EN_SECTIONS = [
       "🧱 Walls block movement and force route planning.",
       "⚡ Hazard zones damage HP when stepped on.",
       "👾 Enemies roam and punish slow, cornered routes.",
-      "🌀 Speed and slippery tiles change movement distance and timing.",
+      "🌀 Normal movement is always one tile. Glowing swirl nodes charge an optional Shift + direction dash.",
       "📦 Delivery zones and 🛸 teleports appear on late-stage sectors.",
     ],
   },

@@ -39,11 +39,6 @@ export function savePlaytestFeedback(mode: FeedbackMode, fun: number, difficulty
   save(data);
 }
 
-export function shouldRequestFeedback(mode: FeedbackMode) {
-  const data = load();
-  return !data.feedback.some((entry) => entry.mode === mode);
-}
-
 export function getLocalPlaytestSummary() {
   const data = load();
   return { starts: data.starts, completions: data.completions, feedbackCount: data.feedback.length };

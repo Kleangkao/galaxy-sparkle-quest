@@ -32,9 +32,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const missionBrief = getMissionBrief(planet.id);
   const lore = getSectorLore(planet.id);
   const approaches = {
-    scout: { id: "scout" as const, name: "Scout route", detail: "+8 seconds · 90% crystals", timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
-    steady: { id: "steady" as const, name: "Steady route", detail: "Standard time · standard rewards", timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
-    salvage: { id: "salvage" as const, name: "Salvage route", detail: "-4 seconds · +25% crystals", timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
+    scout: { id: "scout" as const, name: "Safe scout", detail: "+8 seconds · final crystal reward is 10% lower", timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
+    steady: { id: "steady" as const, name: "Balanced route", detail: "Normal timer · normal crystal reward", timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
+    salvage: { id: "salvage" as const, name: "Risky salvage", detail: "-4 seconds · final crystal reward is 25% higher", timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
   };
   const approach = approaches[approachId];
 
@@ -120,6 +120,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-cosmic-green sm:text-xs">
                 How to handle: {missionBrief.tip}
+              </p>
+              <p className="mt-2 rounded-lg border border-cosmic-yellow/20 bg-cosmic-yellow/5 px-3 py-2 text-[11px] font-bold leading-relaxed text-cosmic-yellow sm:text-xs">
+                How to finish: {missionBrief.completion}
               </p>
             </div>
           )}
