@@ -7,6 +7,7 @@ import ScreenErrorBoundary from "@/components/ScreenErrorBoundary";
 import {
   PLANETS, Planet, GameState, FactionId, createNewGameState, getLevelFromXP,
   calcInfluenceGain, simulateRivalInfluence, getPlanetController, INFLUENCE_TO_CAPTURE, canClaimDaily,
+  getGameplayModifiers,
 } from "@/lib/gameState";
 import { generateEgg, AlienEgg, AlienPet, ALIEN_PETS } from "@/lib/pets";
 import { playClickSound, playTravelSound, setSoundMode, startModeAmbience, stopModeAmbience } from "@/lib/sounds";
@@ -359,7 +360,7 @@ export default function Index() {
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
     updateState((prev) => {
       const xp = prev.xp + finds;
-      const reward = Math.ceil(finds * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier);
+      const reward = Math.ceil(finds * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       const currentMastery = prev.modeRecords.discoveryMastery[biomeId] || 0;
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
@@ -372,7 +373,7 @@ export default function Index() {
     updateState((prev) => {
       const xpReward = 6 + (objectiveComplete ? 4 : 0);
       const xp = prev.xp + xpReward;
-      const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier);
+      const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
     toast("Command cycle saved to the frontier.");

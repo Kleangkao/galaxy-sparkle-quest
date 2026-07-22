@@ -51,27 +51,28 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
   const [ended, setEnded] = useState(false);
   const [won, setWon] = useState(false);
   const [upgradeLevel, setUpgradeLevel] = useState<number | null>(null);
-  const arena = useRef<ArenaState>(makeArena(20 + puri.combatHull));
+  const startingHullBonus = 20 + puri.combatHull + modifiers.combatHullBonus;
+  const arena = useRef<ArenaState>(makeArena(startingHullBonus));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...arena.current }));
   const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1 });
 
   const reset = useCallback(() => {
-    arena.current = makeArena(20 + puri.combatHull);
+    arena.current = makeArena(startingHullBonus);
     upgrades.current = { damage: 1, speed: 1, fireRate: 1, magnet: 1 };
     completedRef.current = false;
     setFrame({ ...arena.current }); setEnded(false); setWon(false); setUpgradeLevel(null); setPaused(false); setRunning(true);
-  }, [puri.combatHull]);
+  }, [startingHullBonus]);
 
   const finish = useCallback((success: boolean) => {
     if (completedRef.current) return;
     completedRef.current = true;
     setRunning(false); setEnded(true); setWon(success);
     const state = arena.current;
-    const crystals = Math.ceil(Math.max(3, Math.floor(state.score / 420) + (success ? 10 : 3)) * puri.rewardMultiplier);
+    const crystals = Math.ceil(Math.max(3, Math.floor(state.score / 420) + (success ? 10 : 3)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
     const xp = Math.max(3, Math.floor(state.elapsed / 6) + (success ? 12 : 3));
     onComplete({ score: state.score, crystals, xp, won: success, variant: "swarm" });
-  }, [onComplete, puri.rewardMultiplier]);
+  }, [modifiers.crystalMultiplier, onComplete, puri.rewardMultiplier]);
 
   const activatePulse = useCallback(() => {
     const state = arena.current;
@@ -110,7 +111,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       if (!state.bossSpawned && state.elapsed >= bossTime) { state.bossSpawned = true; state.enemies.push({ id: state.nextId++, x: WIDTH / 2, y: -55, hp: 440, maxHp: 440, speed: 24, size: 42, kind: "boss", timer: 4.5, phase: 0 }); }
 
       const target = state.enemies.reduce<Enemy | null>((best, enemy) => !best || distance(enemy, state.player) < distance(best, state.player) ? enemy : best, null);
-      if (target && state.fireTimer <= 0) { const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x); state.shots.push({ id: state.nextId++, x: state.player.x, y: state.player.y, vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430, damage: 13 * upgrades.current.damage }); state.fireTimer = 0.58 / upgrades.current.fireRate; }
+      if (target && state.fireTimer <= 0) { const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x); state.shots.push({ id: state.nextId++, x: state.player.x, y: state.player.y, vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430, damage: 13 * upgrades.current.damage * modifiers.combatDamage }); state.fireTimer = 0.58 / (upgrades.current.fireRate * modifiers.combatFireRate); }
       state.shots.forEach((shot) => { shot.x += shot.vx * dt; shot.y += shot.vy * dt; });
       state.shots = state.shots.filter((shot) => shot.x > -30 && shot.x < WIDTH + 30 && shot.y > -30 && shot.y < HEIGHT + 30);
 
@@ -138,7 +139,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       if (state.hp <= 0) finish(false); else if (success) finish(true); else if (state.elapsed >= duration) finish(false);
     }, tickMs);
     return () => window.clearInterval(timer);
-  }, [aimBonus, bossTime, duration, finish, gameState.accessibility.combatSpeed, inputVector, paused, puri.combatMagnet, running, upgradeLevel]);
+  }, [aimBonus, bossTime, duration, finish, gameState.accessibility.combatSpeed, inputVector, modifiers.combatDamage, modifiers.combatFireRate, paused, puri.combatMagnet, running, upgradeLevel]);
 
   const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "repair") => {
     if (kind === "repair") arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32);
@@ -147,14 +148,14 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     pulseGamepad(70, 0.3);
   };
   const boss = frame.enemies.find((enemy) => enemy.kind === "boss");
-  const resultReward = useMemo(() => ({ crystals: Math.ceil(Math.max(3, Math.floor(frame.score / 420) + (won ? 10 : 3)) * puri.rewardMultiplier), xp: Math.max(3, Math.floor(frame.elapsed / 6) + (won ? 12 : 3)) }), [frame.elapsed, frame.score, puri.rewardMultiplier, won]);
+  const resultReward = useMemo(() => ({ crystals: Math.ceil(Math.max(3, Math.floor(frame.score / 420) + (won ? 10 : 3)) * puri.rewardMultiplier * modifiers.crystalMultiplier), xp: Math.max(3, Math.floor(frame.elapsed / 6) + (won ? 12 : 3)) }), [frame.elapsed, frame.score, modifiers.crystalMultiplier, puri.rewardMultiplier, won]);
   const bossStatus = frame.bossSpawned ? "Boss active" : `Boss in ${Math.max(0, Math.ceil(bossTime - frame.elapsed))}s`;
 
   const nextPerkAt = [5, 13, 24, 38, 56].find((threshold) => threshold > frame.energy);
 
   return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
     <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><span>Swarm Protocol · Survival</span><strong>AHR INCURSION</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
-    <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>Mission objective</span><strong>{objectiveText}</strong>{puri.combatHull > 0 && <small>PURI shield +{puri.combatHull} hull</small>}{aimBonus > 0 && <small>Wide aim active</small>}</div>
+    <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>Mission objective</span><strong>{objectiveText}</strong><small>{tool.name}: {tool.effect}</small>{startingHullBonus > 20 && <small>Total loadout hull +{startingHullBonus}</small>}{aimBonus > 0 && <small>Wide aim active</small>}</div>
     <section className="swarm-purpose"><span><Sparkles className="h-4 w-4" /> Collect energy to pause and choose run perks.</span><span><Zap className="h-4 w-4" /> Every run earns crystals, XP, and PURI bond—even on extraction.</span><button onClick={onOpenHangar}>Permanent upgrades · Crew Hangar</button></section>
     <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>Hull</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>Perk level</span><strong>{frame.level}</strong><small>{nextPerkAt ? `${frame.energy}/${nextPerkAt} to next perk` : "All perks reached"}</small></div><div><Crosshair className="h-4 w-4" /><span>Score</span><strong>{frame.score.toLocaleString()}</strong><small>{frame.enemies.length} contacts</small></div><div><Zap className="h-4 w-4" /><span>Time</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong><small>{bossStatus}</small></div></section>
     <div className="combat-arena-wrap"><div className={`combat-arena ${frame.invulnerable > 0 ? "is-hit" : ""} ${frame.bossWarning > 0 ? "boss-warning" : ""}`} style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}><div className="combat-grid" />

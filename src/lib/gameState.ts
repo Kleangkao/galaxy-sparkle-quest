@@ -118,12 +118,12 @@ export interface ShipUpgrade {
 }
 
 export const SHIP_UPGRADES: ShipUpgrade[] = [
-  { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Your first permanent safety upgrade.", effect: "Failed missions now keep at least 60% of rewards.", cost: 8, requiredLevel: 1 },
-  { id: "booster", name: "Turbo Booster", emoji: "⚡", description: "Permanent passive engine upgrade.", effect: "+5 seconds on every mission timer.", cost: 25, requiredLevel: 2 },
-  { id: "scanner", name: "Crystal Scanner", emoji: "📡", description: "Permanent passive scan module.", effect: "+15% crystals from missions.", cost: 40, requiredLevel: 3 },
+  { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Permanent safety system for Story and Swarm.", effect: "Keep 60% of failed Story rewards and start Swarm with +10 hull.", cost: 8, requiredLevel: 1 },
+  { id: "booster", name: "Turbo Booster", emoji: "⚡", description: "Permanent route-time upgrade.", effect: "+5 seconds in Story, Swarm, and Arcade.", cost: 25, requiredLevel: 2 },
+  { id: "scanner", name: "Crystal Scanner", emoji: "📡", description: "Permanent reward scanner for every mode.", effect: "+15% crystals from every activity.", cost: 40, requiredLevel: 3 },
   { id: "garden", name: "Pet Garden", emoji: "🌿", description: "Permanent passive habitat support.", effect: "+15% alien pet discovery chance.", cost: 50, requiredLevel: 4 },
-  { id: "wings", name: "Star Wings", emoji: "🦋", description: "Permanent passive flight tuning.", effect: "+8 seconds on every mission timer.", cost: 80, requiredLevel: 6 },
-  { id: "crown", name: "Galaxy Crown", emoji: "👑", description: "Permanent passive command relic.", effect: "+20% crystals from missions.", cost: 120, requiredLevel: 8 },
+  { id: "wings", name: "Star Wings", emoji: "🦋", description: "Permanent high-rank route tuning.", effect: "+8 seconds in Story, Swarm, and Arcade.", cost: 80, requiredLevel: 6 },
+  { id: "crown", name: "Galaxy Crown", emoji: "👑", description: "Permanent reward relic for every mode.", effect: "+20% crystals from every activity.", cost: 120, requiredLevel: 8 },
 ];
 
 // ─── Faction Influence System ────────────────────────────────────
@@ -287,6 +287,11 @@ export interface GameplayModifiers {
   petDiscoveryBonus: number;
   missionTimeBonus: number;
   failRewardMultiplier: number;
+  combatDamage: number;
+  combatFireRate: number;
+  combatHullBonus: number;
+  arcadeMagazineBonus: number;
+  arcadeReloadMultiplier: number;
 }
 
 const LEGACY_STORAGE_KEY = "cosmic-explorer-save";
@@ -601,6 +606,11 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
   let petDiscoveryBonus = 0;
   let missionTimeBonus = 0;
   let failRewardMultiplier = 0.3;
+  let combatDamage = 1;
+  let combatFireRate = 1;
+  let combatHullBonus = 0;
+  let arcadeMagazineBonus = 0;
+  let arcadeReloadMultiplier = 1;
 
   const activePet = state.activePet ? getPetById(state.activePet) || getPetByName(state.activePet) : undefined;
   const activePilot = getPilot(state.activePilot);
@@ -609,10 +619,13 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
   crystalMultiplier *= activePilot.crystalMultiplier ?? 1;
   missionTimeBonus += activePilot.missionTimeBonus ?? 0;
   failRewardMultiplier = Math.max(failRewardMultiplier, activePilot.failRewardMultiplier ?? 0);
+  combatHullBonus += activePilot.combatHullBonus ?? 0;
 
-  if (activeTool.effectType === "discovery") petDiscoveryBonus += 0.12;
-  if (activeTool.effectType === "time") missionTimeBonus += 4;
-  if (activeTool.effectType === "shield") failRewardMultiplier = Math.max(failRewardMultiplier, 0.5);
+  combatDamage *= activeTool.combatDamage ?? 1;
+  combatFireRate *= activeTool.combatFireRate ?? 1;
+  combatHullBonus += activeTool.combatHullBonus ?? 0;
+  arcadeMagazineBonus += activeTool.arcadeMagazineBonus ?? 0;
+  arcadeReloadMultiplier *= activeTool.arcadeReloadMultiplier ?? 1;
 
   switch (activePet?.id) {
     case "aneko":
@@ -666,6 +679,7 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
         break;
       case "shield":
         failRewardMultiplier = Math.max(failRewardMultiplier, 0.6);
+        combatHullBonus += 10;
         break;
     }
   }
@@ -675,6 +689,11 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
     petDiscoveryBonus,
     missionTimeBonus,
     failRewardMultiplier,
+    combatDamage,
+    combatFireRate,
+    combatHullBonus,
+    arcadeMagazineBonus,
+    arcadeReloadMultiplier,
   };
 }
 

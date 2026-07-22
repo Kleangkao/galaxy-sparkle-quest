@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Sparkles, Target, Trophy, Zap } from "lucide-react";
-import { GameState } from "@/lib/gameState";
+import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getArcadeContract } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
@@ -19,15 +19,15 @@ interface Props {
 
 const WIDTH = 920;
 const HEIGHT = 520;
-const MAGAZINE = 6;
+const BASE_MAGAZINE = 6;
 
-const makeState = (): ShooterState => ({
+const makeState = (magazine = BASE_MAGAZINE): ShooterState => ({
   elapsed: 0,
   score: 0,
   combo: 0,
   bestCombo: 0,
   energy: 0,
-  ammo: MAGAZINE,
+  ammo: magazine,
   reloading: 0,
   targets: [],
   nextId: 1,
@@ -39,13 +39,17 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   const contract = getArcadeContract(contractId);
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
+  const modifiers = getGameplayModifiers(gameState);
+  const magazine = BASE_MAGAZINE + modifiers.arcadeMagazineBonus;
+  const reloadDuration = 1.05 * modifiers.arcadeReloadMultiplier;
+  const duration = contract.duration + modifiers.missionTimeBonus;
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const [ended, setEnded] = useState(false);
   const [won, setWon] = useState(false);
   const [aim, setAim] = useState({ x: WIDTH / 2, y: HEIGHT / 2 });
-  const stateRef = useRef<ShooterState>(makeState());
+  const stateRef = useRef<ShooterState>(makeState(magazine));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...stateRef.current }));
 
@@ -56,9 +60,9 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       : `Score ${contract.target.toLocaleString()} points`;
 
   const rewards = useMemo(() => ({
-    crystals: Math.ceil((4 + Math.floor(frame.score / 450) + (won ? 8 : 0)) * puri.rewardMultiplier),
+    crystals: Math.ceil((4 + Math.floor(frame.score / 450) + (won ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier),
     xp: 4 + Math.floor(frame.score / 500) + (won ? 8 : 0),
-  }), [frame.score, puri.rewardMultiplier, won]);
+  }), [frame.score, modifiers.crystalMultiplier, puri.rewardMultiplier, won]);
 
   const finish = useCallback((success: boolean) => {
     if (completedRef.current) return;
@@ -67,13 +71,13 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     setEnded(true);
     setWon(success);
     const current = stateRef.current;
-    const crystals = Math.ceil((4 + Math.floor(current.score / 450) + (success ? 8 : 0)) * puri.rewardMultiplier);
+    const crystals = Math.ceil((4 + Math.floor(current.score / 450) + (success ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
     const xp = 4 + Math.floor(current.score / 500) + (success ? 8 : 0);
     onComplete({ score: current.score, crystals, xp, won: success, variant: "arcade", contractId: contract.id });
-  }, [contract.id, onComplete, puri.rewardMultiplier]);
+  }, [contract.id, modifiers.crystalMultiplier, onComplete, puri.rewardMultiplier]);
 
   const reset = useCallback(() => {
-    const next = makeState();
+    const next = makeState(magazine);
     if (contract.objective === "boss") {
       next.targets.push({ id: next.nextId++, x: WIDTH * 0.72, y: HEIGHT * 0.44, vx: 78, vy: 56, size: 46, hp: 14, maxHp: 14, life: 999, kind: "boss" });
     }
@@ -84,15 +88,15 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     setWon(false);
     setPaused(false);
     setRunning(true);
-  }, [contract.objective]);
+  }, [contract.objective, magazine]);
 
   const reload = useCallback(() => {
     const state = stateRef.current;
-    if (!running || paused || state.reloading > 0 || state.ammo === MAGAZINE) return;
-    state.reloading = 1.05;
+    if (!running || paused || state.reloading > 0 || state.ammo === magazine) return;
+    state.reloading = reloadDuration;
     playReloadSound();
     setFrame({ ...state, targets: [...state.targets] });
-  }, [paused, running]);
+  }, [magazine, paused, reloadDuration, running]);
 
   const shootTarget = useCallback((targetId?: number) => {
     const state = stateRef.current;
@@ -110,7 +114,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       pulseGamepad(80, 0.35);
     } else {
       playImpactSound();
-      target.hp -= 1;
+      target.hp -= modifiers.combatDamage;
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);
       if (target.kind === "crystal") {
@@ -125,9 +129,9 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
         state.score += target.kind === "boss" ? 90 : 35;
       }
     }
-    if (state.ammo <= 0) state.reloading = 1.05;
+    if (state.ammo <= 0) state.reloading = reloadDuration;
     setFrame({ ...state, targets: [...state.targets] });
-  }, [paused, reload, running]);
+  }, [modifiers.combatDamage, paused, reload, reloadDuration, running]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -146,7 +150,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       state.elapsed += dt;
       state.spawnTimer -= dt;
       state.reloading -= dt;
-      if (state.reloading <= 0 && state.ammo === 0) state.ammo = MAGAZINE;
+      if (state.reloading <= 0 && state.ammo === 0) state.ammo = magazine;
 
       for (const target of state.targets) {
         target.x += target.vx * dt;
@@ -175,7 +179,8 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
           life: kind === "crystal" ? 3.8 : 3,
           kind,
         });
-        state.spawnTimer = contract.objective === "score" ? 0.58 : 0.8;
+        const baseSpawnDelay = contract.objective === "score" ? 0.72 : 0.9;
+        state.spawnTimer = baseSpawnDelay / contract.spawnMultiplier;
       }
 
       const success = contract.objective === "boss"
@@ -185,10 +190,10 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
           : state.score >= contract.target;
       setFrame({ ...state, targets: [...state.targets] });
       if (success) finish(true);
-      else if (state.elapsed >= contract.duration) finish(false);
+      else if (state.elapsed >= duration) finish(false);
     }, 33);
     return () => window.clearInterval(timer);
-  }, [contract.duration, contract.objective, contract.target, finish, gameState.accessibility.combatSpeed, paused, running]);
+  }, [contract.objective, contract.spawnMultiplier, contract.target, duration, finish, gameState.accessibility.combatSpeed, magazine, paused, running]);
 
   const updateAim = (event: React.PointerEvent<HTMLDivElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -216,10 +221,10 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       </section>
 
       <section className="arcade-shooter__hud">
-        <div><span>Time</span><strong>{Math.max(0, Math.ceil(contract.duration - frame.elapsed))}s</strong></div>
+        <div><span>Time</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
         <div><span>Score</span><strong>{frame.score.toLocaleString()}</strong></div>
         <div><span>Combo</span><strong>x{frame.combo}</strong></div>
-        <div><span>{contract.objective === "energy" ? "Signals" : "Ammo"}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${MAGAZINE}`}</strong></div>
+        <div><span>{contract.objective === "energy" ? "Signals" : "Ammo"}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
 
@@ -250,7 +255,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               <MousePointer2 className="h-8 w-8 text-cosmic-orange" />
               <div className="command-kicker">Different from Swarm</div>
               <h2>You aim. You shoot.</h2>
-              <p>Track moving targets with your mouse. Click to fire, avoid red decoys, and reload after six shots.</p>
+              <p>Track moving targets with your mouse. Click to fire, avoid red decoys, and manage your {magazine}-round magazine.</p>
               <button onClick={(event) => { event.stopPropagation(); reset(); }}><Play className="h-4 w-4" /> Start assignment</button>
             </div>
           )}
@@ -272,7 +277,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
 
       <footer className="arcade-shooter__controls">
         <span>{frame.reloading > 0 ? `Reloading ${Math.ceil(frame.reloading * 10) / 10}s` : "Mouse · aim and fire"}</span>
-        <button onClick={reload} disabled={!running || frame.reloading > 0 || frame.ammo === MAGAZINE}><RotateCcw className="h-4 w-4" /> R · Reload</button>
+        <button onClick={reload} disabled={!running || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · Reload</button>
         <button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? "Resume" : "Pause"}</button>
       </footer>
     </main>

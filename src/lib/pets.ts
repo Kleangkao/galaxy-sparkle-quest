@@ -39,7 +39,7 @@ export const ALIEN_PETS: AlienPet[] = [
     id: "tigu", name: "Tigu", emoji: "😺", image: "/assets/galia-plush-tech/canonical/teal-companion-master-v1.jpg", species: "Cute Teal Cat",
     description: "A calm teal cat who purrs in zero gravity. Great at finding hidden treasures!",
     rarity: "common", color: "text-cosmic-cyan",
-    ability: { type: "discovery", descEn: "Better treasure finds", descTh: "หาสมบัติเก่งขึ้น", emoji: "🔍" },
+    ability: { type: "discovery", descEn: "+8% companion discovery chance", descTh: "โอกาสพบเพื่อนเพิ่ม 8%", emoji: "🔍" },
   },
   {
     id: "vada", name: "Vada", emoji: "🐲", species: "Dragon Alien",
@@ -51,13 +51,13 @@ export const ALIEN_PETS: AlienPet[] = [
     id: "flynnie", name: "Flynnie", emoji: "🐶", species: "Cute Dog Alien",
     description: "A bouncy space puppy who loves belly rubs and asteroid fetch!",
     rarity: "common", color: "text-cosmic-orange",
-    ability: { type: "extra-time", descEn: "+3 seconds in missions", descTh: "เพิ่มเวลา 3 วินาที", emoji: "⏱️" },
+    ability: { type: "extra-time", descEn: "+3 seconds in timed modes", descTh: "เพิ่มเวลา 3 วินาที", emoji: "⏱️" },
   },
   {
     id: "nova", name: "Little", emoji: "🐯", species: "Glowing Tiger Alien",
     description: "A tiny glowing tiger from the golden galaxy. Radiates warmth and fierce cuteness!",
     rarity: "legendary", color: "text-cosmic-yellow",
-    ability: { type: "discovery", descEn: "Much higher pet find chance", descTh: "โอกาสเจอเพื่อนเพิ่มมาก", emoji: "🌟" },
+    ability: { type: "discovery", descEn: "+25% companion discovery chance", descTh: "โอกาสเจอเพื่อนเพิ่ม 25%", emoji: "🌟" },
   },
   {
     id: "blobbo", name: "Blobbo", emoji: "🫧", species: "Bubble Blob",
@@ -69,25 +69,25 @@ export const ALIEN_PETS: AlienPet[] = [
     id: "sparkle", name: "Sparkle", emoji: "✨", species: "Star Sprite",
     description: "A twinkling sprite made of pure starlight. Leaves a trail of glitter!",
     rarity: "rare", color: "text-cosmic-yellow",
-    ability: { type: "extra-time", descEn: "+5 seconds in missions", descTh: "เพิ่มเวลา 5 วินาที", emoji: "⏱️" },
+    ability: { type: "extra-time", descEn: "+5 seconds in timed modes", descTh: "เพิ่มเวลา 5 วินาที", emoji: "⏱️" },
   },
   {
     id: "frosty", name: "SnowD", emoji: "⛄", species: "Ice Buddy",
     description: "A friendly snowpal from Frosty Star. Always cool under pressure!",
     rarity: "common", color: "text-cosmic-cyan",
-    ability: { type: "extra-time", descEn: "+5 seconds in missions", descTh: "เพิ่มเวลา 5 วินาที", emoji: "⏱️" },
+    ability: { type: "extra-time", descEn: "+5 seconds in timed modes", descTh: "เพิ่มเวลา 5 วินาที", emoji: "⏱️" },
   },
   {
     id: "zippy", name: "Zippy", emoji: "🦎", species: "Jungle Lizard",
     description: "A speedy lizard who can camouflage with any alien jungle!",
     rarity: "rare", color: "text-cosmic-green",
-    ability: { type: "speed", descEn: "Faster travel speed", descTh: "เดินทางเร็วขึ้น", emoji: "⚡" },
+    ability: { type: "extra-time", descEn: "+4 seconds in timed modes", descTh: "เพิ่มเวลา 4 วินาที", emoji: "⏱️" },
   },
   {
     id: "lumi", name: "Lumi", emoji: "🦋", species: "Rainbow Butterfly",
     description: "A magical butterfly whose wings shimmer with all colors of the rainbow!",
     rarity: "rare", color: "text-cosmic-purple",
-    ability: { type: "discovery", descEn: "Higher pet find chance", descTh: "โอกาสเจอเพื่อนเพิ่ม", emoji: "🌟" },
+    ability: { type: "discovery", descEn: "+15% companion discovery chance", descTh: "โอกาสเจอเพื่อนเพิ่ม 15%", emoji: "🌟" },
   },
 ];
 

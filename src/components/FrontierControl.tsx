@@ -10,6 +10,7 @@ import {
   getPlanetController,
   getSectorLore,
   simulateRivalInfluence,
+  getGameplayModifiers,
 } from "@/lib/gameState";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { SECTOR_TRAITS, StrategyAction, getStrategyActionValues, getStrategyObjective, isStrategyObjectiveComplete } from "@/lib/strategyMissions";
@@ -32,6 +33,7 @@ const cloneInfluence = (influence: GameState["influence"]): GameState["influence
 
 export default function FrontierControl({ gameState, onBack, onComplete }: Props) {
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
+  const modifiers = getGameplayModifiers(gameState);
   const startingActions = 4 + puri.strategyActions;
   const [cycle] = useState(gameState.modeRecords.strategyCycles);
   const [objective] = useState(() => getStrategyObjective(cycle));
@@ -57,7 +59,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   const previewState = { ...gameState, influence: workingInfluence };
   const objectiveComplete = isStrategyObjectiveComplete(objective, previewState, startControlled, touched);
   const baseReward = 6 + captures * 5 + (objectiveComplete ? 5 : 0);
-  const crystalReward = Math.ceil(baseReward * puri.rewardMultiplier);
+  const crystalReward = Math.ceil(baseReward * puri.rewardMultiplier * modifiers.crystalMultiplier);
   const xpReward = 6 + (objectiveComplete ? 4 : 0);
   const sortedInfluence = useMemo(() => FACTIONS.map((item) => ({ ...item, value: inf[item.id] })).sort((a, b) => b.value - a.value), [inf]);
   const turn = startingActions - actions + 1;
@@ -86,7 +88,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
       return { ...currentInfluence, [selected.id]: next };
     });
     setTouched((current) => current.includes(selected.id) ? current : [...current, selected.id]);
-    const label = action === "scan" ? `Scouted ${lore.name} (+${values.scan})` : action === "reinforce" ? `Reinforced ${lore.name} (+${values.reinforce})` : `Disrupted rival at ${lore.name}`;
+    const label = action === "scan" ? `Deployed relay at ${lore.name} (+${values.scan})` : action === "reinforce" ? `Reinforced ${lore.name} (+${values.reinforce})` : `Disrupted rival at ${lore.name}`;
     setHistory((current) => [label, ...current].slice(0, 4));
     setActions((value) => value - 1);
   };
@@ -98,7 +100,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   };
 
   const recommendedAction: StrategyAction = objective.id === "survey" ? "scan" : inf[playerFaction] < 65 ? "reinforce" : "disrupt";
-  const recommendedLabel = recommendedAction === "scan" ? "Scout this sector" : recommendedAction === "reinforce" ? "Reinforce this sector" : "Disrupt the leading rival";
+  const recommendedLabel = recommendedAction === "scan" ? "Deploy a safe signal relay" : recommendedAction === "reinforce" ? "Reinforce this sector" : "Disrupt the leading rival";
 
   if (!started) {
     return (
@@ -109,7 +111,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
         <p>You are not controlling a real-time war. Pick sectors, spend command actions, and raise your faction’s influence before the cycle ends.</p>
         <section className="strategy-how">
           <div><strong>1</strong><Flag className="h-5 w-5" /><span>Pick a sector<small>Yellow outline marks the objective target.</small></span></div>
-          <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>Spend {startingActions} actions<small>Scout is safe, Reinforce is strong, Disrupt slows a rival.</small></span></div>
+          <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>Spend {startingActions} actions<small>Relay is safe, Reinforce is strong, Disrupt slows a rival.</small></span></div>
           <div><strong>3</strong><Gift className="h-5 w-5" /><span>Bank the cycle<small>Earn 6+ crystals, 6+ XP, PURI bond, and capture bonuses.</small></span></div>
         </section>
         <section className="strategy-intro__mission"><Radio className="h-6 w-6" /><div><span>This cycle’s objective</span><h2>{objective.name}</h2><p>{objective.description}</p></div><b>{startingActions} moves</b></section>
@@ -131,7 +133,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
           <div className="sector-trait"><Waves className="h-4 w-4" /><span>Sector rule<strong>{trait.name}</strong><small>{trait.effect}</small></span></div>
           <div className="strategy-bars">{sortedInfluence.map((item) => <div key={item.id}><span>{item.name}<b>{item.value}/100</b></span><i><em className={`bar-${item.id}`} style={{ width: `${item.value}%` }} /></i></div>)}</div>
           <div className="strategy-status"><Flag className="h-4 w-4" /><span>Current status</span><strong>{controller ? `${controller.toUpperCase()} secured` : "Contested / neutral"}</strong></div>
-          <div className="strategy-choices"><button className={recommendedAction === "scan" ? "is-recommended" : ""} onClick={() => act("scan")} disabled={actions <= 0}><Eye className="h-5 w-5" /><span><strong>Scout safely</strong><small>+{values.scan} influence · rivals do not react</small></span></button><button className={recommendedAction === "reinforce" ? "is-recommended" : ""} onClick={() => act("reinforce")} disabled={actions <= 0}><ShieldPlus className="h-5 w-5" /><span><strong>Reinforce strongly</strong><small>+{values.reinforce} influence · rivals also move</small></span></button><button className={recommendedAction === "disrupt" ? "is-recommended" : ""} onClick={() => act("disrupt")} disabled={actions <= 0}><Waves className="h-5 w-5" /><span><strong>Disrupt rival</strong><small>-{values.disrupt} rival · +8 friendly influence</small></span></button></div>
+          <div className="strategy-choices"><button className={recommendedAction === "scan" ? "is-recommended" : ""} onClick={() => act("scan")} disabled={actions <= 0}><Eye className="h-5 w-5" /><span><strong>Deploy relay safely</strong><small>+{values.scan} influence · rivals do not react</small></span></button><button className={recommendedAction === "reinforce" ? "is-recommended" : ""} onClick={() => act("reinforce")} disabled={actions <= 0}><ShieldPlus className="h-5 w-5" /><span><strong>Reinforce strongly</strong><small>+{values.reinforce} influence · rivals also move</small></span></button><button className={recommendedAction === "disrupt" ? "is-recommended" : ""} onClick={() => act("disrupt")} disabled={actions <= 0}><Waves className="h-5 w-5" /><span><strong>Disrupt rival</strong><small>-{values.disrupt} rival · +8 friendly influence</small></span></button></div>
           {actions <= 0 && !claimed && <button className="strategy-complete" onClick={claim}><CheckCircle2 className="h-4 w-4" /> Bank this command cycle</button>}
           {claimed && <div className="strategy-reward">Cycle saved · +{crystalReward} crystals · +{xpReward} XP · PURI +{objectiveComplete ? 2 : 1}</div>}
         </aside>

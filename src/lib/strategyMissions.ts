@@ -6,7 +6,7 @@ export type SectorTrait = "calm" | "volatile" | "fortified" | "resonant";
 export const SECTOR_TRAITS: Record<string, { trait: SectorTrait; name: string; effect: string }> = Object.fromEntries(
   PLANETS.map((planet, index) => {
     const options = [
-      { trait: "calm" as const, name: "Calm Route", effect: "Scouting gains +4 influence." },
+      { trait: "calm" as const, name: "Calm Route", effect: "Signal relays gain +4 influence." },
       { trait: "volatile" as const, name: "Volatile Front", effect: "Reinforce gains +6, but rivals react harder." },
       { trait: "fortified" as const, name: "Old Defenses", effect: "Disrupt is 5 points stronger here." },
       { trait: "resonant" as const, name: "Signal Resonance", effect: "All friendly actions gain +3 influence." },

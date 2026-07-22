@@ -87,7 +87,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
       <div className="w-full max-w-xs animate-slide-up rounded-[1.5rem] border border-border/50 bg-card/30 p-4 pb-6 shadow-[0_12px_30px_rgba(0,0,0,0.18)] sm:max-w-sm sm:pb-8 md:max-w-md">
         <h3 className="text-xs sm:text-sm font-bold text-cosmic-cyan mb-2" style={{ fontFamily: "var(--font-display)" }}>{t("upgrades")}</h3>
         <p className="mb-3 rounded-xl border border-cosmic-cyan/20 bg-cosmic-cyan/5 px-3 py-2 text-[11px] leading-relaxed text-cyan-50/85 sm:text-xs">
-          {t("upgradeRules")}
+          Permanent ship systems apply automatically. Reward systems help every mode; timer systems help Story, Swarm, and Arcade; discovery systems help Story; shields also add Swarm hull.
         </p>
 
         {installedUpgrades.length > 0 && (

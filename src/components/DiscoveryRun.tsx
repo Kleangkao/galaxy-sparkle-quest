@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BookOpen, Compass, Gift, Leaf, MousePointerClick, RotateCcw, ScanLine, Sparkles } from "lucide-react";
-import { GameState } from "@/lib/gameState";
+import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getPilot } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, DiscoveryBiome, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
@@ -14,6 +14,7 @@ interface Props {
 export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const pilot = getPilot(gameState.activePilot);
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
+  const modifiers = getGameplayModifiers(gameState);
   const [biome, setBiome] = useState<DiscoveryBiome | null>(null);
   const [runNumber, setRunNumber] = useState(gameState.modeRecords.discoveryRuns);
   const finds = useMemo(() => biome ? getDiscoveryRotation(biome, runNumber, 6) : [], [biome, runNumber]);
@@ -26,7 +27,7 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const scanTimer = useRef<number | null>(null);
   const complete = points.length > 0 && found.length === points.length;
   const guidedId = puri.discoveryHint ? points.find((item) => !found.includes(item.id))?.id : undefined;
-  const crystalReward = Math.ceil(found.length * puri.rewardMultiplier);
+  const crystalReward = Math.ceil(found.length * puri.rewardMultiplier * modifiers.crystalMultiplier);
   const masteryGain = complete ? 12 : found.length;
 
   useEffect(() => () => { if (scanTimer.current !== null) window.clearTimeout(scanTimer.current); }, []);
@@ -60,7 +61,7 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   return (
     <main className="discovery-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
       <header className="discovery-header"><button onClick={() => setBiome(null)}><ArrowLeft className="h-4 w-4" /> Biomes</button><div><div className="command-kicker">Discovery Run · {biome.name}</div><h1>Find the six pulsing markers.</h1><p>Click a signal in the picture to reveal its object and story. Use Scan if one is hard to spot.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery)}<small>{found.length}/{points.length} discoveries</small></span></div></header>
-      <section className="discovery-run-guide"><div><MousePointerClick className="h-4 w-4" /><span>Current task<strong>Click {points.length - found.length} more glowing {points.length - found.length === 1 ? "signal" : "signals"}</strong></span></div><div><Gift className="h-4 w-4" /><span>Full journal reward<strong>+{Math.ceil(points.length * puri.rewardMultiplier)} crystals · +{points.length} XP · +12 mastery</strong></span></div><button onClick={scan} disabled={scanCharges <= 0 || scanActive}><ScanLine className="h-4 w-4" /> Scan field · {scanCharges} left</button></section>
+      <section className="discovery-run-guide"><div><MousePointerClick className="h-4 w-4" /><span>Current task<strong>Click {points.length - found.length} more glowing {points.length - found.length === 1 ? "signal" : "signals"}</strong></span></div><div><Gift className="h-4 w-4" /><span>Full journal reward<strong>+{Math.ceil(points.length * puri.rewardMultiplier * modifiers.crystalMultiplier)} crystals · +{points.length} XP · +12 mastery</strong></span></div><button onClick={scan} disabled={scanCharges <= 0 || scanActive}><ScanLine className="h-4 w-4" /> Scan field · {scanCharges} left</button></section>
       <section className="discovery-layout">
         <div className="discovery-scene"><img className="discovery-scene__backdrop" src={biome.backdrop} alt={`${biome.name} landscape`} /><div className="discovery-scene__wash" /><div className="discovery-scene__hint"><Leaf className="h-4 w-4" /> {puri.discoveryHint ? "PURI found a warm signal. Look for the pulsing marker!" : "Search the scene. Signals glow gently when you move near them."}</div>
           {points.map((item) => { const isFound = found.includes(item.id); return <button key={item.id} aria-label={`Discover ${item.name}`} onClick={() => find(item)} className={`discovery-point ${isFound ? "is-found" : ""} ${guidedId === item.id || (scanActive && !isFound) ? "is-guided" : ""}`} style={{ left: `${item.x}%`, top: `${item.y}%` }}>{isFound ? item.icon : "?"}</button>; })}

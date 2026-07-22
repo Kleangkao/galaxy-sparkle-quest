@@ -26,15 +26,17 @@ describe("multi-mode progression", () => {
     expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full" });
   });
 
-  it("stacks pilot and tool effects into the shared mission model", () => {
+  it("keeps pilot timing and weapon power as separate, truthful effects", () => {
     const modifiers = getGameplayModifiers({
       activePilot: "k-rail",
       activeTool: "vector-drive",
       activePet: null,
       upgrades: [],
     });
-    expect(modifiers.missionTimeBonus).toBe(10);
+    expect(modifiers.missionTimeBonus).toBe(6);
     expect(modifiers.crystalMultiplier).toBe(1);
+    expect(modifiers.combatDamage).toBe(1.2);
+    expect(modifiers.arcadeMagazineBonus).toBe(0);
   });
 
   it("keeps defensive loadouts easy to understand", () => {
@@ -45,6 +47,19 @@ describe("multi-mode progression", () => {
       upgrades: [],
     });
     expect(modifiers.failRewardMultiplier).toBe(0.55);
+    expect(modifiers.combatHullBonus).toBe(40);
+  });
+
+  it("makes the sidearm a quick-reload choice instead of an unrelated scanner", () => {
+    const modifiers = getGameplayModifiers({
+      activePilot: "nova-reyes",
+      activeTool: "echo-scanner",
+      activePet: null,
+      upgrades: [],
+    });
+    expect(modifiers.arcadeMagazineBonus).toBe(2);
+    expect(modifiers.arcadeReloadMultiplier).toBe(0.8);
+    expect(modifiers.petDiscoveryBonus).toBe(0);
   });
 
   it("unlocks PURI abilities at stable milestone thresholds", () => {

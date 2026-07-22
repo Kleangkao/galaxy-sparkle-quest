@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Check, Gauge, Radar, Shield, UserRound } from "lucide-react";
+import { ArrowLeft, Check, Crosshair, Gauge, Radar, Shield, UserRound, Zap } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { PILOTS, TOOLS } from "@/lib/loadouts";
 import ShipUpgradeShop from "@/components/ShipUpgradeShop";
@@ -42,7 +42,7 @@ export default function CrewHangar(props: Props) {
         <div>
           <div className="command-kicker">Crew deck · Loadout online</div>
           <h1>Crew & Hangar</h1>
-          <p>Choose one pilot and one expedition tool. Clear choices, real mission effects.</p>
+          <p>Choose one pilot for your overall play style and one weapon for combat. Every listed effect is active in the modes it names.</p>
         </div>
         <button className="hangar-ship-link" onClick={() => setView("ship")}>Ship systems →</button>
       </header>
@@ -79,13 +79,13 @@ export default function CrewHangar(props: Props) {
 
       <section className="hangar-section" aria-labelledby="tool-rack-title">
         <div className="hangar-section__heading">
-          <div><span>02</span><div><h2 id="tool-rack-title">Expedition tools</h2><p>Tools are non-graphic sci-fi utilities used against hazards and machines.</p></div></div>
+          <div><span>02</span><div><h2 id="tool-rack-title">Combat weapons</h2><p>Weapons affect Swarm or Arcade combat only. Story exploration is improved by pilots and ship systems.</p></div></div>
           <small>One tool equipped</small>
         </div>
         <div className="tool-grid">
           {TOOLS.map((tool) => {
             const active = tool.id === activeTool.id;
-            const Icon = tool.effectType === "discovery" ? Radar : tool.effectType === "time" ? Gauge : Shield;
+            const Icon = tool.effectType === "quickdraw" ? Zap : tool.effectType === "power" ? Crosshair : Shield;
             return (
               <button key={tool.id} className={`tool-card ${active ? "is-active" : ""}`} onClick={() => props.onSetTool(tool.id)}>
                 <div className="tool-card__image"><img src={tool.image} alt="" /></div>
