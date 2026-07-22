@@ -1,4 +1,4 @@
-import { GameState, SHIP_UPGRADES, SHIP_SKINS, getActiveShipEmoji } from "@/lib/gameState";
+import { GameState, SHIP_UPGRADES, SHIP_SKINS, getActiveShipEmoji, getUpgradeCost, getUpgradeTier, MAX_UPGRADE_TIER } from "@/lib/gameState";
 import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -101,11 +101,15 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                   <div className="flex items-center gap-2">
                     <span className="text-base">{upgrade.emoji}</span>
                     <span className="text-xs font-bold text-foreground sm:text-sm">{upgrade.name}</span>
-                    <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">
-                      {t("autoActive")}
-                    </span>
+                    <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">Tier {getUpgradeTier(gameState, upgrade.id)}/{MAX_UPGRADE_TIER}</span>
                   </div>
                   <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">{upgrade.effect}</p>
+                  {getUpgradeTier(gameState, upgrade.id) < MAX_UPGRADE_TIER && (() => {
+                    const tier = getUpgradeTier(gameState, upgrade.id);
+                    const cost = getUpgradeCost(upgrade, tier);
+                    const available = gameState.crystals >= cost;
+                    return <button className="mt-2 w-full rounded-lg border border-cosmic-cyan/30 bg-cosmic-cyan/10 px-3 py-2 text-xs font-bold text-cosmic-cyan disabled:opacity-40" disabled={!available} onClick={() => available && window.confirm(`Upgrade ${upgrade.name} to Tier ${tier + 1} for ${cost} crystals?`) && onBuyUpgrade(upgrade.id, cost)}>Upgrade to Tier {tier + 1} · 💎 {cost}</button>;
+                  })()}
                 </div>
               ))}
             </div>
@@ -115,13 +119,14 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
         <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-2">
           {availableUpgrades.map((up) => {
             const isOwned = upgrades.includes(up.id);
-            const canAfford = gameState.crystals >= up.cost;
+            const cost = getUpgradeCost(up, 0);
+            const canAfford = gameState.crystals >= cost;
             const levelOk = gameState.level >= up.requiredLevel;
             const available = !isOwned && canAfford && levelOk;
             return (
               <button key={up.id} onClick={() => {
-                if (available && window.confirm(`Install ${up.name} for ${up.cost} crystals?`)) {
-                  onBuyUpgrade(up.id, up.cost);
+                if (available && window.confirm(`Install ${up.name} for ${cost} crystals?`)) {
+                  onBuyUpgrade(up.id, cost);
                 }
               }}
                 disabled={!available}
@@ -147,7 +152,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
         </div>
         {availableUpgrades.length === 0 && (
           <div className="mt-3 rounded-xl border border-cosmic-green/20 bg-cosmic-green/5 px-4 py-3 text-center text-xs text-cosmic-green sm:text-sm">
-            All upgrades are already installed on this ship.
+            Every ship system is installed. Raise each one to Tier 3 to complete the hangar.
           </div>
         )}
       </div>

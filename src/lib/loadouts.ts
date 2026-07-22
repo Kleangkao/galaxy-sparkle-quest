@@ -1,5 +1,14 @@
 export type PilotRole = "explorer" | "racer" | "guardian";
 export type ToolEffect = "quickdraw" | "power" | "shield";
+export type LoadoutPath = "Power" | "Speed" | "Survival";
+
+interface ProgressionSnapshot {
+  level: number;
+  visitedPlanets: string[];
+  activePilot: string;
+  activeTool: string;
+  modeRecords: { swarmHighScore: number; arcadeContracts: Record<string, { bestScore: number; clears: number }> };
+}
 
 export interface PilotDefinition {
   id: string;
@@ -100,4 +109,26 @@ export function getPilot(id: string | null | undefined) {
 
 export function getTool(id: string | null | undefined) {
   return TOOLS.find((tool) => tool.id === id) ?? TOOLS[0];
+}
+
+export function hasArcadeClear(state: ProgressionSnapshot) {
+  return Object.values(state.modeRecords.arcadeContracts).some((record) => record.clears > 0);
+}
+
+export function getPilotUnlock(id: string, state: ProgressionSnapshot) {
+  if (id === "nova-reyes" || state.activePilot === id) return { unlocked: true, requirement: "Starter pilot" };
+  if (id === "k-rail") return { unlocked: state.visitedPlanets.length >= 2 || hasArcadeClear(state), requirement: "Clear Story chapter 2 or one Arcade contract" };
+  return { unlocked: state.visitedPlanets.length >= 4 || state.modeRecords.swarmHighScore >= 1500, requirement: "Clear Story chapter 4 or score 1,500 in Swarm" };
+}
+
+export function getToolUnlock(id: string, state: ProgressionSnapshot) {
+  if (id === "echo-scanner" || state.activeTool === id) return { unlocked: true, requirement: "Starter weapon" };
+  if (id === "vector-drive") return { unlocked: state.level >= 2 || hasArcadeClear(state), requirement: "Reach captain level 2 or clear one Arcade contract" };
+  return { unlocked: state.level >= 3 || state.modeRecords.swarmHighScore >= 1500, requirement: "Reach captain level 3 or score 1,500 in Swarm" };
+}
+
+export function getLoadoutPath(pilotId: string, toolId: string): LoadoutPath {
+  if (pilotId === "bastion-7" || toolId === "aegis-projector") return "Survival";
+  if (pilotId === "k-rail" || toolId === "echo-scanner") return "Speed";
+  return "Power";
 }

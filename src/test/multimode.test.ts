@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createNewGameState, getGameplayModifiers } from "@/lib/gameState";
+import { createNewGameState, getGameplayModifiers, getUpgradeTier } from "@/lib/gameState";
+import { getPilotUnlock, getToolUnlock } from "@/lib/loadouts";
 import { getPuriBonuses, getPuriProgress } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
 import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
@@ -24,6 +25,33 @@ describe("multi-mode progression", () => {
       strategyObjectives: 0,
     });
     expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full" });
+    expect(state.upgradeTiers).toMatchObject({ shield: 0, booster: 0, scanner: 0 });
+  });
+
+  it("turns side-mode mastery into visible campaign support", () => {
+    const state = createNewGameState("mud");
+    state.modeRecords.swarmHighScore = 1500;
+    state.modeRecords.arcadeContracts = { patrol: { bestScore: 900, clears: 1 } };
+    state.modeRecords.discoveryFinds = 18;
+    state.modeRecords.strategyObjectives = 2;
+    const modifiers = getGameplayModifiers(state);
+    expect(modifiers.storyStartingHpBonus).toBe(1);
+    expect(modifiers.storyDashReady).toBe(true);
+    expect(modifiers.petDiscoveryBonus).toBeCloseTo(0.1);
+    expect(modifiers.crystalMultiplier).toBeCloseTo(1.21);
+  });
+
+  it("unlocks loadouts through Story or mode mastery and preserves upgrade tiers", () => {
+    const state = createNewGameState("oni");
+    expect(getPilotUnlock("k-rail", state).unlocked).toBe(false);
+    expect(getToolUnlock("vector-drive", state).unlocked).toBe(false);
+    state.visitedPlanets.push("sparkle-moon", "candy-planet");
+    state.level = 2;
+    expect(getPilotUnlock("k-rail", state).unlocked).toBe(true);
+    expect(getToolUnlock("vector-drive", state).unlocked).toBe(true);
+    state.upgrades.push("shield");
+    state.upgradeTiers.shield = 3;
+    expect(getUpgradeTier(state, "shield")).toBe(3);
   });
 
   it("keeps pilot timing and weapon power as separate, truthful effects", () => {

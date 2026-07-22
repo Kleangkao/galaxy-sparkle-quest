@@ -131,36 +131,41 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     speedTiles: [[1, 3], [2, 6], [4, 1], [5, 4], [6, 2]],
   },
   "bubbly-bay": {
-    name: "Pressure Dive",
-    objective: "Collect 6 pressure blooms and return while the deep sentinel hunts.",
+    name: "Pressure Payload",
+    objective: "Collect 6 pressure blooms and deliver charges to both habitat valves.",
     duration: 70,
     crystalGoal: 6,
-    requireReturn: true,
+    deliveryGoal: 2,
+    dropZones: [[0, 1], [0, 6]],
+    requireReturn: false,
     enemyCount: 1,
   },
   "cookie-crater": {
-    name: "Mimic Pet Hunt",
-    objective: "Find at least 1 pet signature in hidden sectors.",
-    duration: 70,
-    petGoal: 1,
-    requireReturn: false,
-    walls: [[2, 2], [2, 3], [2, 5], [4, 2], [4, 5], [5, 3], [5, 4]],
+    name: "Crater Surge",
+    objective: "Collect 6 stabilizers and survive the collapsing hazard field.",
+    duration: 65,
+    crystalGoal: 6,
+    requireReturn: true,
+    hazards: [[1, 1], [1, 6], [2, 3], [3, 4], [4, 2], [5, 5]],
+    enemyCount: 1,
   },
   "starlight-shore": {
-    name: "Starlight Relay",
-    objective: "Chain slippery movement to collect 8 relay stars.",
+    name: "Starlight Rescue",
+    objective: "Recover a companion signal, collect 7 relay stars, and activate the exit node.",
     duration: 70,
-    crystalGoal: 8,
+    crystalGoal: 7,
+    petGoal: 1,
+    nodeGoal: 1,
     requireReturn: false,
-    slippery: true,
     walls: [[1, 4], [2, 4], [3, 4], [4, 4]],
   },
   "crystal-cave": {
-    name: "Two-Gate Delivery",
-    objective: "Collect resources then deliver to 2 drop zones.",
+    name: "Frontier Decision",
+    objective: "Commit to your chosen route, charge two gates, and secure 6 core fragments.",
     duration: 80,
     crystalGoal: 6,
     deliveryGoal: 2,
+    nodeGoal: 2,
     requireReturn: false,
     enemyCount: 2,
     dropZones: [[0, 1], [0, 6]],
@@ -359,6 +364,8 @@ interface Props {
   missionTimeBonus?: number;
   failRewardMultiplier?: number;
   shipEmoji?: string;
+  startingHpBonus?: number;
+  startDashReady?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -463,6 +470,8 @@ export default function PlanetExploration({
   missionTimeBonus = 0,
   failRewardMultiplier = 0.3,
   shipEmoji = "🚀",
+  startingHpBonus = 0,
+  startDashReady = false,
 }: Props) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(false);
@@ -482,8 +491,9 @@ export default function PlanetExploration({
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [timeLeft, setTimeLeft] = useState(missionTimeLimit);
   const [score, setScore] = useState(0);
-  const [hp, setHp] = useState(3);
-  const [dashReady, setDashReady] = useState(false);
+  const maxHp = 3 + startingHpBonus;
+  const [hp, setHp] = useState(maxHp);
+  const [dashReady, setDashReady] = useState(startDashReady);
   const [carriedPayload, setCarriedPayload] = useState(0);
   const [deliveredZones, setDeliveredZones] = useState<string[]>([]);
   const [activatedNodes, setActivatedNodes] = useState<string[]>([]);
@@ -968,7 +978,7 @@ export default function PlanetExploration({
           </div>
         </div>
         {(mission.enemyCount ?? 0) > 0 && (
-          <div className="text-center text-[10px] sm:text-xs font-bold text-destructive">HP {hp}/3</div>
+          <div className="text-center text-[10px] sm:text-xs font-bold text-destructive">HP {hp}/{maxHp}</div>
         )}
         {/* Timer progress bar */}
         <div className="w-full h-2 sm:h-2.5 rounded-full bg-muted overflow-hidden">

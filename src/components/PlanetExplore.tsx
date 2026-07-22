@@ -112,8 +112,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
           {missionBrief && (
             <div className="w-full rounded-2xl border border-cosmic-cyan/20 bg-cosmic-cyan/5 px-4 py-3 text-left">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cosmic-cyan sm:text-xs">
-                Encounter Brief
+                {missionBrief.title}
               </div>
+              <p className="mt-1 text-xs font-semibold text-white/90">{missionBrief.transmission}</p>
               <p className="mt-1 text-[11px] leading-relaxed text-cyan-50/85 sm:text-xs">
                 {lore.mission} {missionBrief.encounters}
               </p>
@@ -173,6 +174,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             onComplete={handleExplorationComplete}
             missionTimeBonus={modifiers.missionTimeBonus + approach.timeBonus}
             failRewardMultiplier={modifiers.failRewardMultiplier}
+            startingHpBonus={modifiers.storyStartingHpBonus}
+            startDashReady={modifiers.storyDashReady}
             shipEmoji={shipEmoji}
           />
         </div>

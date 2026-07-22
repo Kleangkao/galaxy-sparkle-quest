@@ -20,6 +20,12 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
   const controlled = gameState.faction ? countControlled(gameState.influence, gameState.faction) : 0;
   const nextUpgrade = SHIP_UPGRADES.find((upgrade) => !gameState.upgrades.includes(upgrade.id));
   const campaignPercent = Math.round(gameState.visitedPlanets.length / PLANETS.length * 100);
+  const supportPerks = [
+    { name: "Swarm Hull", detail: "+1 Story HP", earned: gameState.modeRecords.swarmHighScore >= 1500, progress: `${Math.min(gameState.modeRecords.swarmHighScore, 1500).toLocaleString()}/1,500`, mode: "swarm" as PlayMode },
+    { name: "Arcade Dash", detail: "Start Story with one dash", earned: Object.values(gameState.modeRecords.arcadeContracts).some((record) => record.clears > 0), progress: "Clear one contract", mode: "arcade" as PlayMode },
+    { name: "Field Scanner", detail: "+10% Story pet chance", earned: gameState.modeRecords.discoveryFinds >= 18, progress: `${Math.min(gameState.modeRecords.discoveryFinds, 18)}/18 finds`, mode: "discovery" as PlayMode },
+    { name: "Frontier Network", detail: "+10% crystals everywhere", earned: gameState.modeRecords.strategyObjectives >= 2, progress: `${Math.min(gameState.modeRecords.strategyObjectives, 2)}/2 objectives`, mode: "strategy" as PlayMode },
+  ];
   const medals = [
     { name: "First Signal", detail: "Clear one Story chapter", earned: gameState.visitedPlanets.length >= 1, icon: Map },
     { name: "Perk Pilot", detail: "Install your first Crew upgrade", earned: gameState.upgrades.length >= 1, icon: Zap },
@@ -87,6 +93,13 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
         <section className="progress-panel progress-panel--puri">
           <div className="progress-panel__heading"><PawPrint /><div><span>Adventure companion</span><h2>PURI · {puri.current.name}</h2></div></div>
           <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{puri.current.ability}</strong><p>{puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? `${puri.next.bond - puri.bond} bond until ${puri.next.ability}` : "Every PURI ability is unlocked"}</small></div></div>
+        </section>
+
+        <section className="progress-panel">
+          <div className="progress-panel__heading"><Zap /><div><span>Side modes strengthen Story</span><h2>Campaign support</h2></div><b>{supportPerks.filter((perk) => perk.earned).length}/4</b></div>
+          <div className="captain-medals">
+            {supportPerks.map((perk) => <button key={perk.name} className={perk.earned ? "is-earned" : ""} onClick={() => onPlay(perk.mode)}><span>{perk.earned ? <CheckCircle2 /> : <Zap />}</span><strong>{perk.name}</strong><small>{perk.earned ? perk.detail : perk.progress}</small></button>)}
+          </div>
         </section>
       </div>
     </main>

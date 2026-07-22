@@ -254,10 +254,11 @@ export default function Index() {
 
   const handleBuyUpgrade = (id: string, cost: number) => {
     updateState((prev) => {
-      if (prev.crystals < cost || prev.upgrades.includes(id)) return prev;
+      const currentTier = prev.upgradeTiers[id] ?? (prev.upgrades.includes(id) ? 1 : 0);
+      if (prev.crystals < cost || currentTier >= 3) return prev;
       playClickSound();
-      toast(t("upgradeInstalled"));
-      return { ...prev, crystals: prev.crystals - cost, upgrades: [...prev.upgrades, id], shipLevel: prev.upgrades.length + 2 };
+      toast(currentTier ? `System upgraded to Tier ${currentTier + 1}.` : t("upgradeInstalled"));
+      return { ...prev, crystals: prev.crystals - cost, upgrades: prev.upgrades.includes(id) ? prev.upgrades : [...prev.upgrades, id], upgradeTiers: { ...prev.upgradeTiers, [id]: currentTier + 1 }, shipLevel: Math.max(prev.shipLevel, prev.upgrades.length + (currentTier ? 1 : 2)) };
     });
   };
 

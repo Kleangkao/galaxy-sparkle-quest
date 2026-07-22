@@ -248,6 +248,7 @@ export interface GameState {
   visitedPlanets: string[];
   shipLevel: number;
   upgrades: string[];
+  upgradeTiers: Record<string, number>;
   activeSkin: string;
   ownedSkins: string[];
   lastDailyReward: string | null;
@@ -292,6 +293,18 @@ export interface GameplayModifiers {
   combatHullBonus: number;
   arcadeMagazineBonus: number;
   arcadeReloadMultiplier: number;
+  storyStartingHpBonus: number;
+  storyDashReady: boolean;
+}
+
+export const MAX_UPGRADE_TIER = 3;
+
+export function getUpgradeTier(state: Pick<GameState, "upgrades" | "upgradeTiers">, id: string) {
+  return Math.max(state.upgrades.includes(id) ? 1 : 0, Math.min(MAX_UPGRADE_TIER, state.upgradeTiers[id] ?? 0));
+}
+
+export function getUpgradeCost(upgrade: ShipUpgrade, currentTier: number) {
+  return Math.ceil(upgrade.cost * (1 + currentTier * 0.75));
 }
 
 const LEGACY_STORAGE_KEY = "cosmic-explorer-save";
@@ -425,6 +438,10 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
     .filter((pet): pet is NonNullable<typeof pet> => Boolean(pet))
     .map((pet) => pet.name))];
   const upgrades = uniqueStrings(source?.upgrades).filter((id) => SHIP_UPGRADES.some((upgrade) => upgrade.id === id));
+  const upgradeTiers = Object.fromEntries(SHIP_UPGRADES.map((upgrade) => [
+    upgrade.id,
+    Math.min(MAX_UPGRADE_TIER, Math.max(nonNegativeInteger(source?.upgradeTiers?.[upgrade.id]), upgrades.includes(upgrade.id) ? 1 : 0)),
+  ]));
   const ownedSkins = uniqueStrings(source?.ownedSkins).filter((id) => SHIP_SKINS.some((skin) => skin.id === id));
   if (!ownedSkins.includes("red-rocket")) ownedSkins.unshift("red-rocket");
   const requestedSkin = typeof source?.activeSkin === "string" ? source.activeSkin : "red-rocket";
@@ -452,6 +469,7 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
     visitedPlanets: uniqueStrings(source?.visitedPlanets).filter((id) => PLANETS.some((planet) => planet.id === id)),
     shipLevel: Math.max(1, nonNegativeInteger(source?.shipLevel, 1)),
     upgrades,
+    upgradeTiers,
     activeSkin: ownedSkins.includes(requestedSkin) ? requestedSkin : "red-rocket",
     ownedSkins,
     lastDailyReward,
@@ -601,7 +619,7 @@ export function getActiveShipEmoji(state: Pick<GameState, "activeSkin" | "factio
   return getShipSkin(state.activeSkin)?.emoji || getFaction(state.faction)?.shipEmoji || "🚀";
 }
 
-export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgrades" | "activePilot" | "activeTool">): GameplayModifiers {
+export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgrades" | "upgradeTiers" | "activePilot" | "activeTool" | "modeRecords">): GameplayModifiers {
   let crystalMultiplier = 1;
   let petDiscoveryBonus = 0;
   let missionTimeBonus = 0;
@@ -611,6 +629,8 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
   let combatHullBonus = 0;
   let arcadeMagazineBonus = 0;
   let arcadeReloadMultiplier = 1;
+  let storyStartingHpBonus = 0;
+  let storyDashReady = false;
 
   const activePet = state.activePet ? getPetById(state.activePet) || getPetByName(state.activePet) : undefined;
   const activePilot = getPilot(state.activePilot);
@@ -661,27 +681,36 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
   }
 
   for (const upgrade of state.upgrades) {
+    const tier = getUpgradeTier(state, upgrade);
     switch (upgrade) {
       case "scanner":
-        crystalMultiplier *= 1.15;
+        crystalMultiplier *= 1 + 0.15 * tier;
         break;
       case "crown":
-        crystalMultiplier *= 1.2;
+        crystalMultiplier *= 1 + 0.2 * tier;
         break;
       case "garden":
-        petDiscoveryBonus += 0.15;
+        petDiscoveryBonus += 0.15 * tier;
         break;
       case "booster":
-        missionTimeBonus += 5;
+        missionTimeBonus += 5 * tier;
         break;
       case "wings":
-        missionTimeBonus += 8;
+        missionTimeBonus += 8 * tier;
         break;
       case "shield":
-        failRewardMultiplier = Math.max(failRewardMultiplier, 0.6);
-        combatHullBonus += 10;
+        failRewardMultiplier = Math.max(failRewardMultiplier, 0.5 + 0.1 * tier);
+        combatHullBonus += 10 * tier;
         break;
     }
+  }
+
+  // The guard also keeps direct modifier calls from older integrations safe.
+  if (state.modeRecords) {
+    if (state.modeRecords.swarmHighScore >= 1500) storyStartingHpBonus += 1;
+    if (Object.values(state.modeRecords.arcadeContracts).some((record) => record.clears > 0)) storyDashReady = true;
+    if (state.modeRecords.discoveryFinds >= 18) petDiscoveryBonus += 0.1;
+    if (state.modeRecords.strategyObjectives >= 2) crystalMultiplier *= 1.1;
   }
 
   return {
@@ -694,6 +723,8 @@ export function getGameplayModifiers(state: Pick<GameState, "activePet" | "upgra
     combatHullBonus,
     arcadeMagazineBonus,
     arcadeReloadMultiplier,
+    storyStartingHpBonus,
+    storyDashReady,
   };
 }
 
