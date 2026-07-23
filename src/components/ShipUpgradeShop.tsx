@@ -1,6 +1,8 @@
-import { GameState, SHIP_UPGRADES, SHIP_SKINS, getActiveShipEmoji, getUpgradeCost, getUpgradeTier, MAX_UPGRADE_TIER } from "@/lib/gameState";
+import { GameState, SHIP_UPGRADES, SHIP_SKINS, getActiveShipEmoji, getUpgradeCost, getUpgradeEffectAtTier, getUpgradeTier, MAX_UPGRADE_TIER } from "@/lib/gameState";
 import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useState } from "react";
+import ConfirmActionDialog, { ConfirmAction } from "@/components/ConfirmActionDialog";
 
 interface Props {
   gameState: GameState;
@@ -12,6 +14,7 @@ interface Props {
 
 export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, onEquipSkin, onBack }: Props) {
   const { t } = useI18n();
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const ownedSkins = gameState.ownedSkins || ["red-rocket"];
   const upgrades = gameState.upgrades || [];
   const activeShipEmoji = getActiveShipEmoji(gameState);
@@ -64,9 +67,12 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                     return;
                   }
 
-                  if (canAfford && levelOk && window.confirm(`Buy ${skin.name} for ${skin.cost} crystals?`)) {
-                    onBuySkin(skin.id, skin.cost);
-                  }
+                  if (canAfford && levelOk) setConfirmAction({
+                    title: `Add ${skin.name} to the hangar?`,
+                    description: `Cost: ${skin.cost} crystals\nCosmetic only · no gameplay-stat change.`,
+                    confirmLabel: `Buy for ${skin.cost}`,
+                    onConfirm: () => onBuySkin(skin.id, skin.cost),
+                  });
                 }}
                 disabled={!owned && (!canAfford || !levelOk)}
                 className={`min-h-[48px] p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-center transition-all duration-200
@@ -103,12 +109,17 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                     <span className="text-xs font-bold text-foreground sm:text-sm">{upgrade.name}</span>
                     <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">Tier {getUpgradeTier(gameState, upgrade.id)}/{MAX_UPGRADE_TIER}</span>
                   </div>
-                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">{upgrade.effect}</p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs"><strong>Current:</strong> {getUpgradeEffectAtTier(upgrade.id, getUpgradeTier(gameState, upgrade.id))}</p>
                   {getUpgradeTier(gameState, upgrade.id) < MAX_UPGRADE_TIER && (() => {
                     const tier = getUpgradeTier(gameState, upgrade.id);
                     const cost = getUpgradeCost(upgrade, tier);
                     const available = gameState.crystals >= cost;
-                    return <button className="mt-2 w-full rounded-lg border border-cosmic-cyan/30 bg-cosmic-cyan/10 px-3 py-2 text-xs font-bold text-cosmic-cyan disabled:opacity-40" disabled={!available} onClick={() => available && window.confirm(`Upgrade ${upgrade.name} to Tier ${tier + 1} for ${cost} crystals?`) && onBuyUpgrade(upgrade.id, cost)}>Upgrade to Tier {tier + 1} · 💎 {cost}</button>;
+                    return <button className="mt-2 w-full rounded-lg border border-cosmic-cyan/30 bg-cosmic-cyan/10 px-3 py-2 text-xs font-bold text-cosmic-cyan disabled:opacity-40" disabled={!available} onClick={() => available && setConfirmAction({
+                      title: `Upgrade ${upgrade.name} to Tier ${tier + 1}?`,
+                      description: `Cost: ${cost} crystals\nNew effect: ${getUpgradeEffectAtTier(upgrade.id, tier + 1)}`,
+                      confirmLabel: `Upgrade for ${cost}`,
+                      onConfirm: () => onBuyUpgrade(upgrade.id, cost),
+                    })}>Tier {tier + 1}: {getUpgradeEffectAtTier(upgrade.id, tier + 1)} · 💎 {cost}</button>;
                   })()}
                 </div>
               ))}
@@ -125,9 +136,12 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
             const available = !isOwned && canAfford && levelOk;
             return (
               <button key={up.id} onClick={() => {
-                if (available && window.confirm(`Install ${up.name} for ${cost} crystals?`)) {
-                  onBuyUpgrade(up.id, cost);
-                }
+                if (available) setConfirmAction({
+                  title: `Install ${up.name}?`,
+                  description: `Cost: ${cost} crystals\n${getUpgradeEffectAtTier(up.id, 1)}`,
+                  confirmLabel: `Install for ${cost}`,
+                  onConfirm: () => onBuyUpgrade(up.id, cost),
+                });
               }}
                 disabled={!available}
                 className={`flex items-center min-h-[48px] gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-left transition-all duration-200
@@ -136,7 +150,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 <span className="text-xl sm:text-2xl shrink-0">{up.emoji}</span>
                 <div className="flex-1 min-w-0">
                   <span className="text-xs sm:text-sm font-bold text-foreground block">{up.name}</span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground block line-clamp-2">{up.description}</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground block line-clamp-2">{getUpgradeEffectAtTier(up.id, 1)}</span>
                   <span className="text-[10px] sm:text-xs text-foreground/80 block mt-0.5 leading-relaxed">{up.effect}</span>
                   {!isOwned && <span className={`text-[10px] sm:text-xs font-bold block mt-0.5 ${canAfford ? "text-cosmic-cyan" : "text-cosmic-red"}`}>💎 {up.cost}</span>}
                   {isOwned && (
@@ -156,6 +170,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
           </div>
         )}
       </div>
+      <ConfirmActionDialog action={confirmAction} onClose={() => setConfirmAction(null)} />
     </div>
   );
 }

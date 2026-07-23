@@ -127,6 +127,7 @@
 .effects-reduced .combat-arena.is-hit { animation:none !important; }
 .effects-reduced .combat-enemy.is-boss.is-casting::before,.effects-reduced .arcade-hit-feedback { animation:none !important; }
 .effects-reduced .combat-arena.boss-arrival::before { animation:none !important; }
+.no-screen-shake .combat-arena.is-hit { animation:none !important; }
 @media (max-width: 800px) { .arcade-contracts__header { grid-template-columns:1fr; } .arcade-contracts__header > button { justify-self:start; } .arcade-contracts__bond { justify-self:start; } .arcade-contract-grid { grid-template-columns:1fr; } .play-assists small { width:100%; margin-left:0; } }
 
 /* Story Expeditions — unified command-console presentation */
@@ -648,6 +649,7 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .arcade-target { position: absolute; z-index: 3; display: grid; place-items: center; translate: -50% -50%; border: 3px solid hsl(var(--cosmic-cyan)); border-radius: 999px; background: hsl(var(--cosmic-cyan) / .18); box-shadow: 0 0 18px hsl(var(--cosmic-cyan) / .35); color: white; font-weight: 950; cursor: none; }
 .arcade-target.is-crystal { border-color: hsl(var(--cosmic-yellow)); color: hsl(var(--cosmic-yellow)); }.arcade-target.is-decoy { border-color: hsl(var(--cosmic-red)); background: hsl(var(--cosmic-red) / .2); color: hsl(var(--cosmic-red)); }.arcade-target.is-boss { overflow: visible; border-color: hsl(var(--cosmic-orange)); }
 .arcade-target.is-boss img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }.arcade-target i { position: absolute; top: -.55rem; width: 130%; height: .25rem; overflow: hidden; border-radius: 999px; background: black; }.arcade-target i b { display: block; height: 100%; background: hsl(var(--cosmic-orange)); }
+.arcade-target__weakpoint { position:absolute; left:50%; top:42%; width:22%; height:22%; transform:translate(-50%,-50%); border:2px solid hsl(var(--cosmic-yellow)); border-radius:999px; background:hsl(var(--cosmic-pink)/.7); box-shadow:0 0 16px hsl(var(--cosmic-yellow)/.85); pointer-events:none; }
 .arcade-reticle { position: absolute; z-index: 8; display: grid; width: 2.2rem; height: 2.2rem; translate: -50% -50%; place-items: center; color: white; filter: drop-shadow(0 0 5px hsl(var(--cosmic-orange))); pointer-events: none; }
 .arcade-reticle svg { width: 100%; height: 100%; }
 .arcade-overlay { position: absolute; z-index: 12; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; cursor: default; text-align: center; background: hsl(var(--background) / .84); backdrop-filter: blur(8px); }
@@ -661,6 +663,7 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .discovery-run-guide > div, .discovery-run-guide > button { display: flex; min-height: 3rem; align-items: center; gap: .5rem; padding: .55rem .7rem; border: 1px solid hsl(var(--border) / .55); border-radius: .75rem; background: hsl(var(--card) / .5); }
 .discovery-run-guide > div { color: hsl(var(--cosmic-green)); }.discovery-run-guide span { display: grid; color: hsl(var(--muted-foreground)); font-size: .58rem; text-transform: uppercase; letter-spacing: .08em; }.discovery-run-guide strong { color: white; font-size: .67rem; text-transform: none; letter-spacing: 0; }.discovery-run-guide button { color: hsl(var(--cosmic-yellow)); font-size: .67rem; font-weight: 900; }.discovery-run-guide button:disabled { opacity: .45; }
 .discovery-point:not(.is-found) { border: 2px solid white; background: hsl(var(--background) / .72); color: white; box-shadow: 0 0 0 6px hsl(var(--cosmic-cyan) / .12),0 0 18px hsl(var(--cosmic-cyan) / .6); animation: pulse 1.2s ease-in-out infinite alternate; }
+.discovery-point.is-rare { border-color:hsl(var(--cosmic-yellow)); background:hsl(var(--cosmic-yellow)/.2); color:hsl(var(--cosmic-yellow)); box-shadow:0 0 22px hsl(var(--cosmic-yellow)/.65); }
 
 .strategy-intro { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .strategy-intro__back { align-self: flex-start; display: inline-flex; min-height: 2.7rem; align-items: center; gap: .4rem; padding: .6rem .8rem; border: 1px solid hsl(var(--border)); border-radius: .75rem; background: hsl(var(--card) / .72); font-size: .7rem; font-weight: 900; }

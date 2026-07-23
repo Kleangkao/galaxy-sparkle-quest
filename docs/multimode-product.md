@@ -12,7 +12,7 @@ The ten-chapter hybrid campaign. Story missions combine grid exploration, hazard
 
 ### Swarm Protocol
 
-A 75-second survival run inspired by survivor-style games:
+A 60-second survival run inspired by survivor-style games:
 
 - WASD or arrow-key movement
 - automatic targeting and fire
@@ -20,7 +20,9 @@ A 75-second survival run inspired by survivor-style games:
 - collectible energy drops
 - level-up choices for damage, fire rate, speed, or pickup range
 - a reusable pulse ability
+- Power + Rapid perk evolution into Overdrive
 - Ahr boss arrival and boss health tracking
+- a readable second boss phase below half integrity
 - score, crystals, XP, and persistent high score
 
 ### Arcade Ops
@@ -37,6 +39,7 @@ A pressure-free search mode:
 - persistent discovery count
 - persistent mastery ranks for each biome
 - repeatable complete-the-journal objectives
+- periodic optional rare anomalies
 - journal completion rewards
 
 ### Frontier Control
@@ -56,7 +59,7 @@ A strategy-lite command cycle:
 
 ### Auto-pick
 
-“Surprise me” chooses a rotating daily activity. It provides an instant option for younger players or anyone who does not want to compare modes.
+“Surprise me” chooses a rotating daily activity for players who do not want to compare modes.
 
 ## Product rules
 
@@ -79,5 +82,6 @@ A strategy-lite command cycle:
 
 1. Add aim assistance and contrast presets to accessibility settings.
 2. Add controller navigation to non-combat menus.
-3. Add weekly simulated frontier states.
-4. Add optional cloud saves only when an account/backend decision is approved.
+3. Add weekly living-frontier states only after rival capture rules are playtested.
+4. Add optional account-based cloud saves only after an identity decision is approved.
+5. Review anonymous aggregate playtest starts, completions, ratings, and difficulty reports before changing reward balance.

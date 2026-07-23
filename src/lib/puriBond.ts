@@ -11,7 +11,7 @@ export const PURI_MILESTONES: PuriMilestone[] = [
   { bond: 25, name: "Brave Buddy", ability: "Cushion Shield", description: "+15 starting hull in combat." },
   { bond: 50, name: "Clever Buddy", ability: "Curious Nose", description: "Discovery signals give a warm-or-cold hint." },
   { bond: 75, name: "Command Buddy", ability: "Bright Idea", description: "+1 action in every Strategy-lite cycle." },
-  { bond: 100, name: "Forever Friend", ability: "Lucky Hug", description: "+15% crystals from activity rewards." },
+  { bond: 100, name: "Signal Synchronized", ability: "Fortune Link", description: "+15% crystals from activity rewards." },
 ];
 
 export interface PuriBonuses {

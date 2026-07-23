@@ -63,14 +63,14 @@ export default function ModeHub({ gameState, onChoose }: Props) {
     <main className="mode-hub relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <header className="mode-hub__header">
         <div>
-          <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> Galia play garden</div>
-          <h1>Pick your next<br /><span>tiny-big adventure!</span></h1>
-          <p>One captain, five ways to play. Every trip earns something useful.</p>
+          <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> Galia operations network</div>
+          <h1>Choose today’s<br /><span>frontier operation.</span></h1>
+          <p>Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Every operation advances the same campaign.</p>
           <div className="mode-mood-picker" aria-label="Choose by mood">
             <span><Heart className="h-3.5 w-3.5" /> Choose by mood</span>
-            <button onClick={() => onChoose("discovery")}>I want to chill</button>
-            <button onClick={() => onChoose("arcade")}>I want action</button>
-            <button onClick={() => onChoose("story")}>I want a story</button>
+            <button onClick={() => onChoose("discovery")}>Explore calmly</button>
+            <button onClick={() => onChoose("arcade")}>Take direct action</button>
+            <button onClick={() => onChoose("story")}>Continue campaign</button>
           </div>
         </div>
         <div className="mode-hub__aside">
@@ -99,7 +99,7 @@ export default function ModeHub({ gameState, onChoose }: Props) {
               <div className="mode-card__art" aria-hidden="true"><img src={mode.image} alt="" /></div>
               <div className="mode-card__shade" />
               <div className="mode-card__topline"><span><Icon className="h-4 w-4" />{mode.label}</span><small>{mode.status}</small></div>
-              <div className="mode-card__copy"><h2>{mode.name}</h2><p>{mode.description}</p><div className="mode-card__facts"><span>How: {mode.play}</span><span>Goodies: {mode.progress}</span></div><strong>Let’s play <ArrowRight className="h-4 w-4" /></strong></div>
+              <div className="mode-card__copy"><h2>{mode.name}</h2><p>{mode.description}</p><div className="mode-card__facts"><span>Operation: {mode.play}</span><span>Progress: {mode.progress}</span></div><strong>Deploy <ArrowRight className="h-4 w-4" /></strong></div>
             </button>
           );
         })}

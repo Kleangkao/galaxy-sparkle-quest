@@ -5,6 +5,7 @@ import {
   canClaimDaily,
   createNewGameState,
   loadGame,
+  PLANETS,
   resetGame,
   saveGame,
 } from "@/lib/gameState";
@@ -12,6 +13,7 @@ import { useCombatInput } from "@/hooks/useCombatInput";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
+import PlanetExplore from "@/components/PlanetExplore";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
 const ONI_SAVE_KEY = "cosmic-explorer-save-v2:oni";
@@ -175,10 +177,26 @@ describe("public test release hardening", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "04 Verdant Vault Level 4" }));
+    fireEvent.click(screen.getByRole("button", { name: "04 Verdant Vault Clear Chapter 3" }));
 
     expect(screen.getByRole("heading", { name: "Verdant Vault" })).toBeInTheDocument();
     expect(screen.getByText("Threat detected: Guardian drones")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Reach level 4" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Clear Chapter 3" })).toBeDisabled();
+  });
+
+  it("launches an actual Story grid without colliding with the map icon", () => {
+    render(
+      <PlanetExplore
+        planet={PLANETS[0]}
+        gameState={createNewGameState("mud")}
+        onCollect={() => undefined}
+        onBack={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Launch Balanced route" }));
+
+    expect(screen.getByText(/Live Mission HUD/)).toBeInTheDocument();
+    expect(screen.getByText(/Crystal Flight School/)).toBeInTheDocument();
   });
 });

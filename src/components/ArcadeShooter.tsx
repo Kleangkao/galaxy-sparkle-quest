@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Target, Trophy, Zap } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
-import { getArcadeContract } from "@/lib/arcadeContracts";
+import { getArcadeContract, getArcadeGrade } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
-type ShooterState = { elapsed: number; score: number; combo: number; bestCombo: number; energy: number; ammo: number; reloading: number; targets: ShooterTarget[]; nextId: number; spawnTimer: number; bossDefeated: boolean };
+type ShooterState = { elapsed: number; score: number; combo: number; bestCombo: number; shotsFired: number; hits: number; energy: number; ammo: number; reloading: number; targets: ShooterTarget[]; nextId: number; spawnTimer: number; bossDefeated: boolean };
 type ShotFeedback = { id: number; x: number; y: number; text: string; tone: "hit" | "miss" | "bonus" | "danger" };
 
 interface Props {
   gameState: GameState;
   contractId?: string;
   onBack: () => void;
-  onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "arcade"; contractId: string }) => void;
+  onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "arcade"; contractId: string; accuracy: number; grade: string }) => void;
 }
 
 const WIDTH = 920;
@@ -27,6 +27,8 @@ const makeState = (magazine = BASE_MAGAZINE): ShooterState => ({
   score: 0,
   combo: 0,
   bestCombo: 0,
+  shotsFired: 0,
+  hits: 0,
   energy: 0,
   ammo: magazine,
   reloading: 0,
@@ -72,7 +74,8 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     const current = stateRef.current;
     const crystals = Math.ceil((4 + Math.floor(current.score / 450) + (success ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
     const xp = 4 + Math.floor(current.score / 500) + (success ? 8 : 0);
-    onComplete({ score: current.score, crystals, xp, won: success, variant: "arcade", contractId: contract.id });
+    const accuracy = current.shotsFired ? current.hits / current.shotsFired : 0;
+    onComplete({ score: current.score, crystals, xp, won: success, variant: "arcade", contractId: contract.id, accuracy, grade: getArcadeGrade(accuracy, success, current.bestCombo) });
   }, [contract.id, modifiers.crystalMultiplier, onComplete, puri.rewardMultiplier]);
 
   const reset = useCallback(() => {
@@ -103,6 +106,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     if (!running || paused || state.reloading > 0) return;
     if (state.ammo <= 0) { reload(); return; }
     state.ammo -= 1;
+    state.shotsFired += 1;
     playLaserSound();
     const target = targetId === undefined ? null : state.targets.find((item) => item.id === targetId) ?? null;
     const addFeedback = (x: number, y: number, text: string, tone: ShotFeedback["tone"]) => {
@@ -120,8 +124,10 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       pulseGamepad(80, 0.35);
       addFeedback(target.x, target.y, "-75 DECOY", "danger");
     } else {
+      state.hits += 1;
       playImpactSound();
-      target.hp -= modifiers.combatDamage;
+      const weakPointHit = target.kind === "boss" && (state.combo + 1) % 4 === 0;
+      target.hp -= modifiers.combatDamage * (weakPointHit ? 2 : 1);
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);
       if (target.kind === "crystal") {
@@ -138,7 +144,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
         addFeedback(target.x, target.y, target.kind === "boss" ? "CORE BROKEN" : `BREAK x${state.combo}`, "bonus");
       } else {
         state.score += target.kind === "boss" ? 90 : 35;
-        addFeedback(target.x, target.y, target.kind === "boss" ? `CORE ${Math.max(0, Math.ceil(target.hp))}` : `HIT x${state.combo}`, "hit");
+        addFeedback(target.x, target.y, weakPointHit ? "WEAK POINT x2" : target.kind === "boss" ? `CORE ${Math.max(0, Math.ceil(target.hp))}` : `HIT x${state.combo}`, weakPointHit ? "bonus" : "hit");
       }
     }
     if (state.ammo <= 0) state.reloading = reloadDuration;
@@ -235,7 +241,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       <section className="arcade-shooter__hud">
         <div><span>Time</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
         <div><span>Score</span><strong>{frame.score.toLocaleString()}</strong></div>
-        <div><span>Combo</span><strong>x{frame.combo}</strong></div>
+        <div><span>Accuracy</span><strong>{frame.shotsFired ? Math.round(frame.hits / frame.shotsFired * 100) : 100}%</strong></div>
         <div><span>{contract.objective === "energy" ? "Signals" : "Ammo"}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
@@ -256,7 +262,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               onPointerDown={(event) => { event.stopPropagation(); shootTarget(target.id); }}
               aria-label={target.kind === "decoy" ? "Do not shoot decoy" : `Shoot ${target.kind}`}
             >
-              {target.kind === "boss" ? <img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="" /> : target.kind === "crystal" ? "◆" : target.kind === "decoy" ? "!" : ""}
+              {target.kind === "boss" ? <><img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="" /><span className="arcade-target__weakpoint" /></> : target.kind === "crystal" ? "◆" : target.kind === "decoy" ? "!" : ""}
               {target.kind === "boss" && <i><b style={{ width: `${target.hp / target.maxHp * 100}%` }} /></i>}
             </button>
           ))}

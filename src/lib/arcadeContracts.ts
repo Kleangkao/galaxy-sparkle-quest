@@ -19,7 +19,7 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
     id: "ahr-blitz",
     name: "Ahr Blitz",
     subtitle: "Boss assault",
-    briefing: "Track the moving Ahr core with your mouse, manage six-shot magazines, and break its armor before extraction.",
+    briefing: "Track the moving Ahr core with your mouse, manage reload timing, and break its armor before extraction.",
     objective: "boss",
     target: 1,
     duration: 50,
@@ -58,4 +58,12 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
 
 export function getArcadeContract(id: string | null | undefined) {
   return ARCADE_CONTRACTS.find((contract) => contract.id === id) ?? ARCADE_CONTRACTS[0];
+}
+
+export function getArcadeGrade(accuracy: number, cleared: boolean, bestCombo: number) {
+  if (cleared && accuracy >= 0.85 && bestCombo >= 8) return "S";
+  if (cleared && accuracy >= 0.7) return "A";
+  if (cleared || accuracy >= 0.6) return "B";
+  if (accuracy >= 0.4) return "C";
+  return "D";
 }

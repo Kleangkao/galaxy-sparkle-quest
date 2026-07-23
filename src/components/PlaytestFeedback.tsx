@@ -26,7 +26,7 @@ export default function PlaytestFeedback({ open, mode, onOpenChange, onSubmitted
           <fieldset><legend>How fun was it?</legend><div className="feedback-stars">{[1,2,3,4,5].map((rating) => <button key={rating} className={fun >= rating ? "is-active" : ""} onClick={() => setFun(rating)} aria-label={`${rating} out of 5 fun`} aria-pressed={fun === rating}><Sparkles /></button>)}</div></fieldset>
           <fieldset><legend>How did the difficulty feel?</legend><div className="feedback-difficulty">{([['easy','Too easy'],['right','Just right'],['hard','Too hard']] as const).map(([value,label]) => <button key={value} className={difficulty === value ? "is-active" : ""} onClick={() => setDifficulty(value)} aria-pressed={difficulty === value}>{label}</button>)}</div></fieldset>
           <label><span>What felt confusing? <small>Optional</small></span><textarea value={note} maxLength={240} onChange={(event) => setNote(event.target.value)} placeholder="Example: I did not know where to upgrade..." /><small>{note.length}/240</small></label>
-          <div className="playtest-feedback__privacy"><ShieldCheck /><span>Saved only in this browser. No name, email, account, or personal details are collected.</span></div>
+          <div className="playtest-feedback__privacy"><ShieldCheck /><span>Anonymous mode counts and submitted ratings help balance the shared test build. No name, email, account, device identifier, or personal details are collected. A local copy stays in this browser.</span></div>
           <button className="playtest-feedback__submit" disabled={!fun} onClick={submit}>Save feedback</button>
         </div>
       </DialogContent>

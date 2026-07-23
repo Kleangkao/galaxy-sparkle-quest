@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createNewGameState, getGameplayModifiers, getUpgradeTier } from "@/lib/gameState";
-import { getPilotUnlock, getToolUnlock } from "@/lib/loadouts";
+import { createNewGameState, getGameplayModifiers, getUpgradeEffectAtTier, getUpgradeTier, isStoryChapterUnlocked, PLANETS } from "@/lib/gameState";
+import { getPilotUnlock, getToolModeSummary, getToolUnlock, getTool } from "@/lib/loadouts";
 import { getPuriBonuses, getPuriProgress } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
 import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
@@ -8,6 +8,7 @@ import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getLocalPlaytestSummary, savePlaytestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 import { getBossFightWindow, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
+import { getArcadeGrade } from "@/lib/arcadeContracts";
 
 describe("multi-mode progression", () => {
   it("keeps first clears valuable while making Story replays worth doing", () => {
@@ -37,7 +38,7 @@ describe("multi-mode progression", () => {
       strategyCycles: 0,
       strategyObjectives: 0,
     });
-    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full" });
+    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full", screenShake: "full" });
     expect(state.upgradeTiers).toMatchObject({ shield: 0, booster: 0, scanner: 0 });
   });
 
@@ -65,6 +66,29 @@ describe("multi-mode progression", () => {
     state.upgrades.push("shield");
     state.upgradeTiers.shield = 3;
     expect(getUpgradeTier(state, "shield")).toBe(3);
+  });
+
+  it("keeps the connected campaign sequential even when side modes raise captain level", () => {
+    const state = createNewGameState("ustur");
+    state.level = 8;
+    expect(isStoryChapterUnlocked(PLANETS[0], state)).toBe(true);
+    expect(isStoryChapterUnlocked(PLANETS[1], state)).toBe(false);
+    state.visitedPlanets.push(PLANETS[0].id);
+    expect(isStoryChapterUnlocked(PLANETS[1], state)).toBe(true);
+    expect(isStoryChapterUnlocked(PLANETS[2], state)).toBe(false);
+  });
+
+  it("explains exact upgrade tiers and mode-specific weapon relevance", () => {
+    expect(getUpgradeEffectAtTier("shield", 1)).toContain("60%");
+    expect(getUpgradeEffectAtTier("shield", 3)).toContain("80%");
+    expect(getToolModeSummary(getTool("echo-scanner"), "swarm")).toContain("No Swarm bonus");
+    expect(getToolModeSummary(getTool("vector-drive"), "swarm")).toContain("+20% weapon damage");
+  });
+
+  it("grades Arcade accuracy and clear quality consistently", () => {
+    expect(getArcadeGrade(0.9, true, 10)).toBe("S");
+    expect(getArcadeGrade(0.75, true, 4)).toBe("A");
+    expect(getArcadeGrade(0.45, false, 2)).toBe("C");
   });
 
   it("keeps pilot timing and weapon power as separate, truthful effects", () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Boxes, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Clock3, Gem, Landmark, Map, Navigation, Orbit, Package, PawPrint, Rocket, Skull, Sparkles as SparklesIcon, Star, Zap } from "lucide-react";
+import { Bot, Boxes, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Clock3, Gem, Landmark, Map as MapIcon, Navigation, Orbit, Package, PawPrint, Rocket, Skull, Sparkles as SparklesIcon, Star, Zap } from "lucide-react";
 import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound, playImpactSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
@@ -371,6 +371,7 @@ interface Props {
   startDashReady?: boolean;
   pilotImage?: string;
   shipSkinId?: string;
+  routeMode?: "scout" | "steady" | "salvage";
 }
 
 function StoryItemMarker({ item }: { item: ExplorationItem }) {
@@ -490,6 +491,7 @@ export default function PlanetExploration({
   startDashReady = false,
   pilotImage,
   shipSkinId = "red-rocket",
+  routeMode = "steady",
 }: Props) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(false);
@@ -505,13 +507,13 @@ export default function PlanetExploration({
   }), [planetId, theme.timeLimit]);
   const missionTimeLimit = mission.duration + missionTimeBonus;
   const [mapData] = useState(() => generateMap(theme, mission));
-  const [items, setItems] = useState<ExplorationItem[]>(mapData.items);
+  const [items, setItems] = useState<ExplorationItem[]>(() => mapData.items.map((item) => routeMode === "scout" && item.type === "hidden" ? { ...item, revealed: true } : item));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [timeLeft, setTimeLeft] = useState(missionTimeLimit);
   const [score, setScore] = useState(0);
   const maxHp = 3 + startingHpBonus;
   const [hp, setHp] = useState(maxHp);
-  const [dashReady, setDashReady] = useState(startDashReady);
+  const [dashReady, setDashReady] = useState(startDashReady || routeMode === "scout");
   const [carriedPayload, setCarriedPayload] = useState(0);
   const [deliveredZones, setDeliveredZones] = useState<string[]>([]);
   const [activatedNodes, setActivatedNodes] = useState<string[]>([]);
@@ -528,14 +530,15 @@ export default function PlanetExploration({
   const shipPos = useRef({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [enemies, setEnemies] = useState<{ row: number; col: number }[]>(
     () =>
-      Array.from({ length: mission.enemyCount ?? 0 }, (_, index) => ({
+      Array.from({ length: (mission.enemyCount ?? 0) + (routeMode === "salvage" && mission.enemyCount ? 1 : 0) }, (_, index) => ({
         row: 1 + (index % 2),
         col: GRID_COLS - 2 - index,
       })),
   );
   const totalCollected = useRef(0);
   const collectedItemCount = useRef(0);
-  const requiredCollect = mapData.requiredCollect;
+  const requiredCollect = mapData.requiredCollect + (routeMode === "salvage" && mission.crystalGoal ? 1 : 0);
+  const effectiveCrystalGoal = mission.crystalGoal ? requiredCollect : 0;
   const walls = useMemo(() => new Set((mission.walls ?? []).map(([r, c]) => coordKey(r, c))), [mission.walls]);
   const patrolSight = useMemo(() => {
     if (!mission.patrolVision) return new Set<string>();
@@ -548,7 +551,10 @@ export default function PlanetExploration({
     });
     return seen;
   }, [enemies, mission.patrolVision, walls]);
-  const hazards = useMemo(() => new Set((mission.hazards ?? []).map(([r, c]) => coordKey(r, c))), [mission.hazards]);
+  const hazards = useMemo(() => {
+    const entries = routeMode === "scout" ? (mission.hazards ?? []).filter((_, index) => index % 2 === 0) : (mission.hazards ?? []);
+    return new Set(entries.map(([r, c]) => coordKey(r, c)));
+  }, [mission.hazards, routeMode]);
   const speedTiles = useMemo(() => new Set((mission.speedTiles ?? []).map(([r, c]) => coordKey(r, c))), [mission.speedTiles]);
   const dropZones = useMemo(() => mission.dropZones ?? [], [mission.dropZones]);
   const teleportMap = useMemo(() => {
@@ -588,7 +594,7 @@ export default function PlanetExploration({
       const crystalCollected = items.filter((i) => i.collected && i.type !== "robot" && i.type !== "pet").length;
       const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
       const hasEnough =
-        crystalCollected >= (mission.crystalGoal ?? 0) &&
+        crystalCollected >= effectiveCrystalGoal &&
         petCollected >= (mission.petGoal ?? 0) &&
         deliveredZones.length >= (mission.deliveryGoal ?? 0) &&
         activatedNodes.length >= (mission.nodeGoal ?? 0) &&
@@ -603,7 +609,7 @@ export default function PlanetExploration({
     }
     const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
+  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
 
   // Spawn sparkle burst at a grid position
   const spawnSparkles = useCallback((row: number, col: number) => {
@@ -713,7 +719,7 @@ export default function PlanetExploration({
   const deliveryDone = deliveredZones.length;
   const nodesDone = activatedNodes.length;
   const goalsMet =
-    crystalCollected >= (mission.crystalGoal ?? 0) &&
+    crystalCollected >= effectiveCrystalGoal &&
     petCollected >= (mission.petGoal ?? 0) &&
     deliveryDone >= (mission.deliveryGoal ?? 0) &&
     nodesDone >= (mission.nodeGoal ?? 0);
@@ -1065,7 +1071,7 @@ export default function PlanetExploration({
       {/* Theme label */}
       <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-semibold" style={{ fontFamily: "var(--font-display)" }}>
         <span className="flex items-center gap-1.5">
-          <Map className="h-3.5 w-3.5" /> {theme.name}
+          <MapIcon className="h-3.5 w-3.5" /> {theme.name}
           <span className="text-[8px] sm:text-[10px] opacity-60">({GRID_COLS}×{GRID_ROWS})</span>
         </span>
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">

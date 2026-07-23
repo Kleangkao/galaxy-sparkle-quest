@@ -121,7 +121,7 @@ export const SHIP_UPGRADES: ShipUpgrade[] = [
   { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Permanent safety system for Story and Swarm.", effect: "Keep 60% of failed Story rewards and start Swarm with +10 hull.", cost: 8, requiredLevel: 1 },
   { id: "booster", name: "Turbo Booster", emoji: "⚡", description: "Permanent route-time upgrade.", effect: "+5 seconds in Story, Swarm, and Arcade.", cost: 25, requiredLevel: 2 },
   { id: "scanner", name: "Crystal Scanner", emoji: "📡", description: "Permanent reward scanner for every mode.", effect: "+15% crystals from every activity.", cost: 40, requiredLevel: 3 },
-  { id: "garden", name: "Pet Garden", emoji: "🌿", description: "Permanent passive habitat support.", effect: "+15% alien pet discovery chance.", cost: 50, requiredLevel: 4 },
+  { id: "garden", name: "Xenobiology Habitat", emoji: "🌿", description: "Permanent companion habitat support.", effect: "+15% alien companion discovery chance.", cost: 50, requiredLevel: 4 },
   { id: "wings", name: "Star Wings", emoji: "🦋", description: "Permanent high-rank route tuning.", effect: "+8 seconds in Story, Swarm, and Arcade.", cost: 80, requiredLevel: 6 },
   { id: "crown", name: "Galaxy Crown", emoji: "👑", description: "Permanent reward relic for every mode.", effect: "+20% crystals from every activity.", cost: 120, requiredLevel: 8 },
 ];
@@ -280,6 +280,7 @@ export interface GameState {
     aimHelp: "standard" | "wide";
     contrast: "standard" | "high";
     sound: "full" | "quiet" | "off";
+    screenShake: "full" | "off";
   };
 }
 
@@ -305,6 +306,26 @@ export function getUpgradeTier(state: Pick<GameState, "upgrades" | "upgradeTiers
 
 export function getUpgradeCost(upgrade: ShipUpgrade, currentTier: number) {
   return Math.ceil(upgrade.cost * (1 + currentTier * 0.75));
+}
+
+export function getUpgradeEffectAtTier(id: string, tier: number) {
+  const safeTier = Math.max(1, Math.min(MAX_UPGRADE_TIER, tier));
+  switch (id) {
+    case "shield":
+      return `Keep ${50 + safeTier * 10}% of failed Story rewards · +${safeTier * 10} Swarm hull`;
+    case "booster":
+      return `+${safeTier * 5} seconds in Story, Swarm, and Arcade`;
+    case "scanner":
+      return `+${safeTier * 15}% crystals from every activity`;
+    case "garden":
+      return `+${safeTier * 15}% companion discovery chance`;
+    case "wings":
+      return `+${safeTier * 8} seconds in Story, Swarm, and Arcade`;
+    case "crown":
+      return `+${safeTier * 20}% crystals from every activity`;
+    default:
+      return "Permanent ship-system improvement";
+  }
 }
 
 const LEGACY_STORAGE_KEY = "cosmic-explorer-save";
@@ -496,6 +517,7 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
       aimHelp: source?.accessibility?.aimHelp === "wide" ? "wide" : "standard",
       contrast: source?.accessibility?.contrast === "high" ? "high" : "standard",
       sound: source?.accessibility?.sound === "off" ? "off" : source?.accessibility?.sound === "quiet" ? "quiet" : "full",
+      screenShake: source?.accessibility?.screenShake === "off" ? "off" : "full",
     },
   };
 }
@@ -576,6 +598,20 @@ export function resetGame(faction: FactionId | null = null): GameState {
 export function isPlanetUnlocked(planet: Planet, level: number, faction: FactionId | null) {
   const bonus = faction === "ustur" ? 1 : 0;
   return planet.unlockLevel <= level + bonus;
+}
+
+export function getNextStoryChapterIndex(visitedPlanets: string[]) {
+  return PLANETS.findIndex((planet) => !visitedPlanets.includes(planet.id));
+}
+
+export function isStoryChapterUnlocked(
+  planet: Planet,
+  state: Pick<GameState, "visitedPlanets">,
+) {
+  const planetIndex = PLANETS.findIndex((candidate) => candidate.id === planet.id);
+  if (planetIndex <= 0 || state.visitedPlanets.includes(planet.id)) return true;
+  const nextIndex = getNextStoryChapterIndex(state.visitedPlanets);
+  return nextIndex === -1 || planetIndex === nextIndex;
 }
 
 export function getCrystalBonus(base: number, faction: FactionId | null): number {

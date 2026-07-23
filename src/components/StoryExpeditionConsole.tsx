@@ -18,11 +18,14 @@ import {
   PLANETS,
   Planet,
   countControlled,
+  getCrystalBonus,
+  getGameplayModifiers,
   getPlanetController,
   getPlanetDisplayName,
   getSectorLore,
-  isPlanetUnlocked,
+  isStoryChapterUnlocked,
 } from "@/lib/gameState";
+import { getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 
 interface Props {
   gameState: GameState;
@@ -44,12 +47,12 @@ const BIOME_LABELS: Record<Planet["biome"], string> = {
 };
 
 export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: Props) {
-  const unlocked = PLANETS.filter((planet) => isPlanetUnlocked(planet, gameState.level, gameState.faction));
+  const unlocked = PLANETS.filter((planet) => isStoryChapterUnlocked(planet, gameState));
   const recommended = unlocked.find((planet) => !gameState.visitedPlanets.includes(planet.id)) ?? unlocked.at(-1) ?? PLANETS[0];
   const [selectedId, setSelectedId] = useState(recommended.id);
   const selected = PLANETS.find((planet) => planet.id === selectedId) ?? recommended;
   const selectedIndex = PLANETS.findIndex((planet) => planet.id === selected.id);
-  const selectedUnlocked = isPlanetUnlocked(selected, gameState.level, gameState.faction);
+  const selectedUnlocked = isStoryChapterUnlocked(selected, gameState);
   const selectedVisited = gameState.visitedPlanets.includes(selected.id);
   const lore = getSectorLore(selected.id);
   const influence = gameState.influence[selected.id];
@@ -57,13 +60,20 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
   const controlledCount = gameState.faction ? countControlled(gameState.influence, gameState.faction) : 0;
   const campaignProgress = Math.round((gameState.visitedPlanets.length / PLANETS.length) * 100);
   const totalInfluence = Math.max(1, influence.mud + influence.oni + influence.ustur);
-  const nextUnlock = PLANETS.find((planet) => !isPlanetUnlocked(planet, gameState.level, gameState.faction));
+  const nextUnlock = PLANETS.find((planet) => !isStoryChapterUnlocked(planet, gameState));
+  const modifiers = getGameplayModifiers(gameState);
+  const estimatedCrystals = Math.floor(
+    getCrystalBonus(
+      Math.floor(selected.crystals * getStoryReplayMultiplier(selectedVisited)),
+      gameState.faction,
+    ) * modifiers.crystalMultiplier,
+  );
 
   const status = useMemo(() => {
-    if (!selectedUnlocked) return { label: `Unlocks at level ${selected.unlockLevel}`, tone: "locked" };
+    if (!selectedUnlocked) return { label: `Clear Chapter ${selectedIndex}`, tone: "locked" };
     if (selectedVisited) return { label: "Chapter cleared", tone: "complete" };
     return { label: "Ready to deploy", tone: "ready" };
-  }, [selected.unlockLevel, selectedUnlocked, selectedVisited]);
+  }, [selectedIndex, selectedUnlocked, selectedVisited]);
 
   return (
     <main className="story-console relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
@@ -94,7 +104,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
           <div className="story-chapters__list hide-scrollbar">
             {PLANETS.map((planet, index) => {
-              const chapterUnlocked = isPlanetUnlocked(planet, gameState.level, gameState.faction);
+              const chapterUnlocked = isStoryChapterUnlocked(planet, gameState);
               const visited = gameState.visitedPlanets.includes(planet.id);
               const isSelected = planet.id === selected.id;
               const planetLore = getSectorLore(planet.id);
@@ -107,7 +117,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
                 >
                   <span className="story-chapters__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="story-chapters__node">{visited ? <CheckCircle2 /> : chapterUnlocked ? <span>{planet.emoji}</span> : <LockKeyhole />}</span>
-                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").at(-1)?.trim() : `Level ${planet.unlockLevel}`}</small></span>
+                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").at(-1)?.trim() : `Clear Chapter ${index}`}</small></span>
                   <ArrowRight className="story-chapters__arrow h-4 w-4" />
                 </button>
               );
@@ -115,7 +125,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
           <div className="story-chapters__footer">
             <Sparkles className="h-4 w-4" />
-            <span>{nextUnlock ? `Next chapter opens at level ${nextUnlock.unlockLevel}` : "Every chapter is open"}</span>
+            <span>{nextUnlock ? `Clear the current chapter to open ${getSectorLore(nextUnlock.id).name}` : "Every chapter is open"}</span>
           </div>
         </aside>
 
@@ -141,7 +151,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
 
           <div className="story-dossier__rewards" aria-label="Mission rewards">
-            <div><Gem className="h-4 w-4" /><span>Crystals<strong>{selectedVisited ? Math.floor(selected.crystals / 3) : selected.crystals}</strong></span></div>
+            <div><Gem className="h-4 w-4" /><span>Estimated crystals<strong>{estimatedCrystals}</strong><small>Balanced route · current bonuses</small></span></div>
             <div><Sparkles className="h-4 w-4" /><span>Captain XP<strong>{selectedVisited ? Math.floor(selected.xp / 2) : selected.xp}</strong></span></div>
             <div><PawPrint className="h-4 w-4" /><span>Companion intel<strong>{selected.pet?.name ?? "None"}</strong></span></div>
           </div>
@@ -157,7 +167,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
 
           <button className="story-dossier__launch" disabled={!selectedUnlocked} onClick={() => onLaunch(selected)}>
-            {selectedUnlocked ? <><Compass className="h-4 w-4" /> {selectedVisited ? "Replay survey" : "Choose route and deploy"} <ArrowRight className="h-4 w-4" /></> : <><LockKeyhole className="h-4 w-4" /> Reach level {selected.unlockLevel}</>}
+            {selectedUnlocked ? <><Compass className="h-4 w-4" /> {selectedVisited ? "Replay survey" : "Choose route and deploy"} <ArrowRight className="h-4 w-4" /></> : <><LockKeyhole className="h-4 w-4" /> Clear Chapter {selectedIndex}</>}
           </button>
         </article>
       </section>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Crosshair, Heart, Pause, Play, Sparkles, Zap } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
-import { getPilot, getTool } from "@/lib/loadouts";
+import { getPilot, getTool, getToolModeSummary } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { useCombatInput } from "@/hooks/useCombatInput";
 import { playBossWarningSound, playEnemyBreakSound, playFailSound, playImpactSound, playPerkSound, playPickupSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
@@ -56,11 +56,11 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
   const arena = useRef<ArenaState>(makeArena(startingHullBonus));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...arena.current }));
-  const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1 });
+  const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, overdrive: false });
 
   const reset = useCallback(() => {
     arena.current = makeArena(startingHullBonus);
-    upgrades.current = { damage: 1, speed: 1, fireRate: 1, magnet: 1 };
+    upgrades.current = { damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, overdrive: false };
     completedRef.current = false;
     setFrame({ ...arena.current }); setEnded(false); setWon(false); setUpgradeLevel(null); setPaused(false); setRunning(true);
   }, [startingHullBonus]);
@@ -82,7 +82,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     const radius = 150 + (gameState.accessibility.aimHelp === "wide" ? 25 : 0);
     state.enemies = state.enemies.map((enemy) => distance(enemy, state.player) < radius ? { ...enemy, hp: enemy.hp - 45 } : enemy);
     state.hazards = state.hazards.filter((hazard) => distance(hazard, state.player) >= radius);
-    state.pulseCooldown = 9;
+    state.pulseCooldown = 9 * upgrades.current.pulseCooldown;
     playImpactSound();
   }, [gameState.accessibility.aimHelp, paused, running]);
   const combatInput = useCombatInput(activatePulse);
@@ -127,13 +127,15 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
         if (enemy.kind === "orbiter") { enemy.phase += dt * 1.7; enemy.x += (Math.cos(angle) * 0.45 + Math.cos(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; enemy.y += (Math.sin(angle) * 0.45 + Math.sin(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; }
         else { const dash = enemy.kind === "dasher" && enemy.timer < 0 ? 3.5 : 1; enemy.x += Math.cos(angle) * enemy.speed * dash * dt; enemy.y += Math.sin(angle) * enemy.speed * dash * dt; if (enemy.kind === "dasher" && enemy.timer < -0.35) enemy.timer = 2.3; }
         if (enemy.kind === "boss" && enemy.timer <= 0) {
+          const phaseTwo = enemy.hp <= enemy.maxHp * 0.5;
           state.bossWarning = SWARM_BALANCE.bossTelegraphSeconds;
-          enemy.timer = SWARM_BALANCE.bossAttackCooldown;
+          enemy.timer = SWARM_BALANCE.bossAttackCooldown * (phaseTwo ? 0.78 : 1);
           playBossWarningSound();
           window.setTimeout(() => {
             if (!arena.current.bossSpawned || arena.current.bossDefeated) return;
-            for (let i = 0; i < SWARM_BALANCE.bossProjectileCount; i++) {
-              const a = i / SWARM_BALANCE.bossProjectileCount * Math.PI * 2;
+            const projectileCount = SWARM_BALANCE.bossProjectileCount + (phaseTwo ? 4 : 0);
+            for (let i = 0; i < projectileCount; i++) {
+              const a = i / projectileCount * Math.PI * 2 + (phaseTwo ? Math.PI / projectileCount : 0);
               arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * SWARM_BALANCE.bossProjectileSpeed, vy: Math.sin(a) * SWARM_BALANCE.bossProjectileSpeed, size: 7, life: 4 });
             }
           }, SWARM_BALANCE.bossTelegraphSeconds * 1000 / gameState.accessibility.combatSpeed);
@@ -161,9 +163,15 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     return () => window.clearInterval(timer);
   }, [aimBonus, bossTime, duration, finish, gameState.accessibility.combatSpeed, inputVector, modifiers.combatDamage, modifiers.combatFireRate, paused, puri.combatMagnet, running, upgradeLevel]);
 
-  const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "repair") => {
+  const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "pulse" | "repair") => {
     if (kind === "repair") arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32);
+    else if (kind === "pulse") upgrades.current.pulseCooldown *= 0.82;
     else upgrades.current[kind] *= kind === "damage" ? 1.3 : kind === "fireRate" ? 1.2 : 1.22;
+    if (!upgrades.current.overdrive && upgrades.current.damage > 1 && upgrades.current.fireRate > 1) {
+      upgrades.current.overdrive = true;
+      upgrades.current.damage *= 1.08;
+      upgrades.current.fireRate *= 1.08;
+    }
     setUpgradeLevel(null);
     playPerkSound();
     pulseGamepad(70, 0.3);
@@ -175,7 +183,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
 
   return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
     <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><span>Swarm Protocol · Survival</span><strong>AHR INCURSION</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
-    <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>Mission objective</span><strong>{objectiveText}</strong><small>{tool.name}: {tool.effect}</small>{startingHullBonus > 20 && <small>Total loadout hull +{startingHullBonus}</small>}{aimBonus > 0 && <small>Wide aim active</small>}</div>
+    <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>Mission objective</span><strong>{objectiveText}</strong><small>{tool.name}: {getToolModeSummary(tool, "swarm")}</small>{startingHullBonus > 20 && <small>Total loadout hull +{startingHullBonus}</small>}{aimBonus > 0 && <small>Wide aim active</small>}</div>
     <section className="swarm-purpose"><span><Sparkles className="h-4 w-4" /> Collect energy to pause and choose run perks.</span><span><Zap className="h-4 w-4" /> Every run earns crystals, XP, and PURI bond—even on extraction.</span><button onClick={onOpenHangar}>Permanent upgrades · Crew Hangar</button></section>
     <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>Hull</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>Perk level</span><strong>{frame.level}</strong><small>{nextPerkAt ? `${frame.energy}/${nextPerkAt} to next perk` : "All perks reached"}</small></div><div><Crosshair className="h-4 w-4" /><span>Score</span><strong>{frame.score.toLocaleString()}</strong><small>{frame.enemies.length} contacts</small></div><div><Zap className="h-4 w-4" /><span>Time</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong><small>{bossStatus}</small></div></section>
     <div className="combat-arena-wrap"><div className={`combat-arena ${frame.invulnerable > 0 ? "is-hit" : ""} ${frame.bossWarning > 0 ? "boss-warning" : ""} ${frame.bossIntro > 0 ? "boss-arrival" : ""}`} style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}><div className="combat-grid" />
@@ -185,11 +193,11 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
       {!running && !ended && <div className="combat-overlay"><div className="command-kicker">60-second survival build</div><h1>Swarm Protocol</h1><p>Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.</p><div className="swarm-start-summary"><span><strong>1</strong>Dodge & collect</span><span><strong>2</strong>Choose perks</span><span><strong>3</strong>Defeat Ahr</span></div><small>Guaranteed: crystals + XP + PURI bond · Clear adds a larger bonus</small><button onClick={reset}><Play className="h-4 w-4" /> Begin easier run</button></div>}
-      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">Perk level {upgradeLevel}</div><h2>Choose your build</h2><p>The run is paused. Pick one perk, then the swarm resumes.</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>Power<strong>+30% damage</strong></button><button onClick={() => chooseUpgrade("fireRate")}>Rapid<strong>+20% fire rate</strong></button><button onClick={() => chooseUpgrade("speed")}>Boost<strong>+22% speed</strong></button><button onClick={() => chooseUpgrade("magnet")}>Magnet<strong>+22% pickup range</strong></button><button onClick={() => chooseUpgrade("repair")}>Repair<strong>Restore 32 hull</strong></button></div></div>}
+      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">Perk level {upgradeLevel}</div><h2>Choose your build</h2><p>The run is paused. Combine Power + Rapid once to evolve Overdrive (+8% to both).</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>Power<strong>+30% damage</strong></button><button onClick={() => chooseUpgrade("fireRate")}>Rapid<strong>+20% fire rate</strong></button><button onClick={() => chooseUpgrade("speed")}>Boost<strong>+22% speed</strong></button><button onClick={() => chooseUpgrade("magnet")}>Magnet<strong>+22% pickup range</strong></button><button onClick={() => chooseUpgrade("pulse")}>Pulse Core<strong>-18% pulse cooldown</strong></button><button onClick={() => chooseUpgrade("repair")}>Repair<strong>Restore 32 hull</strong></button></div></div>}
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? "AHR CORE CLEARED" : "RUN BANKED"}</div>}
     </div></div>
     <div className="combat-touch" aria-label="Movement controls"><button {...combatInput.directionHandlers("up")} aria-label="Move up">▲</button><button {...combatInput.directionHandlers("left")} aria-label="Move left">◀</button><button {...combatInput.directionHandlers("down")} aria-label="Move down">▼</button><button {...combatInput.directionHandlers("right")} aria-label="Move right">▶</button></div>
     <footer className="combat-controls"><span>{combatInput.source === "controller" ? "Controller connected · Left stick moves" : combatInput.source === "touch" ? "Touch controls active" : "WASD / arrows · Move"}</span><button onClick={activatePulse} disabled={!running || paused || frame.pulseCooldown > 0}>Space / A · Pulse {frame.pulseCooldown > 0 ? `${Math.ceil(frame.pulseCooldown)}s` : "Ready"}</button><button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? "Resume" : "Pause"}</button></footer>
-    {boss && <div className="boss-banner">AHR · {Math.ceil(boss.hp)} integrity{frame.bossWarning > 0 ? " · ATTACK INCOMING" : ""}</div>}
+    {boss && <div className="boss-banner">AHR · {Math.ceil(boss.hp)} integrity{boss.hp <= boss.maxHp * 0.5 ? " · PHASE 2" : ""}{frame.bossWarning > 0 ? " · ATTACK INCOMING" : ""}</div>}
   </main>;
 }

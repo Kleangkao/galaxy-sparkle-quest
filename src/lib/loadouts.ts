@@ -111,6 +111,14 @@ export function getTool(id: string | null | undefined) {
   return TOOLS.find((tool) => tool.id === id) ?? TOOLS[0];
 }
 
+export function getToolModeSummary(tool: ToolDefinition, mode: "story" | "swarm" | "arcade") {
+  if (mode === "story") return "Weapons do not modify Story exploration";
+  const applies =
+    (mode === "swarm" && Boolean(tool.combatDamage || tool.combatFireRate || tool.combatHullBonus)) ||
+    (mode === "arcade" && Boolean(tool.combatDamage || tool.combatFireRate || tool.arcadeMagazineBonus || tool.arcadeReloadMultiplier));
+  return applies ? tool.effect : `No ${mode === "swarm" ? "Swarm" : "Arcade"} bonus · switch in Crew Hangar`;
+}
+
 export function hasArcadeClear(state: ProgressionSnapshot) {
   return Object.values(state.modeRecords.arcadeContracts).some((record) => record.clears > 0);
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ClipboardCheck, Copy, Gauge, RotateCcw, Settings2, Sparkles, Target, Users, Contrast, Volume2 } from "lucide-react";
+import { ClipboardCheck, Copy, Gauge, RotateCcw, Settings2, Sparkles, Target, Users, Contrast, Volume2, Keyboard, Maximize2 } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getLocalPlaytestReport } from "@/lib/playtestFeedback";
@@ -73,6 +73,28 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
                 options={[{ value: "standard", label: "Standard" }, { value: "high", label: "High" }]}
                 onChange={(contrast) => onChange({ ...settings, contrast: contrast as GameState["accessibility"]["contrast"] })}
               />
+            </SettingRow>
+            <SettingRow label="Screen shake" detail="Turn off impact jolts while keeping other visual feedback.">
+              <SegmentedControl
+                value={settings.screenShake}
+                options={[{ value: "full", label: "On" }, { value: "off", label: "Off" }]}
+                onChange={(screenShake) => onChange({ ...settings, screenShake: screenShake as GameState["accessibility"]["screenShake"] })}
+              />
+            </SettingRow>
+          </SettingsGroup>
+
+          <SettingsGroup icon={Keyboard} title="Desktop controls" description="Quick reference for keyboard, mouse, and display controls.">
+            <SettingRow label="Movement" detail="WASD or arrow keys · hold Shift with a direction to spend a Story dash.">
+              <span className="text-xs font-bold text-cosmic-cyan">WASD</span>
+            </SettingRow>
+            <SettingRow label="Combat" detail="Space activates Swarm pulse · R reloads Arcade · Escape pauses combat.">
+              <span className="text-xs font-bold text-cosmic-cyan">Space · R · Esc</span>
+            </SettingRow>
+            <SettingRow label="Display" detail="Fullscreen can improve aiming and keep important controls visible.">
+              <button className="rounded-lg border border-border/60 px-3 py-2 text-xs font-bold" onClick={() => {
+                if (document.fullscreenElement) void document.exitFullscreen();
+                else void document.documentElement.requestFullscreen();
+              }}><Maximize2 className="mr-1 inline h-3.5 w-3.5" /> Toggle fullscreen</button>
             </SettingRow>
           </SettingsGroup>
 

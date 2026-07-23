@@ -35,9 +35,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const missionBrief = getMissionBrief(planet.id);
   const lore = getSectorLore(planet.id);
   const approaches = {
-    scout: { id: "scout" as const, name: "Safe scout", detail: "+8 seconds · final crystal reward is 10% lower", timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
-    steady: { id: "steady" as const, name: "Balanced route", detail: "Normal timer · normal crystal reward", timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
-    salvage: { id: "salvage" as const, name: "Risky salvage", detail: "-4 seconds · final crystal reward is 25% higher", timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
+    scout: { id: "scout" as const, name: "Scout route", detail: "Reveal hidden salvage · remove half the hazards · start with a dash · -10% reward", timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
+    steady: { id: "steady" as const, name: "Balanced route", detail: "Standard map, pressure, objective, and reward", timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
+    salvage: { id: "salvage" as const, name: "Salvage route", detail: "One extra resource target · extra patrols where present · +25% reward", timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
   };
   const approach = approaches[approachId];
 
@@ -51,6 +51,10 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
     getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * approach.crystalMultiplier
   );
   const totalXP = alreadyVisited ? Math.floor(planet.xp / 2) : planet.xp;
+  const factionBonusLabel = gameState.faction === "mud" ? "MUD salvage +20%" : "No faction crystal bonus";
+  const pilotBonusLabel = pilot.crystalMultiplier ? `${pilot.name} +${Math.round((pilot.crystalMultiplier - 1) * 100)}%` : `${pilot.name} utility`;
+  const otherCrystalMultiplier = modifiers.crystalMultiplier / (pilot.crystalMultiplier ?? 1);
+  const systemBonusLabel = otherCrystalMultiplier > 1.001 ? `systems +${Math.round((otherCrystalMultiplier - 1) * 100)}%` : "no other reward bonus";
   const petToCollect = willFindPet && planet.pet ? planet.pet.name : null;
   const rewardLabel = alreadyVisited ? "Survey rewards" : "First-clear rewards";
   const petStatusLabel = !planet.pet
@@ -103,8 +107,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
                 <div className="mt-1 text-sm font-bold text-white">{totalXP}</div>
               </div>
               <div className="rounded-xl border border-cosmic-cyan/15 bg-cosmic-cyan/5 px-3 py-2">
-                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-cyan">Crystals</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-cyan">Estimated crystals</div>
                 <div className="mt-1 text-sm font-bold text-white">{totalCrystals}</div>
+                <div className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">Base {baseCrystals} · {factionBonusLabel} · {pilotBonusLabel} · {systemBonusLabel} · {approach.name}</div>
               </div>
               <div className="rounded-xl border border-cosmic-green/15 bg-cosmic-green/5 px-3 py-2">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">Pet Intel</div>
@@ -151,8 +156,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             </div>
           )}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
-            <span>⭐ {planet.xp} {t("xp")}</span>
-            <span>💎 {planet.crystals} {t("crystals")}</span>
+            <span>⭐ Final {totalXP} {t("xp")}</span>
+            <span>💎 Estimated {totalCrystals} {t("crystals")}</span>
             {planet.pet && <span>🐾 {planet.pet.emoji} {planet.pet.name}</span>}
           </div>
           <Button onClick={() => setPhase("exploring")}
@@ -185,6 +190,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             shipEmoji={shipEmoji}
             pilotImage={pilot.image}
             shipSkinId={gameState.activeSkin}
+            routeMode={approachId}
           />
         </div>
       )}

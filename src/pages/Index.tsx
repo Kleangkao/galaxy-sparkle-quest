@@ -24,6 +24,7 @@ import { profileRepository } from "@/lib/profileRepository";
 import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
 import { FeedbackMode, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 import type { RunResultData } from "@/components/UnifiedRunResults";
+import type { ConfirmAction } from "@/components/ConfirmActionDialog";
 
 type Screen = AppScreen;
 
@@ -52,6 +53,7 @@ const CaptainProgress = lazy(() => import("@/components/CaptainProgress"));
 const GuidedFlight = lazy(() => import("@/components/GuidedFlight"));
 const PlaytestFeedback = lazy(() => import("@/components/PlaytestFeedback"));
 const UnifiedRunResults = lazy(() => import("@/components/UnifiedRunResults"));
+const ConfirmActionDialog = lazy(() => import("@/components/ConfirmActionDialog"));
 
 function ScreenLoadingFallback({ label }: { label: string }) {
   return (
@@ -82,6 +84,7 @@ export default function Index() {
   const [feedback, setFeedback] = useState<{ open: boolean; mode: FeedbackMode }>({ open: false, mode: "overall" });
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const [runResult, setRunResult] = useState<RunResultData | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
@@ -152,18 +155,23 @@ export default function Index() {
 
   const handleResetProgress = useCallback(() => {
     if (!gameState.faction) return;
-
-    const confirmed = window.confirm(`Reset ${gameState.faction.toUpperCase()} progress and start from the beginning?`);
-    if (!confirmed) return;
-
-    playClickSound();
-    setActivePlanet(null);
-    setCaptureEvent(null);
-    setHatchingEgg(null);
-    setSettingsOpen(false);
-    setScreen("map");
-    setGameState(validateAndRepairState(profileRepository.reset(gameState.faction)));
-    toast("Progress reset. You can start fresh now.", { duration: 2500 });
+    const faction = gameState.faction;
+    setConfirmAction({
+      title: `Reset ${faction.toUpperCase()} progress?`,
+      description: "This clears the current faction’s Captain rank, rewards, chapters, crew systems, and records. Other faction saves stay safe.",
+      confirmLabel: "Reset this faction",
+      tone: "danger",
+      onConfirm: () => {
+        playClickSound();
+        setActivePlanet(null);
+        setCaptureEvent(null);
+        setHatchingEgg(null);
+        setSettingsOpen(false);
+        setScreen("map");
+        setGameState(validateAndRepairState(profileRepository.reset(faction)));
+        toast("Progress reset. You can start fresh now.", { duration: 2500 });
+      },
+    });
   }, [gameState.faction]);
 
   const handleCollect = useCallback(
@@ -336,7 +344,7 @@ export default function Index() {
     else setScreen(mode);
   };
 
-  const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string }) => {
+  const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string; accuracy?: number; grade?: string }) => {
     updateState((prev) => {
       const xp = prev.xp + result.xp;
       const previousContract = result.contractId ? prev.modeRecords.arcadeContracts[result.contractId] ?? { bestScore: 0, clears: 0 } : null;
@@ -357,7 +365,7 @@ export default function Index() {
         },
       };
     });
-    setRunResult({ mode: result.variant, title: result.won ? (result.variant === "swarm" ? "Ahr defeated" : "Contract cleared") : "Rewards secured", outcome: result.won ? "Full clear rewards and mastery were banked." : "Partial rewards were banked; upgrade and return stronger.", crystals: result.crystals, xp: result.xp, score: result.score });
+    setRunResult({ mode: result.variant, title: result.won ? (result.variant === "swarm" ? "Ahr defeated" : `Contract cleared · Grade ${result.grade ?? "B"}`) : "Rewards secured", outcome: result.variant === "arcade" && result.accuracy !== undefined ? `${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; refine the route and return."}` : result.won ? "Full clear rewards and mastery were banked." : "Partial rewards were banked; upgrade and return stronger.", crystals: result.crystals, xp: result.xp, score: result.score, mastery: result.grade ? `Grade ${result.grade}` : undefined });
     trackModeComplete(result.variant);
   };
 
@@ -413,7 +421,7 @@ export default function Index() {
   }
 
   return (
-    <div className={`space-bg min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
+    <div className={`space-bg min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""} ${gameState.accessibility.screenShake === "off" ? "no-screen-shake" : ""}`}>
       <SpaceBackground />
       <HUD
         gameState={gameState}
@@ -592,7 +600,8 @@ export default function Index() {
           onResetProgress={handleResetProgress}
           onReplayOnboarding={() => { setSettingsOpen(false); setGuidedOpen(true); }}
         />
-        <PlaytestFeedback open={feedback.open} mode={feedback.mode} onOpenChange={(open) => setFeedback((current) => ({ ...current, open }))} onSubmitted={() => toast("Thanks! Your local playtest note was saved.")} />
+        <PlaytestFeedback open={feedback.open} mode={feedback.mode} onOpenChange={(open) => setFeedback((current) => ({ ...current, open }))} onSubmitted={() => toast("Thanks! Your anonymous playtest note was saved.")} />
+        <ConfirmActionDialog action={confirmAction} onClose={() => setConfirmAction(null)} />
       </Suspense>
 
       {runResult && (
