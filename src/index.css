@@ -517,6 +517,64 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .planet-card-launch { display: flex; min-height: 2.8rem; align-items: center; justify-content: space-between; gap: .7rem; border-radius: .75rem; padding: .65rem .85rem; background: hsl(var(--cosmic-cyan)); color: hsl(220 35% 8%); font-family: var(--font-display); font-size: .75rem; font-weight: 950; transition: filter .16s ease,transform .16s ease; }
 .planet-card-launch:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
+/* Story board: shared cute-tech visual language with the action and strategy modes. */
+.story-expedition-board { --board-accent: 190 90% 55%; --board-accent-2: 265 88% 68%; background-image: radial-gradient(circle at 50% 8%,hsl(var(--board-accent)/.15),transparent 35%),linear-gradient(160deg,hsl(246 52% 17%),hsl(260 68% 8%)); box-shadow: inset 0 0 0 1px hsl(var(--board-accent)/.12),0 24px 65px hsl(240 80% 2%/.45); }
+.story-expedition-board::before { position:absolute; inset:0; background-image:linear-gradient(hsl(var(--board-accent)/.045) 1px,transparent 1px),linear-gradient(90deg,hsl(var(--board-accent)/.045) 1px,transparent 1px); background-size:12.5% 12.5%; content:""; pointer-events:none; }
+.story-expedition-board--candy-planet,.story-expedition-board--rainbow-nebula { --board-accent: 326 88% 65%; --board-accent-2: 276 90% 70%; }
+.story-expedition-board--frosty-star,.story-expedition-board--crystal-cave { --board-accent: 190 94% 58%; --board-accent-2: 220 92% 68%; }
+.story-expedition-board--jungle-world { --board-accent: 156 78% 48%; --board-accent-2: 188 83% 52%; }
+.story-expedition-board--bubbly-bay { --board-accent: 195 88% 55%; --board-accent-2: 166 76% 48%; }
+.story-expedition-board--cookie-crater,.story-expedition-board--starlight-shore,.story-expedition-board--golden-galaxy { --board-accent: 42 96% 58%; --board-accent-2: 24 92% 60%; }
+.story-grid-cell { isolation:isolate; border:1px solid transparent; color:white; outline:none; }
+.story-grid-cell::before { position:absolute; inset:4px; z-index:-1; border-radius:.55rem; background:hsl(245 40% 9%/.13); content:""; transition:background .15s,border-color .15s,transform .15s; }
+.story-grid-cell.is-reachable::before { border:1px solid hsl(var(--board-accent)/.28); background:hsl(var(--board-accent)/.09); }
+.story-grid-cell.is-reachable:hover::before,.story-grid-cell:focus-visible::before { border-color:hsl(var(--board-accent)/.65); background:hsl(var(--board-accent)/.18); transform:scale(1.04); }
+.story-grid-cell.is-player::before { border:1px solid hsl(var(--board-accent)/.72); background:radial-gradient(circle,hsl(var(--board-accent)/.22),hsl(var(--board-accent)/.07)); box-shadow:0 0 22px hsl(var(--board-accent)/.28); }
+.story-grid-cell.is-wall::before { background:hsl(225 25% 8%/.62); }
+.story-grid-cell.is-hazard::before { border:1px solid hsl(350 90% 64%/.46); background:hsl(350 85% 38%/.13); }
+.story-grid-cell.is-activated::before { border:1px solid hsl(155 80% 54%/.55); background:hsl(155 80% 35%/.14); }
+.story-grid-cell.is-extraction { --ship-accent: var(--board-accent); }
+.story-grid-cell.is-extraction.is-skin-red-rocket { --ship-accent:350 90% 64%; }.story-grid-cell.is-extraction.is-skin-candy-ship { --ship-accent:326 90% 70%; }.story-grid-cell.is-extraction.is-skin-ice-ship { --ship-accent:190 94% 62%; }.story-grid-cell.is-extraction.is-skin-jungle-cruiser { --ship-accent:155 78% 54%; }.story-grid-cell.is-extraction.is-skin-rainbow-ship { --ship-accent:276 90% 72%; }.story-grid-cell.is-extraction.is-skin-golden-starship { --ship-accent:44 96% 62%; }
+.story-grid-cell.is-extraction::before { border:1px dashed hsl(var(--ship-accent)/.48); background:hsl(var(--ship-accent)/.09); }
+.story-grid-cell.is-extraction.is-ready::before { border-style:solid; border-color:hsl(155 80% 54%/.7); background:hsl(155 80% 35%/.16); box-shadow:0 0 20px hsl(155 80% 48%/.22); }
+.story-ground-detail { width:.28rem; height:.28rem; border-radius:999px; background:hsl(var(--board-accent)/.1); box-shadow:.75rem -.55rem 0 hsl(var(--board-accent-2)/.055),-.65rem .55rem 0 hsl(var(--board-accent)/.045); }
+.story-ground-detail.has-decoration { width:.38rem; height:.38rem; border:1px solid hsl(var(--board-accent-2)/.12); background:transparent; }
+.story-terrain-marker--wall { display:grid; width:70%; height:54%; grid-template-columns:repeat(3,1fr); gap:2px; opacity:.72; }
+.story-terrain-marker--wall span { border:1px solid hsl(var(--board-accent)/.12); border-radius:.18rem; background:linear-gradient(145deg,hsl(230 12% 32%),hsl(230 18% 15%)); box-shadow:inset 0 1px hsl(0 0% 100%/.08); }
+.story-item-marker,.story-objective-marker,.story-extraction-marker,.story-player-marker,.story-enemy-marker { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.08rem; }
+.story-item-marker { position:relative; width:clamp(1.75rem,5.2vw,3rem); height:clamp(1.75rem,5.2vw,3rem); border:1px solid hsl(var(--marker)/.62); border-radius:38%; background:linear-gradient(145deg,hsl(var(--marker)/.24),hsl(240 30% 8%/.9)); color:hsl(var(--marker)); box-shadow:0 6px 16px hsl(240 70% 2%/.35),0 0 17px hsl(var(--marker)/.2); }
+.story-item-marker::after { position:absolute; inset:3px; border:1px solid hsl(0 0% 100%/.07); border-radius:34%; content:""; }
+.story-item-marker svg { width:46%; height:46%; stroke-width:2.4; }
+.story-item-marker small,.story-objective-marker small,.story-extraction-marker small,.story-player-marker small,.story-enemy-marker small { font-size:clamp(.32rem,.8vw,.48rem); font-weight:950; letter-spacing:.08em; line-height:1; }
+.story-item-marker--crystal { --marker:190 96% 62%; }
+.story-item-marker--chest { --marker:39 96% 61%; }
+.story-item-marker--pet { --marker:326 90% 70%; }
+.story-item-marker--robot { --marker:155 78% 55%; }
+.story-item-marker--star { --marker:52 96% 62%; }
+.story-item-marker--relic { --marker:270 88% 72%; }
+.story-item-marker--hidden { --marker:220 15% 66%; }
+.story-item-marker.is-concealed { opacity:.52; filter:saturate(.45); }
+.story-objective-marker { width:clamp(1.7rem,5vw,2.8rem); height:clamp(1.7rem,5vw,2.8rem); border:1px solid currentColor; border-radius:999px; background:hsl(240 30% 7%/.76); box-shadow:0 0 18px currentColor; }
+.story-objective-marker svg { width:45%; height:45%; }
+.story-objective-marker.is-danger { color:hsl(350 90% 65%); }
+.story-objective-marker.is-node { color:hsl(190 94% 60%); }
+.story-objective-marker.is-node.is-complete { color:hsl(155 78% 55%); }
+.story-objective-marker.is-delivery { color:hsl(40 94% 62%); border-radius:32%; }
+.story-objective-marker.is-portal { color:hsl(276 92% 72%); }
+.story-extraction-marker { width:clamp(2rem,5.7vw,3.3rem); height:clamp(2rem,5.7vw,3.3rem); border:1px solid hsl(var(--ship-accent)/.65); border-radius:42% 42% 48% 48%; background:linear-gradient(145deg,hsl(var(--ship-accent)/.25),hsl(240 30% 7%/.94)); color:hsl(var(--ship-accent)); box-shadow:0 0 22px hsl(var(--ship-accent)/.28); }
+.story-extraction-marker svg { width:47%; height:47%; transform:rotate(-42deg); }
+.story-player-marker>span { display:grid; width:clamp(2.1rem,6vw,3.5rem); height:clamp(2.1rem,6vw,3.5rem); place-items:center; overflow:hidden; border:2px solid hsl(var(--board-accent)); border-radius:42%; background:hsl(240 30% 7%/.94); box-shadow:0 0 0 3px hsl(var(--board-accent)/.12),0 0 24px hsl(var(--board-accent)/.38); }
+.story-player-marker img { width:100%; height:100%; object-fit:cover; object-position:top; }
+.story-player-marker svg { width:55%; color:hsl(var(--board-accent)); }
+.story-player-marker small { margin-top:.15rem; border-radius:999px; background:hsl(var(--board-accent)); padding:.14rem .28rem; color:hsl(240 40% 7%); }
+.story-enemy-marker { width:clamp(1.8rem,5.4vw,3rem); height:clamp(1.8rem,5.4vw,3rem); border:1px solid hsl(350 88% 63%/.7); border-radius:42%; background:hsl(350 65% 22%/.72); color:hsl(350 92% 72%); box-shadow:0 0 18px hsl(350 80% 52%/.3); }
+.story-enemy-marker svg { width:46%; height:46%; }
+.story-collect-burst { display:grid; width:1.8rem; height:1.8rem; place-items:center; border-radius:999px; background:hsl(var(--cosmic-cyan)/.18); color:hsl(var(--cosmic-cyan)); box-shadow:0 0 18px hsl(var(--cosmic-cyan)/.45); }
+.story-collect-burst svg { width:1rem; }
+.story-board-legend { display:inline-flex; align-items:center; gap:.3rem; border:1px solid hsl(var(--border)/.38); border-radius:999px; background:hsl(var(--background)/.2); padding:.28rem .55rem; color:hsl(var(--foreground)/.65); }
+.story-board-legend svg { width:.75rem; height:.75rem; color:hsl(var(--cosmic-cyan)); }
+@media(max-width:640px){.story-grid-cell::before{inset:2px;border-radius:.35rem}.story-item-marker small,.story-objective-marker small,.story-extraction-marker small,.story-player-marker small,.story-enemy-marker small{display:none}.story-player-marker small{display:block}.story-terrain-marker--wall{gap:1px}}
+
 .story-approach { width: 100%; padding: .8rem; border: 1px solid hsl(var(--cosmic-yellow) / .22); border-radius: 1rem; background: hsl(var(--card) / .46); text-align: left; }
 .story-landing { display: grid; width: min(100%,68rem); grid-template-columns: minmax(16rem,.7fr) minmax(30rem,1.3fr); gap: 1rem; align-items: center; }
 .story-landing__hero, .story-landing__mission { display: flex; flex-direction: column; align-items: center; gap: .75rem; text-align: center; }

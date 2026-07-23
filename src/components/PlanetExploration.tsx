@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bot, Boxes, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Clock3, Gem, Landmark, Map, Navigation, Orbit, Package, PawPrint, Rocket, Skull, Sparkles as SparklesIcon, Star, Zap } from "lucide-react";
 import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound, playImpactSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
@@ -365,6 +365,19 @@ interface Props {
   shipEmoji?: string;
   startingHpBonus?: number;
   startDashReady?: boolean;
+  pilotImage?: string;
+  shipSkinId?: string;
+}
+
+function StoryItemMarker({ item }: { item: ExplorationItem }) {
+  const Icon = item.type === "crystal" ? Gem
+    : item.type === "chest" ? Boxes
+      : item.type === "pet" ? PawPrint
+        : item.type === "robot" ? Bot
+          : item.type === "star" ? Star
+            : item.type === "relic" ? Landmark
+              : CircleHelp;
+  return <span className={`story-item-marker story-item-marker--${item.type}`}><Icon aria-hidden="true" /><small>{item.type === "robot" ? "HELP" : item.type === "pet" ? "ALLY" : item.type === "hidden" ? "SCAN" : `+${item.value}`}</small></span>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -471,6 +484,8 @@ export default function PlanetExploration({
   shipEmoji = "🚀",
   startingHpBonus = 0,
   startDashReady = false,
+  pilotImage,
+  shipSkinId = "red-rocket",
 }: Props) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(false);
@@ -966,18 +981,18 @@ export default function PlanetExploration({
         )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
-            <span className="text-sm sm:text-lg">💎</span>
+            <Gem className="h-4 w-4 text-cosmic-cyan" />
             <span className="text-xs sm:text-sm font-bold text-foreground">{score}</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
-            <span className="text-sm sm:text-lg">📦</span>
+            <Package className="h-4 w-4 text-cosmic-yellow" />
             <span className={`text-xs sm:text-sm font-bold ${canReturn ? "text-cosmic-green" : "text-foreground"}`}>
               {goalBits || `${collectedCount}/${requiredCollect}`}
             </span>
             {canReturn && <span className="text-xs">✅</span>}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
-            <span className="text-sm sm:text-lg">⏱️</span>
+            <Clock3 className="h-4 w-4 text-cosmic-green" />
             <span className={`text-xs sm:text-sm font-bold tabular-nums ${timerColor}`}>{timeLeft}s</span>
           </div>
         </div>
@@ -1022,17 +1037,20 @@ export default function PlanetExploration({
       {/* Theme label */}
       <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-semibold" style={{ fontFamily: "var(--font-display)" }}>
         <span className="flex items-center gap-1.5">
-          <span>🗺️</span> {theme.name}
+          <Map className="h-3.5 w-3.5" /> {theme.name}
           <span className="text-[8px] sm:text-[10px] opacity-60">({GRID_COLS}×{GRID_ROWS})</span>
         </span>
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">
           One tile per move · WASD / arrows · {dashReady ? "Hold Shift + direction to use your 2-tile dash" : "cross a swirl node to charge a dash"}
         </span>
+        <span className="story-board-legend"><Navigation /> Pilot = you</span>
+        <span className="story-board-legend"><Rocket /> Rocket = extraction</span>
+        <span className="story-board-legend"><Gem /> Glowing badges = collectibles</span>
       </div>
 
       {/* Exploration Grid */}
       <div
-        className={`relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 border-border/40 shadow-2xl bg-gradient-to-b ${theme.bgGradient}`}
+        className={`story-expedition-board story-expedition-board--${planetId} relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 border-border/40 shadow-2xl bg-gradient-to-b ${theme.bgGradient}`}
       >
         {hpHitFlash && (
           <motion.div
@@ -1087,37 +1105,36 @@ export default function PlanetExploration({
                 <button
                   key={`${row}-${col}`}
                   onClick={() => handleCellTap(row, col)}
-                  className={`relative rounded-md sm:rounded-lg flex items-center justify-center transition-all duration-150 select-none
-                    ${canMove && !isPlayer ? "bg-foreground/5 hover:bg-foreground/15 hover:scale-[1.08] cursor-pointer active:scale-95" : "bg-transparent"}
-                    ${isPlayer ? "bg-primary/20 ring-1 sm:ring-2 ring-primary/50 scale-105 z-10" : ""}
-                    ${isShip && !isPlayer && canReturn ? "ring-1 ring-cosmic-green/50 bg-cosmic-green/10" : ""}
-                    ${isWall ? "bg-background/50" : ""}
-                    ${isHazard ? "ring-1 ring-destructive/50 bg-destructive/10" : ""}
-                    ${isActivatedNode ? "ring-1 ring-cosmic-green/60 bg-cosmic-green/15" : ""}
+                  aria-label={isPlayer ? "Your explorer" : isShip ? "Extraction ship" : item ? `${item.type} ${item.value ? `worth ${item.value}` : ""}` : `Grid cell ${row + 1}, ${col + 1}`}
+                  className={`story-grid-cell relative rounded-md sm:rounded-lg flex items-center justify-center transition-all duration-150 select-none
+                    ${canMove && !isPlayer ? "is-reachable cursor-pointer active:scale-95" : ""}
+                    ${isPlayer ? "is-player z-10" : ""}
+                    ${isShip && !isPlayer ? `is-extraction is-skin-${shipSkinId} ${canReturn ? "is-ready" : ""}` : ""}
+                    ${isWall ? "is-wall" : ""}
+                    ${isHazard ? "is-hazard" : ""}
+                    ${isActivatedNode ? "is-activated" : ""}
                   `}
                 >
                   {isWall && !isPlayer && (
-                    <span className="text-xs sm:text-sm opacity-70">🧱</span>
+                    <span className="story-terrain-marker story-terrain-marker--wall"><span /><span /><span /></span>
                   )}
                   {/* Ground/decoration layer */}
                   {!item && !isPlayer && !isShip && !isWall && (
-                    <span className="opacity-10 text-[8px] sm:text-xs pointer-events-none">
-                      {decoration || mapData.ground[row][col]}
-                    </span>
+                    <span className={`story-ground-detail ${decoration ? "has-decoration" : ""}`} aria-hidden="true" />
                   )}
-                  {isHazard && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-70">⚡</span>}
-                  {isSpeedTile && !isPlayer && !isWall && <span className={`absolute text-[10px] sm:text-xs ${isActivatedNode ? "opacity-100" : "opacity-70"}`}>{isActivatedNode ? "⚡" : "🌀"}</span>}
-                  {isDropZone && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-80">📦</span>}
-                  {isTeleport && !isPlayer && !isWall && <span className="absolute text-[10px] sm:text-xs opacity-80">🛸</span>}
+                  {isHazard && !isPlayer && !isWall && <span className="story-objective-marker is-danger"><Zap aria-hidden="true" /><small>HAZARD</small></span>}
+                  {isSpeedTile && !isPlayer && !isWall && <span className={`story-objective-marker is-node ${isActivatedNode ? "is-complete" : ""}`}>{isActivatedNode ? <Zap aria-hidden="true" /> : <Orbit aria-hidden="true" />}<small>{isActivatedNode ? "ONLINE" : "NODE"}</small></span>}
+                  {isDropZone && !isPlayer && !isWall && <span className="story-objective-marker is-delivery"><Package aria-hidden="true" /><small>DROP</small></span>}
+                  {isTeleport && !isPlayer && !isWall && <span className="story-objective-marker is-portal"><Orbit aria-hidden="true" /><small>GATE</small></span>}
 
                   {/* Ship marker (when player is not on it) */}
                   {isShip && !isPlayer && (
                     <motion.span
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="text-sm sm:text-lg md:text-xl"
+                      className="story-extraction-marker"
                     >
-                      {shipEmoji}
+                      <Rocket aria-hidden="true" /><small>{canReturn ? "EXIT" : "SHIP"}</small>
                     </motion.span>
                   )}
 
@@ -1129,9 +1146,9 @@ export default function PlanetExploration({
                         <motion.span
                           animate={{ opacity: [0.3, 0.5, 0.3] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="text-xs sm:text-base opacity-30"
+                          className="story-item-marker story-item-marker--hidden is-concealed"
                         >
-                          {theme.hiddenItemEmoji || "❓"}
+                          <CircleHelp aria-hidden="true" /><small>SCAN</small>
                         </motion.span>
                       ) : (
                         <motion.span
@@ -1146,9 +1163,9 @@ export default function PlanetExploration({
                               ? { duration: 0.7 }
                               : { duration: 1.5 + Math.random(), repeat: Infinity }
                           }
-                          className={`text-sm sm:text-lg md:text-xl drop-shadow-lg ${item.type === "robot" ? "animate-pulse" : ""}`}
+                          className={item.type === "robot" ? "animate-pulse" : ""}
                         >
-                          {item.emoji}
+                          <StoryItemMarker item={item} />
                         </motion.span>
                       )}
                     </>
@@ -1159,9 +1176,9 @@ export default function PlanetExploration({
                     <motion.span
                       animate={{ scale: [1, 1.08, 1] }}
                       transition={{ duration: 0.9, repeat: Infinity }}
-                      className="absolute text-sm sm:text-lg md:text-xl"
+                      className="story-enemy-marker"
                     >
-                      👾
+                      <Skull aria-hidden="true" /><small>THREAT</small>
                     </motion.span>
                   )}
 
@@ -1169,10 +1186,10 @@ export default function PlanetExploration({
                   {isPlayer && (
                     <motion.div
                       layoutId="player"
-                      className="flex flex-col items-center z-10"
+                      className="story-player-marker z-10"
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                     >
-                      <span className="text-lg sm:text-2xl md:text-3xl drop-shadow-lg">{shipEmoji}</span>
+                      <span>{pilotImage ? <img src={pilotImage} alt="" /> : <Navigation aria-hidden="true" />}</span><small>YOU</small>
                     </motion.div>
                   )}
                 </button>
@@ -1196,7 +1213,7 @@ export default function PlanetExploration({
                 top: `${(effect.y / GRID_ROWS) * 100}%`,
               }}
             >
-              <span className={`text-lg sm:text-2xl ${effect.type === "pet" ? "animate-bounce" : ""}`}>{effect.emoji}</span>
+              <span className={`story-collect-burst ${effect.type === "pet" ? "animate-bounce" : ""}`}><SparklesIcon aria-hidden="true" /></span>
               {effect.value > 0 && (
                 <span className="text-[10px] sm:text-xs font-bold text-cosmic-yellow drop-shadow-md">+{effect.value}</span>
               )}

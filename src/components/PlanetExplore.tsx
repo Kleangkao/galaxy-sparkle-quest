@@ -6,6 +6,7 @@ import PlanetExploration from "@/components/PlanetExploration";
 import CelebrationScreen from "@/components/CelebrationScreen";
 import { useI18n } from "@/lib/i18n";
 import { getMissionBrief } from "@/lib/missionBriefs";
+import { getPilot } from "@/lib/loadouts";
 
 interface Props {
   planet: Planet;
@@ -25,6 +26,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
   const alreadyVisited = gameState.visitedPlanets.includes(planet.id);
   const hasPet = planet.pet ? gameState.pets.includes(planet.pet.name) : false;
   const modifiers = getGameplayModifiers(gameState);
+  const pilot = getPilot(gameState.activePilot);
   const shipEmoji = getActiveShipEmoji(gameState);
   const basePetChance = gameState.faction === "oni" ? 0.9 : (alreadyVisited ? (hasPet ? 0.18 : 0.42) : 0.8);
   const petChance = Math.min(0.98, basePetChance + modifiers.petDiscoveryBonus);
@@ -180,6 +182,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
             startingHpBonus={modifiers.storyStartingHpBonus}
             startDashReady={modifiers.storyDashReady}
             shipEmoji={shipEmoji}
+            pilotImage={pilot.image}
+            shipSkinId={gameState.activeSkin}
           />
         </div>
       )}
