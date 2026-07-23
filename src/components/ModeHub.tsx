@@ -96,10 +96,20 @@ export default function ModeHub({ gameState, onChoose }: Props) {
           const Icon = mode.icon;
           return (
             <button key={mode.id} className={`mode-card mode-card--${mode.color} mode-card--${mode.id} ${index === 0 ? "mode-card--feature" : ""}`} onClick={() => onChoose(mode.id)}>
-              <div className="mode-card__art" aria-hidden="true"><img src={mode.image} alt="" /></div>
               <div className="mode-card__shade" />
               <div className="mode-card__topline"><span><Icon className="h-4 w-4" />{mode.label}</span><small>{mode.status}</small></div>
-              <div className="mode-card__copy"><h2>{mode.name}</h2><p>{mode.description}</p><div className="mode-card__facts"><span>Operation: {mode.play}</span><span>Progress: {mode.progress}</span></div><strong>Deploy <ArrowRight className="h-4 w-4" /></strong></div>
+              <div className="mode-card__body">
+                <div className="mode-card__copy">
+                  <h2>{mode.name}</h2>
+                  <p>{mode.description}</p>
+                  <div className="mode-card__facts">
+                    <span><b>Play</b>{mode.play}</span>
+                    <span><b>Earn</b>{mode.progress}</span>
+                  </div>
+                  <strong>Deploy <ArrowRight className="h-4 w-4" /></strong>
+                </div>
+                <div className="mode-card__art" aria-hidden="true"><img src={mode.image} alt="" /></div>
+              </div>
             </button>
           );
         })}
