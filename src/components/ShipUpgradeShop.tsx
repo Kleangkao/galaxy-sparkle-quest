@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import ConfirmActionDialog, { ConfirmAction } from "@/components/ConfirmActionDialog";
+import GaliaHangarSprite from "@/components/GaliaHangarSprite";
 
 interface Props {
   gameState: GameState;
@@ -78,7 +79,10 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 className={`min-h-[48px] p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-center transition-all duration-200
                   ${active ? "border-cosmic-green bg-cosmic-green/10 scale-105" : owned ? "border-border bg-card/60 hover:scale-[1.03] cursor-pointer" : canAfford && levelOk ? "border-border bg-card/40 hover:bg-card/60 cursor-pointer" : "border-border/40 bg-card/20 opacity-50"}
                 `}>
-                <div className="text-xl sm:text-2xl mb-0.5 sm:mb-1">{skin.emoji}</div>
+                <div className="mb-0.5 flex h-10 items-center justify-center sm:mb-1">
+                  <GaliaHangarSprite id={skin.id} className="h-10 w-14" />
+                  {!["red-rocket", "candy-ship", "ice-ship", "jungle-cruiser"].includes(skin.id) && <span className="text-xl sm:text-2xl">{skin.emoji}</span>}
+                </div>
                 <div className="text-[11px] sm:text-xs font-bold text-foreground mt-1">{skin.name}</div>
                 {active && <span className="text-[10px] sm:text-[11px] text-cosmic-green font-bold">{t("equipped")}</span>}
                 {!owned && <span className="text-[10px] sm:text-[11px] text-cosmic-cyan font-bold">💎 {skin.cost}</span>}
@@ -105,7 +109,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
               {installedUpgrades.map((upgrade) => (
                 <div key={upgrade.id} className="rounded-lg border border-cosmic-green/15 bg-background/20 px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{upgrade.emoji}</span>
+                    <GaliaHangarSprite id={upgrade.id} className="h-8 w-8 shrink-0" />
                     <span className="text-xs font-bold text-foreground sm:text-sm">{upgrade.name}</span>
                     <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">Tier {getUpgradeTier(gameState, upgrade.id)}/{MAX_UPGRADE_TIER}</span>
                   </div>
@@ -147,7 +151,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 className={`flex items-center min-h-[48px] gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 text-left transition-all duration-200
                   ${isOwned ? "border-cosmic-green/50 bg-cosmic-green/10" : available ? "border-border bg-card/60 hover:scale-[1.02] cursor-pointer" : "border-border/40 bg-card/20 opacity-50"}
                 `}>
-                <span className="text-xl sm:text-2xl shrink-0">{up.emoji}</span>
+                <GaliaHangarSprite id={up.id} className="h-12 w-12 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="text-xs sm:text-sm font-bold text-foreground block">{up.name}</span>
                   <span className="text-[10px] sm:text-xs text-muted-foreground block line-clamp-2">{getUpgradeEffectAtTier(up.id, 1)}</span>

@@ -3,7 +3,7 @@ import { GameState, PLANETS, getFaction, getRank, getSectorLore, isPlanetUnlocke
 import { getPilot, getTool } from "@/lib/loadouts";
 
 const LEADER_TRANSMISSIONS = {
-  mud: { name: "Commander Charon", image: "/assets/galia-plush-tech/canonical/mud-leader-master-v1.jpg" },
+  mud: { name: "Commander Charon", image: "/assets/galia-current/mud-leader-charon-master-v2.webp" },
   oni: { name: "Pathfinder Vaor", image: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg" },
   ustur: { name: "Elder Opos", image: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg" },
 };

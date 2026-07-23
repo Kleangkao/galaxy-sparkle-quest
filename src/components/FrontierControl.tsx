@@ -22,7 +22,7 @@ interface Props {
 }
 
 const LEADERS = {
-  mud: "/assets/galia-plush-tech/canonical/mud-leader-master-v1.jpg",
+  mud: "/assets/galia-current/mud-leader-charon-master-v2.webp",
   oni: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg",
   ustur: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg",
 };

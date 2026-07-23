@@ -4,6 +4,7 @@ import { Bot, Boxes, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CircleHe
 import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound, playStepSound, playVictorySound, playFailSound, playImpactSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
+import GaliaSprite from "@/components/GaliaSprite";
 
 // ─── Types ───────────────────────────────────────────────────────
 interface ExplorationItem {
@@ -382,7 +383,15 @@ function StoryItemMarker({ item }: { item: ExplorationItem }) {
           : item.type === "star" ? Star
             : item.type === "relic" ? Landmark
               : CircleHelp;
-  return <span className={`story-item-marker story-item-marker--${item.type}`}><Icon aria-hidden="true" /><small>{item.type === "robot" ? "HELP" : item.type === "pet" ? "ALLY" : item.type === "hidden" ? "SCAN" : `+${item.value}`}</small></span>;
+  const sprite = item.type === "crystal"
+    ? item.value >= 3 ? [0, 1] : item.value >= 2 ? [3, 0] : [2, 0]
+    : item.type === "chest" ? [1, 1]
+      : item.type === "hidden" ? [2, 1]
+        : item.type === "robot" ? [3, 1]
+          : item.type === "star" ? [0, 1]
+            : item.type === "relic" ? [3, 3]
+              : null;
+  return <span className={`story-item-marker story-item-marker--${item.type}`}>{sprite ? <GaliaSprite sheet="story" column={sprite[0]} row={sprite[1]} /> : <Icon aria-hidden="true" />}<small>{item.type === "robot" ? "HELP" : item.type === "pet" ? "ALLY" : item.type === "hidden" ? "SCAN" : `+${item.value}`}</small></span>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────

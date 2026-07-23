@@ -25,31 +25,31 @@ const MODES: Array<{
   {
     id: "story", name: "Story Expeditions", label: "Campaign", icon: Map,
     description: "Trace the lost signal across ten connected chapters. Explore, upgrade, and shape the frontier.",
-    image: "/assets/star-atlas/kQLooz/01-vitaly-tyukin-sand-punaab-fire3.webp", color: "cyan", status: "10 chapters",
+    image: "/assets/galia-current/nova-reyes-mud-pilot-v2.webp", color: "cyan", status: "10 chapters",
     play: "Choose route · complete short missions", progress: "XP · crystals · pets · sector control",
   },
   {
     id: "swarm", name: "Swarm Protocol", label: "Survival", icon: Swords,
     description: "A gentler 60-second survival run. Dodge, auto-fire, collect energy, and choose perks before the Ahr boss.",
-    image: "/assets/galia-cute-tech/ahr-boss-v2.png", color: "pink", status: "Run perks",
+    image: "/assets/galia-current/ahr-boss-master-v3.webp", color: "pink", status: "Run perks",
     play: "Move · auto-fire · build perks", progress: "Crystals · XP · PURI bond every run",
   },
   {
     id: "arcade", name: "Arcade Ops", label: "Action", icon: Crosshair,
     description: "Real mouse-aim shooting assignments with moving targets, reload timing, decoys, combos, and boss weak points.",
-    image: "/assets/star-atlas/bgenAm/01-joao-lira-cc-ust-m-combat-001.webp", color: "orange", status: "Aim & shoot",
+    image: "/assets/galia-current/arcade-frontier-gunner-v1.webp", color: "orange", status: "Aim & shoot",
     play: "Mouse aim · click fire · R reload", progress: "Contract records · crystals · XP",
   },
   {
     id: "discovery", name: "Discovery Runs", label: "Relax", icon: Binoculars,
     description: "A relaxed hidden-object hunt. Click six pulsing signals, reveal their stories, and complete a field journal.",
-    image: "/assets/galia-cute-tech/verdant-tree-biome-v2.png", color: "green", status: "Hidden objects",
+    image: "/assets/galia-current/discovery-scout-v1.webp", color: "green", status: "Hidden objects",
     play: "Pick biome · find signals · claim journal", progress: "Biome mastery · lore · crystals",
   },
   {
     id: "strategy", name: "Frontier Control", label: "Strategy-lite", icon: Sparkles,
     description: "A four-turn map puzzle. Pick sectors, spend simple actions, and complete one clear objective for a bonus.",
-    image: "/assets/star-atlas/1NvkdG/01-joao-lira-old-leaders1.webp", color: "yellow", status: "4-turn puzzle",
+    image: "/assets/galia-current/mud-leader-charon-master-v2.webp", color: "yellow", status: "4-turn puzzle",
     play: "Pick sector · spend four moves", progress: "Influence · captures · command rewards",
   },
 ];
@@ -95,7 +95,7 @@ export default function ModeHub({ gameState, onChoose }: Props) {
         {MODES.map((mode, index) => {
           const Icon = mode.icon;
           return (
-            <button key={mode.id} className={`mode-card mode-card--${mode.color} ${index === 0 ? "mode-card--feature" : ""}`} onClick={() => onChoose(mode.id)}>
+            <button key={mode.id} className={`mode-card mode-card--${mode.color} mode-card--${mode.id} ${index === 0 ? "mode-card--feature" : ""}`} onClick={() => onChoose(mode.id)}>
               <div className="mode-card__art" aria-hidden="true"><img src={mode.image} alt="" /></div>
               <div className="mode-card__shade" />
               <div className="mode-card__topline"><span><Icon className="h-4 w-4" />{mode.label}</span><small>{mode.status}</small></div>

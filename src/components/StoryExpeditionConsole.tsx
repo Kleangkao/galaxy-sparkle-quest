@@ -78,7 +78,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
   return (
     <main className="story-console relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <header className="story-console__hero">
-        <img src="/assets/star-atlas/kQLooz/01-vitaly-tyukin-sand-punaab-fire3.webp" alt="" />
+        <img src="/assets/galia-current/nova-reyes-mud-pilot-v2.webp" alt="" />
         <div className="story-console__hero-shade" />
         <div className="story-console__hero-copy">
           <button className="story-console__back" onClick={onHome}><ArrowLeft className="h-4 w-4" /> All modes</button>

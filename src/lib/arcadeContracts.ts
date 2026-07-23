@@ -25,7 +25,7 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
     duration: 50,
     bossTime: null,
     spawnMultiplier: 1,
-    image: "/assets/galia-cute-tech/ahr-boss-v2.png",
+    image: "/assets/galia-current/ahr-boss-master-v3.webp",
     accent: "pink",
   },
   {
@@ -38,7 +38,7 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
     duration: 45,
     bossTime: null,
     spawnMultiplier: 1.25,
-    image: "/assets/star-atlas/kN1PYn/03-robin-karlsson-pistol-still-03.webp",
+    image: "/assets/galia-current/arcade-calibration-pistol-v1.webp",
     accent: "cyan",
   },
   {
@@ -51,7 +51,7 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
     duration: 50,
     bossTime: null,
     spawnMultiplier: 1.4,
-    image: "/assets/star-atlas/bgenAm/01-joao-lira-cc-ust-m-combat-001.webp",
+    image: "/assets/galia-current/bastion-7-ustur-guardian-v2.webp",
     accent: "yellow",
   },
 ];

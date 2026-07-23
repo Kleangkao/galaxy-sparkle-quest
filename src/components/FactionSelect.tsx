@@ -4,7 +4,7 @@ import { FACTIONS, FactionId } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
 
 const FACTION_IMAGES: Record<FactionId, string> = {
-  mud: "/assets/galia-plush-tech/canonical/mud-leader-master-v1.jpg",
+  mud: "/assets/galia-current/mud-leader-charon-master-v2.webp",
   oni: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg",
   ustur: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg",
 };
@@ -69,7 +69,7 @@ export default function FactionSelect({ onSelect }: Props) {
               <img
                 src={FACTION_IMAGES[faction.id]}
                 alt={faction.name}
-                className="h-full w-full object-cover object-top"
+                className="h-full w-full object-contain object-center p-1.5"
               />
               <span>{FACTION_LEADERS[faction.id]}</span>
             </div>

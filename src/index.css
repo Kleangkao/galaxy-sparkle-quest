@@ -1139,3 +1139,98 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
     animation: fade-out-up 0.5s ease-out forwards;
   }
 }
+
+/* Current Galia art library: keep masters readable instead of enlarging or cropping faces. */
+.mode-card__art {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 38%, hsl(var(--mode) / .17), transparent 56%),
+    hsl(var(--background) / .72);
+}
+.mode-card__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  padding: .38rem;
+  filter: saturate(.94) brightness(.94);
+}
+.mode-card--arcade .mode-card__art img,
+.mode-card--discovery .mode-card__art img { padding: .18rem; }
+.mode-hub__captain img,
+.discovery-pilot img,
+.strategy-dossier__leader img,
+.command-briefing__signal img,
+.captain-progress__identity img {
+  object-fit: contain;
+  object-position: center;
+  padding: .22rem;
+}
+.pilot-card > img {
+  object-fit: contain;
+  object-position: center bottom;
+  padding: .4rem .4rem 0;
+  background: radial-gradient(circle at 50% 35%, hsl(var(--cosmic-cyan) / .1), transparent 62%);
+  filter: saturate(.92);
+}
+.tool-card__image {
+  background: radial-gradient(circle, hsl(var(--cosmic-cyan) / .1), hsl(var(--background) / .82));
+}
+.tool-card__image img,
+.arcade-contract__art img {
+  object-fit: contain;
+  object-position: center;
+  padding: .38rem;
+}
+.guided-flight__visual img {
+  object-fit: contain;
+  object-position: center bottom;
+  padding: .7rem .7rem 0;
+  opacity: .92;
+}
+.combat-player img,
+.combat-enemy.is-boss img,
+.story-player-marker img,
+.arcade-target.is-boss img {
+  object-fit: contain;
+  object-position: center;
+}
+.galia-hangar-sprite {
+  display: inline-block;
+  background-image: url("/assets/galia-current/ship-upgrade-kit-v1.webp");
+  background-repeat: no-repeat;
+  background-size: 400% 300%;
+  filter: drop-shadow(0 6px 10px hsl(220 80% 2% / .45));
+}
+.galia-game-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  flex: none;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 3px 6px hsl(220 80% 2% / .55));
+}
+.story-item-marker .galia-game-sprite {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+}
+.story-item-marker .galia-game-sprite + small {
+  position: absolute;
+  right: -.22rem;
+  bottom: -.18rem;
+  z-index: 2;
+  border-radius: 999px;
+  background: hsl(var(--background) / .9);
+  padding: .1rem .2rem;
+}
+.story-console__hero > img {
+  inset: 0 0 0 auto;
+  width: 48%;
+  object-fit: contain;
+  object-position: center bottom;
+  padding: .5rem .75rem 0;
+  opacity: .62;
+}
