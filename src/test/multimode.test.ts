@@ -7,6 +7,7 @@ import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMis
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getLocalPlaytestSummary, savePlaytestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
+import { getBossFightWindow, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
 
 describe("multi-mode progression", () => {
   it("keeps first clears valuable while making Story replays worth doing", () => {
@@ -162,5 +163,16 @@ describe("multi-mode progression", () => {
     trackModeComplete("story");
     savePlaytestFeedback("story", 4, "right", "Clear and fun");
     expect(getLocalPlaytestSummary()).toEqual({ starts: { story: 2 }, completions: { story: 1 }, feedbackCount: 1 });
+  });
+});
+
+describe("Swarm boss balance", () => {
+  it("gives starter pilots a meaningful boss fight window", () => {
+    expect(getBossFightWindow()).toBeGreaterThanOrEqual(24);
+    expect(SWARM_BALANCE.bossHp).toBeLessThanOrEqual(320);
+  });
+
+  it("reduces background swarm pressure while Ahr is active", () => {
+    expect(getSwarmSpawnDelay(40, true)).toBeGreaterThan(getSwarmSpawnDelay(40, false));
   });
 });

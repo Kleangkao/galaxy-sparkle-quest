@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Sparkles, Target, Trophy, Zap } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Target, Trophy, Zap } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getArcadeContract } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
@@ -61,11 +61,6 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     : contract.objective === "energy"
       ? `Tag ${contract.target} crystal signals`
       : `Score ${contract.target.toLocaleString()} points`;
-
-  const rewards = useMemo(() => ({
-    crystals: Math.ceil((4 + Math.floor(frame.score / 450) + (won ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier),
-    xp: 4 + Math.floor(frame.score / 500) + (won ? 8 : 0),
-  }), [frame.score, modifiers.crystalMultiplier, puri.rewardMultiplier, won]);
 
   const finish = useCallback((success: boolean) => {
     if (completedRef.current) return;
@@ -278,18 +273,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
             </div>
           )}
           {paused && <div className="arcade-overlay"><h2>Paused</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> Resume</button></div>}
-          {ended && (
-            <div className="arcade-overlay">
-              <Sparkles className="h-8 w-8 text-cosmic-yellow" />
-              <div className="command-kicker">Assignment complete</div>
-              <h2>{won ? "Target secured!" : "Extraction called"}</h2>
-              <p>{frame.score.toLocaleString()} points · best combo x{frame.bestCombo} · +{rewards.crystals} crystals · +{rewards.xp} XP</p>
-              <div className="arcade-overlay__actions">
-                <button onClick={(event) => { event.stopPropagation(); reset(); }}><RotateCcw className="h-4 w-4" /> Play again</button>
-                <button onClick={(event) => { event.stopPropagation(); onBack(); }}>Assignments</button>
-              </div>
-            </div>
-          )}
+          {ended && <div className="combat-run-finished" aria-hidden="true">{won ? "CONTRACT CLEARED" : "RUN BANKED"}</div>}
         </div>
       </div>
 
