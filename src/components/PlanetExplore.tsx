@@ -7,6 +7,7 @@ import CelebrationScreen from "@/components/CelebrationScreen";
 import { useI18n } from "@/lib/i18n";
 import { getMissionBrief } from "@/lib/missionBriefs";
 import { getPilot } from "@/lib/loadouts";
+import { getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 
 interface Props {
   planet: Planet;
@@ -45,7 +46,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack }: 
     setPhase("celebration");
   }, []);
 
-  const baseCrystals = alreadyVisited ? Math.floor(planet.crystals / 3) : planet.crystals;
+  const baseCrystals = Math.floor(planet.crystals * getStoryReplayMultiplier(alreadyVisited));
   const totalCrystals = Math.floor(
     getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * approach.crystalMultiplier
   );

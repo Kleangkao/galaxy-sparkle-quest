@@ -23,6 +23,7 @@ import { getPuriBonuses } from "@/lib/puriBond";
 import { profileRepository } from "@/lib/profileRepository";
 import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
 import { FeedbackMode, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
+import type { RunResultData } from "@/components/UnifiedRunResults";
 
 type Screen = AppScreen;
 
@@ -50,6 +51,7 @@ const SettingsPanel = lazy(() => import("@/components/SettingsPanel"));
 const CaptainProgress = lazy(() => import("@/components/CaptainProgress"));
 const GuidedFlight = lazy(() => import("@/components/GuidedFlight"));
 const PlaytestFeedback = lazy(() => import("@/components/PlaytestFeedback"));
+const UnifiedRunResults = lazy(() => import("@/components/UnifiedRunResults"));
 
 function ScreenLoadingFallback({ label }: { label: string }) {
   return (
@@ -79,6 +81,7 @@ export default function Index() {
   const [guidedOpen, setGuidedOpen] = useState(() => !hasSeenGuidedFlight(gameState.faction));
   const [feedback, setFeedback] = useState<{ open: boolean; mode: FeedbackMode }>({ open: false, mode: "overall" });
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
+  const [runResult, setRunResult] = useState<RunResultData | null>(null);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
@@ -246,6 +249,7 @@ export default function Index() {
           level: newLevel, shipLevel: newShipLevel, influence: newInfluence, eggs: newEggs,
         };
       });
+      setRunResult({ mode: "story", title: activePlanet ? `${activePlanet.name} secured` : "Story expedition complete", outcome: petName ? `${petName} joined your archive and the signal trail advanced.` : "The signal trail advanced and your faction influence increased.", crystals, xp });
       trackModeComplete("story");
     },
     [activePlanet, t, updateState]
@@ -353,27 +357,33 @@ export default function Index() {
         },
       };
     });
+    setRunResult({ mode: result.variant, title: result.won ? (result.variant === "swarm" ? "Ahr defeated" : "Contract cleared") : "Rewards secured", outcome: result.won ? "Full clear rewards and mastery were banked." : "Partial rewards were banked; upgrade and return stronger.", crystals: result.crystals, xp: result.xp, score: result.score });
     trackModeComplete(result.variant);
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
+    const previewReward = Math.ceil(finds * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
     updateState((prev) => {
       const xp = prev.xp + finds;
       const reward = Math.ceil(finds * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       const currentMastery = prev.modeRecords.discoveryMastery[biomeId] || 0;
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
+    setRunResult({ mode: "discovery", title: "Field journal complete", outcome: "Six signals were recorded and this biome's research rank advanced.", crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery` });
     toast("Field journal saved. Discovery rewards added.");
     trackModeComplete("discovery");
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
+    const previewXp = 6 + (objectiveComplete ? 4 : 0);
+    const previewReward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
     updateState((prev) => {
       const xpReward = 6 + (objectiveComplete ? 4 : 0);
       const xp = prev.xp + xpReward;
       const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
+    setRunResult({ mode: "strategy", title: objectiveComplete ? "Command objective complete" : "Command cycle banked", outcome: objectiveComplete ? "Your faction secured the objective bonus and advanced its frontier network." : "Your influence was saved; the objective remains a target for the next cycle.", crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle" });
     toast("Command cycle saved to the frontier.");
     trackModeComplete("strategy");
   };
@@ -584,6 +594,12 @@ export default function Index() {
         />
         <PlaytestFeedback open={feedback.open} mode={feedback.mode} onOpenChange={(open) => setFeedback((current) => ({ ...current, open }))} onSubmitted={() => toast("Thanks! Your local playtest note was saved.")} />
       </Suspense>
+
+      {runResult && (
+        <Suspense fallback={null}>
+          <UnifiedRunResults result={runResult} gameState={gameState} onClose={() => setRunResult(null)} onNext={(mode) => { setRunResult(null); handleChooseMode(mode); }} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
+        </Suspense>
+      )}
 
       {guidedOpen && (
         <Suspense fallback={null}>

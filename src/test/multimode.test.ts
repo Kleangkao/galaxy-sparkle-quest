@@ -6,8 +6,20 @@ import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/di
 import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getLocalPlaytestSummary, savePlaytestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
+import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 
 describe("multi-mode progression", () => {
+  it("keeps first clears valuable while making Story replays worth doing", () => {
+    expect(getStoryReplayMultiplier(false)).toBe(1);
+    expect(getStoryReplayMultiplier(true)).toBe(0.55);
+  });
+
+  it("recommends the next unlocked campaign chapter before optional grinding", () => {
+    const state = createNewGameState("mud");
+    expect(getProgressGoal(state)).toMatchObject({ mode: "story", title: "Continue Story chapter 1" });
+    state.visitedPlanets.push("sparkle-moon"); state.xp = 10; state.level = 2;
+    expect(getProgressGoal(state)).toMatchObject({ mode: "story", title: "Continue Story chapter 2" });
+  });
   it("creates migration-safe loadout and mode records", () => {
     const state = createNewGameState("mud");
     expect(state.activePilot).toBe("nova-reyes");

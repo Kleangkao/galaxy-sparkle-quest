@@ -46,6 +46,8 @@ interface MissionProfile {
   enemyCount?: number;
   nodeGoal?: number;
   bossName?: string;
+  trailSequence?: boolean;
+  patrolVision?: boolean;
 }
 
 interface CollectEffect {
@@ -92,10 +94,11 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
   },
   "candy-planet": {
     name: "Living Signal Hunt",
-    objective: "Track one hidden creature signature through the coral maze.",
+    objective: "Follow the highlighted signal trail in order through the coral maze.",
     duration: 60,
     crystalGoal: 6,
     requireReturn: false,
+    trailSequence: true,
     walls: [
       [1, 2], [1, 3], [1, 4], [1, 5],
       [3, 1], [3, 2], [3, 4], [3, 5],
@@ -118,6 +121,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     requireReturn: false,
     hazards: [[1, 1], [1, 6], [2, 3], [3, 4], [4, 2], [5, 5]],
     enemyCount: 2,
+    patrolVision: true,
   },
   "rainbow-nebula": {
     name: "Prism Warden",
@@ -533,6 +537,17 @@ export default function PlanetExploration({
   const collectedItemCount = useRef(0);
   const requiredCollect = mapData.requiredCollect;
   const walls = useMemo(() => new Set((mission.walls ?? []).map(([r, c]) => coordKey(r, c))), [mission.walls]);
+  const patrolSight = useMemo(() => {
+    if (!mission.patrolVision) return new Set<string>();
+    const seen = new Set<string>();
+    enemies.forEach((enemy) => {
+      ([[-1, 0], [-2, 0], [1, 0], [2, 0], [0, -1], [0, -2], [0, 1], [0, 2]] as Coord[]).forEach(([dr, dc]) => {
+        const row = enemy.row + dr; const col = enemy.col + dc;
+        if (row >= 0 && row < GRID_ROWS && col >= 0 && col < GRID_COLS && !walls.has(coordKey(row, col))) seen.add(coordKey(row, col));
+      });
+    });
+    return seen;
+  }, [enemies, mission.patrolVision, walls]);
   const hazards = useMemo(() => new Set((mission.hazards ?? []).map(([r, c]) => coordKey(r, c))), [mission.hazards]);
   const speedTiles = useMemo(() => new Set((mission.speedTiles ?? []).map(([r, c]) => coordKey(r, c))), [mission.speedTiles]);
   const dropZones = useMemo(() => mission.dropZones ?? [], [mission.dropZones]);
@@ -642,6 +657,14 @@ export default function PlanetExploration({
   }, [t]);
 
   const collectItem = useCallback((item: ExplorationItem, row: number, col: number) => {
+    if (mission.trailSequence && item.type !== "robot" && item.type !== "pet") {
+      const nextTrailItem = items.find((candidate) => !candidate.collected && candidate.type !== "robot" && candidate.type !== "pet");
+      if (nextTrailItem && nextTrailItem.id !== item.id) {
+        setRobotMessage("Signal out of sequence. Follow the highlighted TRACK marker.");
+        setTimeout(() => setRobotMessage(null), 1600);
+        return;
+      }
+    }
     if (item.type === "robot") {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, collected: true } : i));
       activateRobot(row, col);
@@ -683,7 +706,7 @@ export default function PlanetExploration({
     }
     addCollectEffect(item.emoji, item.value, row, col, item.type === "pet" ? "pet" : "sparkle");
     spawnSparkles(row, col);
-  }, [activateRobot, addCollectEffect, spawnSparkles]);
+  }, [activateRobot, addCollectEffect, spawnSparkles, items, mission.trailSequence]);
 
   const crystalCollected = items.filter((i) => i.collected && i.type !== "robot" && i.type !== "pet").length;
   const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
@@ -694,6 +717,7 @@ export default function PlanetExploration({
     petCollected >= (mission.petGoal ?? 0) &&
     deliveryDone >= (mission.deliveryGoal ?? 0) &&
     nodesDone >= (mission.nodeGoal ?? 0);
+  const trailTargetId = mission.trailSequence ? items.find((item) => !item.collected && item.type !== "robot" && item.type !== "pet")?.id : undefined;
 
   const checkShipReturn = useCallback((row: number, col: number) => {
     if (row === shipPos.current.row && col === shipPos.current.col && goalsMet && mission.requireReturn) {
@@ -727,6 +751,10 @@ export default function PlanetExploration({
       if (hazards.has(cellKey)) {
         applyDamage(nextRow, nextCol);
         addCollectEffect("⚡", 0, nextRow, nextCol, "collect");
+      }
+      if (mission.patrolVision && patrolSight.has(cellKey)) {
+        applyDamage(nextRow, nextCol);
+        addCollectEffect("!", 0, nextRow, nextCol, "collect");
       }
       if (speedTiles.has(cellKey)) {
         setDashReady(true);
@@ -769,7 +797,7 @@ export default function PlanetExploration({
     }
     playStepSound();
     checkShipReturn(nextRow, nextCol);
-  }, [landing, gameOver, dashReady, mission.bossName, playerPos.row, playerPos.col, walls, hazards, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
+  }, [landing, gameOver, dashReady, mission.bossName, mission.patrolVision, playerPos.row, playerPos.col, walls, hazards, patrolSight, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
 
   // Keyboard controls
   useEffect(() => {
@@ -1098,6 +1126,7 @@ export default function PlanetExploration({
               const isActivatedNode = activatedNodes.includes(coordKey(row, col));
               const isDropZone = dropZones.some(([r, c]) => r === row && c === col);
               const isTeleport = teleportMap.has(coordKey(row, col));
+              const isPatrolSight = patrolSight.has(coordKey(row, col));
               const canMove = !gameOver && !landing && !isWall && isAdjacent(playerPos.row, playerPos.col, row, col);
               const decoration = mapData.decorations[row][col];
 
@@ -1112,6 +1141,7 @@ export default function PlanetExploration({
                     ${isShip && !isPlayer ? `is-extraction is-skin-${shipSkinId} ${canReturn ? "is-ready" : ""}` : ""}
                     ${isWall ? "is-wall" : ""}
                     ${isHazard ? "is-hazard" : ""}
+                    ${isPatrolSight && !isPlayer ? "is-patrol-sight" : ""}
                     ${isActivatedNode ? "is-activated" : ""}
                   `}
                 >
@@ -1163,7 +1193,7 @@ export default function PlanetExploration({
                               ? { duration: 0.7 }
                               : { duration: 1.5 + Math.random(), repeat: Infinity }
                           }
-                          className={item.type === "robot" ? "animate-pulse" : ""}
+                          className={`${item.type === "robot" ? "animate-pulse" : ""} ${item.id === trailTargetId ? "is-trail-target" : ""}`}
                         >
                           <StoryItemMarker item={item} />
                         </motion.span>
