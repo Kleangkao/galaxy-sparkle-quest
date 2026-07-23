@@ -1,4 +1,4 @@
-// Playful kid-friendly sound effects using Web Audio API
+// Lightweight game audio generated with Web Audio API. No external files are required.
 let audioCtx: AudioContext | null = null;
 let soundMode: "full" | "quiet" | "off" = "full";
 let ambienceTimer: number | null = null;
@@ -84,6 +84,31 @@ export function playLaserSound() {
 export function playImpactSound() {
   playNotes([{ freq: 130, delay: 0, dur: 0.08, type: "square", vol: 0.08 }, { freq: 520, delay: 0.035, dur: 0.07, type: "triangle", vol: 0.05 }]);
   pulseGamepad(42, 0.22);
+}
+
+export function playPickupSound() {
+  playNotes([{ freq: 620, delay: 0, dur: 0.06, type: "triangle", vol: 0.045 }, { freq: 930, delay: 0.045, dur: 0.1, type: "sine", vol: 0.055 }]);
+}
+
+export function playEnemyBreakSound() {
+  playNotes([{ freq: 240, delay: 0, dur: 0.055, type: "square", vol: 0.055 }, { freq: 480, delay: 0.035, dur: 0.09, type: "triangle", vol: 0.045 }]);
+}
+
+export function playBossWarningSound() {
+  playNotes([
+    { freq: 150, delay: 0, dur: 0.12, type: "sawtooth", vol: 0.055 },
+    { freq: 150, delay: 0.22, dur: 0.12, type: "sawtooth", vol: 0.06 },
+    { freq: 110, delay: 0.44, dur: 0.2, type: "square", vol: 0.05 },
+  ]);
+  pulseGamepad(150, 0.38);
+}
+
+export function playPerkSound() {
+  playNotes([
+    { freq: 392, delay: 0, dur: 0.1, type: "triangle", vol: 0.055 },
+    { freq: 523, delay: 0.08, dur: 0.1, type: "triangle", vol: 0.06 },
+    { freq: 784, delay: 0.16, dur: 0.18, type: "sine", vol: 0.065 },
+  ]);
 }
 
 export function playReloadSound() {

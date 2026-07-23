@@ -107,8 +107,22 @@
 .combat-enemy.is-orbiter { display:grid; place-items:center; border:2px solid #70e8ff; background:#10263b; color:#70e8ff; font-size:1.1rem; box-shadow:0 0 18px rgb(112 232 255/.4); }
 .combat-hazard { position:absolute; z-index:3; width:12px; height:12px; translate:-50% -50%; border-radius:50%; background:#ff3f87; box-shadow:0 0 14px #ff3f87; }
 .combat-arena.boss-warning::after { content:"AHR WAVE INCOMING"; position:absolute; inset:1rem auto auto 50%; translate:-50% 0; z-index:12; padding:.35rem .75rem; border-radius:999px; background:rgb(105 8 49/.88); color:#fff; font-size:.7rem; font-weight:900; letter-spacing:.12em; animation:pulse 500ms ease-in-out infinite alternate; }
+.combat-enemy.is-boss.is-casting::before { content:""; position:absolute; inset:-20px; border:3px solid rgb(255 63 135/.88); border-radius:50%; box-shadow:0 0 0 8px rgb(255 63 135/.12),0 0 34px rgb(255 63 135/.7); animation:boss-cast-ring .8s cubic-bezier(.2,.8,.2,1) forwards; pointer-events:none; }
+.combat-enemy.is-boss.is-casting::after { content:"DODGE"; position:absolute; left:50%; bottom:calc(100% + 24px); translate:-50% 0; border-radius:999px; background:#ff3f87; padding:.22rem .45rem; color:#fff; font-size:.55rem; font-weight:950; letter-spacing:.1em; }
+@keyframes boss-cast-ring { from { scale:1.7; opacity:.35; } to { scale:.55; opacity:1; } }
+.arcade-range { isolation:isolate; }
+.arcade-hit-feedback { position:absolute; z-index:18; translate:-50% -50%; border-radius:999px; padding:.18rem .4rem; background:rgb(5 10 24/.88); font-size:.62rem; font-weight:950; letter-spacing:.08em; pointer-events:none; animation:arcade-hit-pop .52s ease-out forwards; }
+.arcade-hit-feedback.is-hit { color:#72eaff; }
+.arcade-hit-feedback.is-bonus { color:#ffe266; }
+.arcade-hit-feedback.is-miss { color:#9ba4b7; }
+.arcade-hit-feedback.is-danger { color:#ff7aa9; }
+@keyframes arcade-hit-pop { 0% { opacity:0; scale:.7; } 22% { opacity:1; scale:1.08; } 100% { opacity:0; translate:-50% calc(-50% - 30px); scale:1; } }
+.arcade-target:active:not(.is-decoy) { filter:brightness(1.7); transform:translate(-50%,-50%) scale(.9); }
+.combat-arena.is-hit { animation:combat-hit-kick .18s ease-out; }
+@keyframes combat-hit-kick { 0%,100% { transform:translateX(0); } 35% { transform:translateX(-4px); } 70% { transform:translateX(3px); } }
 .effects-reduced .combat-grid, .effects-reduced .combat-shot, .effects-reduced .combat-drop, .effects-reduced .combat-hazard { animation:none !important; box-shadow:none !important; }
 .effects-reduced .combat-arena.is-hit { animation:none !important; }
+.effects-reduced .combat-enemy.is-boss.is-casting::before,.effects-reduced .arcade-hit-feedback { animation:none !important; }
 @media (max-width: 800px) { .arcade-contracts__header { grid-template-columns:1fr; } .arcade-contracts__header > button { justify-self:start; } .arcade-contracts__bond { justify-self:start; } .arcade-contract-grid { grid-template-columns:1fr; } .play-assists small { width:100%; margin-left:0; } }
 
 /* Story Expeditions — unified command-console presentation */

@@ -4,11 +4,12 @@ import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getArcadeContract } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
-import { playImpactSound, playLaserSound, playReloadSound, pulseGamepad } from "@/lib/sounds";
+import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
 type ShooterState = { elapsed: number; score: number; combo: number; bestCombo: number; energy: number; ammo: number; reloading: number; targets: ShooterTarget[]; nextId: number; spawnTimer: number; bossDefeated: boolean };
+type ShotFeedback = { id: number; x: number; y: number; text: string; tone: "hit" | "miss" | "bonus" | "danger" };
 
 interface Props {
   gameState: GameState;
@@ -49,6 +50,8 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   const [ended, setEnded] = useState(false);
   const [won, setWon] = useState(false);
   const [aim, setAim] = useState({ x: WIDTH / 2, y: HEIGHT / 2 });
+  const [shotFeedback, setShotFeedback] = useState<ShotFeedback[]>([]);
+  const feedbackId = useRef(0);
   const stateRef = useRef<ShooterState>(makeState(magazine));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...stateRef.current }));
@@ -70,6 +73,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     setRunning(false);
     setEnded(true);
     setWon(success);
+    if (success) playVictorySound(); else playFailSound();
     const current = stateRef.current;
     const crystals = Math.ceil((4 + Math.floor(current.score / 450) + (success ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
     const xp = 4 + Math.floor(current.score / 500) + (success ? 8 : 0);
@@ -87,6 +91,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     setEnded(false);
     setWon(false);
     setPaused(false);
+    setShotFeedback([]);
     setRunning(true);
   }, [contract.objective, magazine]);
 
@@ -105,33 +110,45 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     state.ammo -= 1;
     playLaserSound();
     const target = targetId === undefined ? null : state.targets.find((item) => item.id === targetId) ?? null;
+    const addFeedback = (x: number, y: number, text: string, tone: ShotFeedback["tone"]) => {
+      const id = ++feedbackId.current;
+      setShotFeedback((current) => [...current.slice(-5), { id, x, y, text, tone }]);
+      window.setTimeout(() => setShotFeedback((current) => current.filter((item) => item.id !== id)), 520);
+    };
     if (!target) {
       state.combo = 0;
+      addFeedback(aim.x, aim.y, "MISS", "miss");
     } else if (target.kind === "decoy") {
       state.score = Math.max(0, state.score - 75);
       state.combo = 0;
       state.targets = state.targets.filter((item) => item.id !== target.id);
       pulseGamepad(80, 0.35);
+      addFeedback(target.x, target.y, "-75 DECOY", "danger");
     } else {
       playImpactSound();
       target.hp -= modifiers.combatDamage;
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);
       if (target.kind === "crystal") {
+        playPickupSound();
         state.energy += 1;
         state.score += 90 + Math.min(100, state.combo * 10);
         state.targets = state.targets.filter((item) => item.id !== target.id);
+        addFeedback(target.x, target.y, `SIGNAL +${state.combo}`, "bonus");
       } else if (target.hp <= 0) {
+        playEnemyBreakSound();
         state.score += target.kind === "boss" ? 1800 : 140 + Math.min(160, state.combo * 12);
         if (target.kind === "boss") state.bossDefeated = true;
         state.targets = state.targets.filter((item) => item.id !== target.id);
+        addFeedback(target.x, target.y, target.kind === "boss" ? "CORE BROKEN" : `BREAK x${state.combo}`, "bonus");
       } else {
         state.score += target.kind === "boss" ? 90 : 35;
+        addFeedback(target.x, target.y, target.kind === "boss" ? `CORE ${Math.max(0, Math.ceil(target.hp))}` : `HIT x${state.combo}`, "hit");
       }
     }
     if (state.ammo <= 0) state.reloading = reloadDuration;
     setFrame({ ...state, targets: [...state.targets] });
-  }, [modifiers.combatDamage, paused, reload, reloadDuration, running]);
+  }, [aim.x, aim.y, modifiers.combatDamage, paused, reload, reloadDuration, running]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -248,6 +265,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               {target.kind === "boss" && <i><b style={{ width: `${target.hp / target.maxHp * 100}%` }} /></i>}
             </button>
           ))}
+          {shotFeedback.map((feedback) => <span key={feedback.id} className={`arcade-hit-feedback is-${feedback.tone}`} style={{ left: `${feedback.x / WIDTH * 100}%`, top: `${feedback.y / HEIGHT * 100}%` }}>{feedback.text}</span>)}
           <span className="arcade-reticle" style={{ left: `${aim.x / WIDTH * 100}%`, top: `${aim.y / HEIGHT * 100}%` }}><Crosshair /></span>
 
           {!running && !ended && (

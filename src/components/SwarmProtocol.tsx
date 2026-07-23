@@ -4,7 +4,7 @@ import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { useCombatInput } from "@/hooks/useCombatInput";
-import { playImpactSound, pulseGamepad } from "@/lib/sounds";
+import { playBossWarningSound, playEnemyBreakSound, playFailSound, playImpactSound, playPerkSound, playPickupSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 
 type Point = { x: number; y: number };
 type EnemyKind = "chaser" | "dasher" | "orbiter" | "boss";
@@ -68,6 +68,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     if (completedRef.current) return;
     completedRef.current = true;
     setRunning(false); setEnded(true); setWon(success);
+    if (success) playVictorySound(); else playFailSound();
     const state = arena.current;
     const crystals = Math.ceil(Math.max(3, Math.floor(state.score / 420) + (success ? 10 : 3)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
     const xp = Math.max(3, Math.floor(state.elapsed / 6) + (success ? 12 : 3));
@@ -108,7 +109,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
         state.spawnTimer = spawnRate;
       }
 
-      if (!state.bossSpawned && state.elapsed >= bossTime) { state.bossSpawned = true; state.enemies.push({ id: state.nextId++, x: WIDTH / 2, y: -55, hp: 440, maxHp: 440, speed: 24, size: 42, kind: "boss", timer: 4.5, phase: 0 }); }
+      if (!state.bossSpawned && state.elapsed >= bossTime) { state.bossSpawned = true; state.enemies.push({ id: state.nextId++, x: WIDTH / 2, y: -55, hp: 440, maxHp: 440, speed: 24, size: 42, kind: "boss", timer: 4.5, phase: 0 }); playBossWarningSound(); }
 
       const target = state.enemies.reduce<Enemy | null>((best, enemy) => !best || distance(enemy, state.player) < distance(best, state.player) ? enemy : best, null);
       if (target && state.fireTimer <= 0) { const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x); state.shots.push({ id: state.nextId++, x: state.player.x, y: state.player.y, vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430, damage: 13 * upgrades.current.damage * modifiers.combatDamage }); state.fireTimer = 0.58 / (upgrades.current.fireRate * modifiers.combatFireRate); }
@@ -119,7 +120,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
         enemy.timer -= dt; const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
         if (enemy.kind === "orbiter") { enemy.phase += dt * 1.7; enemy.x += (Math.cos(angle) * 0.45 + Math.cos(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; enemy.y += (Math.sin(angle) * 0.45 + Math.sin(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; }
         else { const dash = enemy.kind === "dasher" && enemy.timer < 0 ? 3.5 : 1; enemy.x += Math.cos(angle) * enemy.speed * dash * dt; enemy.y += Math.sin(angle) * enemy.speed * dash * dt; if (enemy.kind === "dasher" && enemy.timer < -0.35) enemy.timer = 2.3; }
-        if (enemy.kind === "boss" && enemy.timer <= 0) { state.bossWarning = 0.8; enemy.timer = 4.5; window.setTimeout(() => { if (!arena.current.bossSpawned || arena.current.bossDefeated) return; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, size: 7, life: 4 }); } }, 800 / gameState.accessibility.combatSpeed); }
+        if (enemy.kind === "boss" && enemy.timer <= 0) { state.bossWarning = 0.8; enemy.timer = 4.5; playBossWarningSound(); window.setTimeout(() => { if (!arena.current.bossSpawned || arena.current.bossDefeated) return; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * 135, vy: Math.sin(a) * 135, size: 7, life: 4 }); } }, 800 / gameState.accessibility.combatSpeed); }
       });
 
       state.hazards.forEach((hazard) => { hazard.x += hazard.vx * dt; hazard.y += hazard.vy * dt; hazard.life -= dt; });
@@ -127,12 +128,14 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       const hitShots = new Set<number>(); state.enemies.forEach((enemy) => state.shots.forEach((shot) => { if (!hitShots.has(shot.id) && distance(enemy, shot) < enemy.size + 5 + aimBonus) { enemy.hp -= shot.damage; hitShots.add(shot.id); } })); state.shots = state.shots.filter((shot) => !hitShots.has(shot.id));
       const defeated = state.enemies.filter((enemy) => enemy.hp <= 0);
       defeated.forEach((enemy) => { state.score += enemy.kind === "boss" ? 2500 : enemy.kind === "orbiter" ? 130 : enemy.kind === "dasher" ? 110 : 80; if (enemy.kind === "boss") state.bossDefeated = true; const drops = enemy.kind === "boss" ? 10 : 1; for (let i = 0; i < drops; i++) state.drops.push({ id: state.nextId++, x: enemy.x + (Math.random() - 0.5) * 55, y: enemy.y + (Math.random() - 0.5) * 55, value: enemy.kind === "boss" ? 4 : 1 }); });
+      if (defeated.length > 0) playEnemyBreakSound();
       state.enemies = state.enemies.filter((enemy) => enemy.hp > 0);
 
       const enemyHit = state.enemies.some((enemy) => distance(enemy, state.player) < enemy.size + 14); const hazardHit = state.hazards.some((hazard) => distance(hazard, state.player) < hazard.size + 11);
-      if (state.invulnerable <= 0 && (enemyHit || hazardHit)) { state.hp -= hazardHit ? 12 : 9; state.invulnerable = 0.95; }
+      if (state.invulnerable <= 0 && (enemyHit || hazardHit)) { state.hp -= hazardHit ? 12 : 9; state.invulnerable = 0.95; playImpactSound(); }
       const magnetRadius = 55 * upgrades.current.magnet * puri.combatMagnet; state.drops.forEach((drop) => { const d = distance(drop, state.player); if (d < magnetRadius * 2 && d > 1) { drop.x += (state.player.x - drop.x) / d * 180 * dt; drop.y += (state.player.y - drop.y) / d * 180 * dt; } });
       const collected = state.drops.filter((drop) => distance(drop, state.player) < 22); collected.forEach((drop) => { state.energy += drop.value; state.score += drop.value * 15; }); const collectedIds = new Set(collected.map((drop) => drop.id)); state.drops = state.drops.filter((drop) => !collectedIds.has(drop.id));
+      if (collected.length > 0) playPickupSound();
       const thresholds = [0, 5, 13, 24, 38, 56]; const nextLevel = thresholds.reduce((level, threshold, index) => state.energy >= threshold ? index + 1 : level, 1); if (nextLevel > state.level) { state.level = nextLevel; setUpgradeLevel(nextLevel); }
       setFrame({ ...state, enemies: [...state.enemies], shots: [...state.shots], hazards: [...state.hazards], drops: [...state.drops], player: { ...state.player } });
       const success = state.bossDefeated;
@@ -145,6 +148,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
     if (kind === "repair") arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32);
     else upgrades.current[kind] *= kind === "damage" ? 1.3 : kind === "fireRate" ? 1.2 : 1.22;
     setUpgradeLevel(null);
+    playPerkSound();
     pulseGamepad(70, 0.3);
   };
   const boss = frame.enemies.find((enemy) => enemy.kind === "boss");
@@ -162,7 +166,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       {frame.drops.map((drop) => <span key={drop.id} className="combat-drop" style={{ left: `${drop.x / WIDTH * 100}%`, top: `${drop.y / HEIGHT * 100}%` }}>◆</span>)}
       {frame.shots.map((shot) => <span key={shot.id} className="combat-shot" style={{ left: `${shot.x / WIDTH * 100}%`, top: `${shot.y / HEIGHT * 100}%` }} />)}
       {frame.hazards.map((hazard) => <span key={hazard.id} className="combat-hazard" style={{ left: `${hazard.x / WIDTH * 100}%`, top: `${hazard.y / HEIGHT * 100}%` }} />)}
-      {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
+      {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-cute-tech/ahr-boss-v2.png" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
       {!running && !ended && <div className="combat-overlay"><div className="command-kicker">60-second survival build</div><h1>Swarm Protocol</h1><p>Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.</p><div className="swarm-start-summary"><span><strong>1</strong>Dodge & collect</span><span><strong>2</strong>Choose perks</span><span><strong>3</strong>Defeat Ahr</span></div><small>Guaranteed: crystals + XP + PURI bond · Clear adds a larger bonus</small><button onClick={reset}><Play className="h-4 w-4" /> Begin easier run</button></div>}
       {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">Perk level {upgradeLevel}</div><h2>Choose your build</h2><p>The run is paused. Pick one perk, then the swarm resumes.</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>Power<strong>+30% damage</strong></button><button onClick={() => chooseUpgrade("fireRate")}>Rapid<strong>+20% fire rate</strong></button><button onClick={() => chooseUpgrade("speed")}>Boost<strong>+22% speed</strong></button><button onClick={() => chooseUpgrade("magnet")}>Magnet<strong>+22% pickup range</strong></button><button onClick={() => chooseUpgrade("repair")}>Repair<strong>Restore 32 hull</strong></button></div></div>}
