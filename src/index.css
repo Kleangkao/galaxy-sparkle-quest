@@ -749,6 +749,8 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .discovery-run-guide > div { color: hsl(var(--cosmic-green)); }.discovery-run-guide span { display: grid; color: hsl(var(--muted-foreground)); font-size: .58rem; text-transform: uppercase; letter-spacing: .08em; }.discovery-run-guide strong { color: white; font-size: .67rem; text-transform: none; letter-spacing: 0; }.discovery-run-guide button { color: hsl(var(--cosmic-yellow)); font-size: .67rem; font-weight: 900; }.discovery-run-guide button:disabled { opacity: .45; }
 .discovery-point:not(.is-found) { border: 2px solid white; background: hsl(var(--background) / .72); color: white; box-shadow: 0 0 0 6px hsl(var(--cosmic-cyan) / .12),0 0 18px hsl(var(--cosmic-cyan) / .6); animation: pulse 1.2s ease-in-out infinite alternate; }
 .discovery-point.is-rare { border-color:hsl(var(--cosmic-yellow)); background:hsl(var(--cosmic-yellow)/.2); color:hsl(var(--cosmic-yellow)); box-shadow:0 0 22px hsl(var(--cosmic-yellow)/.65); }
+.discovery-point.is-locked-clue,
+.discovery-point.is-locked-clue.is-guided { opacity:.16; border-color:hsl(var(--muted-foreground)/.35); background:hsl(var(--background)/.5); color:hsl(var(--muted-foreground)); box-shadow:none; outline:0; animation:none; cursor:default; }
 
 .strategy-intro { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .strategy-intro__back { align-self: flex-start; display: inline-flex; min-height: 2.7rem; align-items: center; gap: .4rem; padding: .6rem .8rem; border: 1px solid hsl(var(--border)); border-radius: .75rem; background: hsl(var(--card) / .72); font-size: .7rem; font-weight: 900; }

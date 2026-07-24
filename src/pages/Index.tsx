@@ -279,9 +279,17 @@ export default function Index() {
           level: newLevel, shipLevel: newShipLevel, influence: newInfluence, eggs: newEggs,
         };
       });
-      setRunResult({ mode: "story", title: activePlanet ? `${activePlanet.name} secured` : "Story expedition complete", outcome: petName ? `${petName} joined your archive and the signal trail advanced.` : "The signal trail advanced and your faction influence increased.", crystals, xp });
+      setRunResult({
+        mode: "story",
+        title: activePlanet ? tr(`${activePlanet.name} secured`, `ยึดพื้นที่ ${activePlanet.name} สำเร็จ`) : tr("Story expedition complete", "ผ่านภารกิจเนื้อเรื่องแล้ว"),
+        outcome: petName ? tr(`${petName} joined your archive and the signal trail advanced.`, `${petName} เข้าร่วมทีม และเส้นทางสัญญาณคืบหน้าแล้ว`) : tr("The signal trail advanced and your faction influence increased.", "ตามรอยสัญญาณต่อได้แล้ว และฝ่ายของคุณมีอิทธิพลเพิ่มขึ้น"),
+        crystals,
+        xp,
+        improvements: ["Next Story chapter progress advanced", "Faction influence increased", petName ? `${petName} joined your collection` : "PURI bond and Captain XP increased"],
+        improvementsTh: ["เนื้อเรื่องคืบหน้าไปยังบทถัดไป", "คะแนนพื้นที่ของฝ่ายเพิ่มขึ้น", petName ? `${petName} เข้าร่วมคอลเลกชัน` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"],
+      });
     },
-    [activePlanet, t, updateState]
+    [activePlanet, t, tr, updateState]
   );
 
   const handleBuyUpgrade = (id: string, cost: number) => {
@@ -385,7 +393,27 @@ export default function Index() {
         },
       };
     });
-    setRunResult({ mode: result.variant, title: result.won ? (result.variant === "swarm" ? "Ahr defeated" : `Contract cleared · Grade ${result.grade ?? "B"}`) : "Rewards secured", outcome: result.variant === "arcade" && result.accuracy !== undefined ? `${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; refine the route and return."}` : result.won ? "Full clear rewards and mastery were banked." : "Partial rewards were banked; upgrade and return stronger.", crystals: result.crystals, xp: result.xp, score: result.score, mastery: result.grade ? `Grade ${result.grade}` : undefined });
+    const isSwarm = result.variant === "swarm";
+    setRunResult({
+      mode: result.variant,
+      title: result.won
+        ? isSwarm ? tr("Ahr defeated", "กำจัด Ahr สำเร็จ") : tr(`Contract cleared · Grade ${result.grade ?? "B"}`, `ผ่านภารกิจยิงเป้า · ระดับ ${result.grade ?? "B"}`)
+        : tr("Rewards secured", "รับรางวัลแล้ว"),
+      outcome: result.variant === "arcade" && result.accuracy !== undefined
+        ? tr(`${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; try again when ready."}`, `ยิงแม่น ${Math.round(result.accuracy * 100)}% · ${result.won ? "บันทึกสถิติภารกิจแล้ว" : "ได้รับรางวัลบางส่วน พร้อมแล้วค่อยลองใหม่"}`)
+        : result.won ? tr("Full clear rewards and mastery were banked.", "ได้รับรางวัลชนะและความชำนาญครบแล้ว") : tr("Partial rewards were banked. Upgrade or try a different build.", "ได้รับรางวัลบางส่วน ลองอัปเกรดหรือเลือกพลังแบบใหม่ได้"),
+      crystals: result.crystals,
+      xp: result.xp,
+      score: result.score,
+      mastery: result.grade ? `Grade ${result.grade}` : undefined,
+      masteryTh: result.grade ? `ระดับ ${result.grade}` : undefined,
+      improvements: isSwarm
+        ? ["Swarm record and PURI bond increased", result.won ? "Ahr clear counts toward combat mastery" : "Crystals for permanent upgrades increased"]
+        : ["Arcade record and PURI bond increased", result.won ? "This contract clear was saved" : "Accuracy practice and upgrade fund increased"],
+      improvementsTh: isSwarm
+        ? ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "การกำจัด Ahr เพิ่มความชำนาญการต่อสู้" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
+        : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],
+    });
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
@@ -396,7 +424,7 @@ export default function Index() {
       const currentMastery = prev.modeRecords.discoveryMastery[biomeId] || 0;
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
-    setRunResult({ mode: "discovery", title: "Field journal complete", outcome: "Six signals were recorded and this biome's research rank advanced.", crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery` });
+    setRunResult({ mode: "discovery", title: tr("Field journal complete", "บันทึกการสำรวจครบแล้ว"), outcome: tr("Six linked signals were recorded and this biome's research rank advanced.", "เก็บสัญญาณที่เชื่อมโยงกันครบแล้ว และระดับสำรวจพื้นที่นี้เพิ่มขึ้น"), crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery`, masteryTh: `ความชำนาญพื้นที่ +${mastery}`, improvements: ["Biome mastery increased", "Discovery total and PURI bond increased"], improvementsTh: ["ความชำนาญพื้นที่เพิ่มขึ้น", "จำนวนสิ่งที่พบและความสนิทกับ PURI เพิ่มขึ้น"] });
     toast("Field journal saved. Discovery rewards added.");
   };
 
@@ -409,7 +437,7 @@ export default function Index() {
       const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
-    setRunResult({ mode: "strategy", title: objectiveComplete ? "Command objective complete" : "Command cycle banked", outcome: objectiveComplete ? "Your faction secured the objective bonus and advanced its frontier network." : "Your influence was saved; the objective remains a target for the next cycle.", crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle" });
+    setRunResult({ mode: "strategy", title: objectiveComplete ? tr("Command objective complete", "ทำเป้าหมายวางแผนสำเร็จ") : tr("Command cycle banked", "บันทึกรอบวางแผนแล้ว"), outcome: objectiveComplete ? tr("Your faction secured the objective bonus and advanced its frontier network.", "ฝ่ายของคุณได้รับโบนัสเป้าหมาย และเครือข่ายพื้นที่แข็งแกร่งขึ้น") : tr("Your influence was saved. Try the objective again next cycle.", "บันทึกคะแนนพื้นที่แล้ว ลองทำเป้าหมายอีกครั้งในรอบหน้าได้"), crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle", masteryTh: captures ? `ยึดพื้นที่ ${captures} แห่ง` : "รอบวางแผน +1", improvements: [objectiveComplete ? "Control objective progress increased" : "Faction influence was saved", captures ? `${captures} new sector captured` : "PURI bond and Captain XP increased"], improvementsTh: [objectiveComplete ? "ความคืบหน้าเป้าหมายวางแผนเพิ่มขึ้น" : "บันทึกคะแนนพื้นที่ของฝ่ายแล้ว", captures ? `ยึดพื้นที่ใหม่ ${captures} แห่ง` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"] });
     toast("Command cycle saved to the frontier.");
   };
 
