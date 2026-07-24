@@ -453,6 +453,13 @@ export default function Index() {
     setScreen(next);
   };
 
+  const exitRunResults = () => {
+    if (!runResult) return;
+    const completedMode = runResult.mode;
+    setRunResult(null);
+    setScreen(completedMode === "arcade" ? "arcade-select" : "hub");
+  };
+
   if (!gameState.faction) {
     return (
       <div className="relative">
@@ -650,7 +657,7 @@ export default function Index() {
 
       {runResult && (
         <Suspense fallback={null}>
-          <UnifiedRunResults result={runResult} gameState={gameState} onClose={() => setRunResult(null)} onNext={(mode) => { setRunResult(null); handleChooseMode(mode); }} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
+          <UnifiedRunResults result={runResult} gameState={gameState} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
         </Suspense>
       )}
 

@@ -56,3 +56,24 @@ test("public entry and mode hub have no serious accessibility violations", async
   const hub = await new AxeBuilder({ page }).analyze();
   expect(hub.violations.filter((issue) => issue.impact === "critical" || issue.impact === "serious")).toEqual([]);
 });
+
+test("Arcade pointer tracking stays responsive without runtime failures", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  await page.getByRole("button", { name: /MUD/ }).click();
+  await page.getByRole("button", { name: /Continue with MUD/ }).click();
+  await page.getByRole("button", { name: /Skip guided flight/ }).click();
+  await page.getByRole("button", { name: /Arcade Ops/ }).click();
+  await page.getByRole("button", { name: /Start challenge/ }).first().click();
+
+  const range = page.locator(".arcade-range");
+  await expect(range).toBeVisible();
+  const bounds = await range.boundingBox();
+  if (!bounds) throw new Error("Arcade range has no layout box");
+  await page.mouse.move(bounds.x + 40, bounds.y + 40);
+  await page.mouse.move(bounds.x + bounds.width - 40, bounds.y + bounds.height - 40, { steps: 120 });
+
+  await expect(page.locator(".arcade-reticle")).toHaveCSS("will-change", "transform");
+  expect(await page.locator(".arcade-reticle").evaluate((node) => (node as HTMLElement).style.transform)).toContain("translate3d");
+  expect(runtimeErrors).toEqual([]);
+});

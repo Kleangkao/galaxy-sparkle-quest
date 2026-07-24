@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Profiler, useState } from "react";
 import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -17,6 +17,8 @@ import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 import PlanetExplore from "@/components/PlanetExplore";
 import { MISSION_BRIEFS } from "@/lib/missionBriefs";
+import UnifiedRunResults from "@/components/UnifiedRunResults";
+import ArcadeShooter from "@/components/ArcadeShooter";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
 const ONI_SAVE_KEY = "cosmic-explorer-save-v2:oni";
@@ -228,5 +230,47 @@ describe("public test release hardening", () => {
     expect(brief.encounters).toMatch(/enemies|hazards/i);
     expect(brief.completion).toMatch(/every counter/i);
     expect(brief.transmission).toMatch(/ends here/i);
+  });
+
+  it("always exits a completed run to a usable mode menu", () => {
+    const onExit = vi.fn();
+    render(
+      <UnifiedRunResults
+        result={{ mode: "arcade", title: "Contract cleared", outcome: "Saved", crystals: 10, xp: 8 }}
+        gameState={createNewGameState("mud")}
+        onExit={onExit}
+        onCrew={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByText("Stay here")).not.toBeInTheDocument();
+    expect(screen.queryByText("Play next")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Back to assignments" }));
+    expect(onExit).toHaveBeenCalledOnce();
+  });
+
+  it("moves the Arcade reticle without rerendering React on every pointer event", () => {
+    let commits = 0;
+    const { container } = render(
+      <Profiler id="arcade-pointer" onRender={() => { commits += 1; }}>
+        <ArcadeShooter
+          gameState={createNewGameState("mud")}
+          onBack={() => undefined}
+          onComplete={() => undefined}
+        />
+      </Profiler>,
+    );
+    const range = container.querySelector(".arcade-range") as HTMLDivElement;
+    vi.spyOn(range, "getBoundingClientRect").mockReturnValue({
+      x: 10, y: 20, left: 10, top: 20, right: 930, bottom: 540,
+      width: 920, height: 520, toJSON: () => ({}),
+    });
+    const commitsBeforeMovement = commits;
+
+    for (let index = 0; index < 30; index += 1) {
+      fireEvent.pointerMove(range, { clientX: 20 + index * 10, clientY: 40 + index * 5 });
+    }
+
+    expect(commits).toBe(commitsBeforeMovement);
   });
 });

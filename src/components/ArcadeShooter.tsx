@@ -53,7 +53,10 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   const [paused, setPaused] = useState(false);
   const [ended, setEnded] = useState(false);
   const [won, setWon] = useState(false);
-  const [aim, setAim] = useState({ x: WIDTH / 2, y: HEIGHT / 2 });
+  const aimRef = useRef({ x: WIDTH / 2, y: HEIGHT / 2 });
+  const reticleRef = useRef<HTMLSpanElement>(null);
+  const aimFrameRef = useRef<number | null>(null);
+  const pendingReticleRef = useRef({ x: 0, y: 0 });
   const [shotFeedback, setShotFeedback] = useState<ShotFeedback[]>([]);
   const feedbackId = useRef(0);
   const stateRef = useRef<ShooterState>(makeState(magazine));
@@ -118,7 +121,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     };
     if (!target) {
       state.combo = 0;
-      addFeedback(aim.x, aim.y, "MISS", "miss");
+      addFeedback(aimRef.current.x, aimRef.current.y, "MISS", "miss");
     } else if (target.kind === "decoy") {
       state.score = Math.max(0, state.score - 75);
       state.combo = 0;
@@ -151,7 +154,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     }
     if (state.ammo <= 0) state.reloading = reloadDuration;
     setFrame({ ...state, targets: [...state.targets] });
-  }, [aim.x, aim.y, modifiers.combatDamage, paused, reload, reloadDuration, running]);
+  }, [modifiers.combatDamage, paused, reload, reloadDuration, running]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -215,9 +218,32 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     return () => window.clearInterval(timer);
   }, [contract.objective, contract.spawnMultiplier, contract.target, duration, finish, gameState.accessibility.combatSpeed, magazine, paused, running]);
 
+  useEffect(() => () => {
+    if (aimFrameRef.current !== null) cancelAnimationFrame(aimFrameRef.current);
+  }, []);
+
   const updateAim = (event: React.PointerEvent<HTMLDivElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
-    setAim({ x: (event.clientX - bounds.left) / bounds.width * WIDTH, y: (event.clientY - bounds.top) / bounds.height * HEIGHT });
+    const localX = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
+    const localY = Math.max(0, Math.min(bounds.height, event.clientY - bounds.top));
+    aimRef.current = {
+      x: bounds.width > 0 ? localX / bounds.width * WIDTH : WIDTH / 2,
+      y: bounds.height > 0 ? localY / bounds.height * HEIGHT : HEIGHT / 2,
+    };
+    pendingReticleRef.current = { x: localX, y: localY };
+    if (aimFrameRef.current !== null) return;
+    aimFrameRef.current = requestAnimationFrame(() => {
+      aimFrameRef.current = null;
+      const reticle = reticleRef.current;
+      if (!reticle) return;
+      const next = pendingReticleRef.current;
+      reticle.style.transform = `translate3d(${next.x}px, ${next.y}px, 0) translate(-50%, -50%)`;
+    });
+  };
+
+  const fireAtPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    updateAim(event);
+    shootTarget();
   };
 
   const progress = contract.objective === "boss"
@@ -252,7 +278,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
         <div
           className="arcade-range"
           onPointerMove={updateAim}
-          onPointerDown={() => shootTarget()}
+          onPointerDown={fireAtPointer}
           style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}
         >
           <div className="arcade-range__grid" />
@@ -269,7 +295,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
             </button>
           ))}
           {shotFeedback.map((feedback) => <span key={feedback.id} className={`arcade-hit-feedback is-${feedback.tone}`} style={{ left: `${feedback.x / WIDTH * 100}%`, top: `${feedback.y / HEIGHT * 100}%` }}>{feedback.text}</span>)}
-          <span className="arcade-reticle" style={{ left: `${aim.x / WIDTH * 100}%`, top: `${aim.y / HEIGHT * 100}%` }}><Crosshair /></span>
+          <span ref={reticleRef} className="arcade-reticle"><Crosshair /></span>
 
           {!running && !ended && (
             <div className="arcade-overlay">

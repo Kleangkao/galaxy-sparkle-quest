@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.1 — Completion flow and pointer performance
+
+- Removed the dead-end “Stay here” action and unrelated cross-mode recommendation.
+- Completed runs now return to the relevant mode or assignment menu.
+- Moved Arcade pointer tracking off the React render path and onto one composited animation frame.
+- Reduced always-running background animation work across every mode.
+- Added regression coverage for completion navigation and high-frequency pointer movement.
+
 ## 0.9.0 — Public beta readiness
 
 - Completed the EN/TH browser foundation and self-hosted both language fonts.
