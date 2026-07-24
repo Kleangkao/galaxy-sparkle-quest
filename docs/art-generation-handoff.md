@@ -1,68 +1,5 @@
 # Guardians of Galia — Art Generation Handoff
 
-## Revised scope after reviewing `asset/`
-
-One approved master image must be reused everywhere that subject appears. Do **not** generate separate images for faction selection, briefings, Crew, Progress, mode cards, and results when they show the same character. The website will create the required square, portrait, and thumbnail presentations with CSS crops, scale, framing, and backgrounds.
-
-The following requests are **deferred until new references are supplied**:
-
-- Jobs 16–18: biome backgrounds.
-- Jobs 19–23: cinematic mode key art.
-
-Those jobs are not required for the first integration pass. Existing generated character, weapon, ship, target, collectible, and gameplay-kit files in `asset/` should be matched to their logical roles first.
-
-### Single-master reuse map
-
-- Charon master → faction choice, Command Briefing, Frontier Control, promotion screens.
-- Vaor master → faction choice, Command Briefing, Frontier Control, promotion screens.
-- Opos master → faction choice, Command Briefing, Frontier Control, promotion screens.
-- Nova master → Crew, HUD, Story board, results, Progress.
-- K-RAIL master → Crew, HUD, Story board, results, Progress.
-- Bastion-7 master → Crew, HUD, Swarm/Arcade supporting presentation, results.
-- Ahr master → Swarm boss, Arcade boss target, contract card, boss result.
-- PURI master → top bar, bond panel, Arcade bond card, Progress, Story board.
-- Each weapon master → Crew loadout card and any mode briefing that uses that weapon.
-
-No duplicate generation is needed for these placements.
-
-### Received-file matching
-
-Use these files as the current integration candidates:
-
-- `mud-leader-charon-master-v2.png` → Charon master.
-- `nova-reyes-mud-pilot-v2.png` → MUD pilot candidate.
-- `k-rail-ustur-racer-v2.png` → K-RAIL candidate.
-- `bastion-7-ustur-guardian-v2.png` → Bastion-7 candidate.
-- `ahr-boss-master-v3.png` → Ahr candidate.
-- `mud-station-crew-master-v1.png` → MUD station/rescue NPC.
-- `arc-pistol-tool-v2.png` → Arc Pistol.
-- `vector-rifle-tool-v2.png` → Vector Rifle.
-- `aegis-repeater-tool-v2.png` → Aegis Repeater.
-- `arcade-calibration-pistol-v1.png` → Arcade calibration weapon.
-- `story-exploration-kit-v1.png` → Story objects; requires background removal and individual crops.
-- `swarm-combat-kit-v1.png` → Swarm objects; requires background removal and individual crops.
-- `arcade-target-kit-v1.png` → Arcade targets; requires background removal and individual crops.
-- `discovery-collectibles-kit-v1.png` → Discovery finds; requires background removal and individual crops.
-- `ship-upgrade-kit-v1.png` → ships, upgrades, and eggs; already supplied with usable transparency.
-
-Hold these until their identity is decided:
-
-- `another charactor.png` → good standalone character art, but not yet mapped to a named pilot or companion.
-- `ChatGPT Image 23 ก.ค. 2569 21_16_08.png` → armed frontier character, but not yet mapped to a named role.
-
-Ignore this duplicate:
-
-- `ChatGPT Image 23 ก.ค. 2569 21_57_50.png` → earlier checkerboard version of `ship-upgrade-kit-v1.png`; use the named transparent kit instead.
-
-Still missing or awaiting approval:
-
-- Vaor master.
-- Opos master.
-- PURI master.
-- Tigu master.
-- Archive elder, only if needed later.
-- All biome backgrounds, intentionally deferred.
-
 ## Direction locked for every image
 
 Use the attached Star Atlas image as the **identity reference** and the approved images in `asset/` as the **rendering-style reference**.
@@ -395,3 +332,4 @@ The game currently references 17 raster files. The outputs above cover every one
 - Verdant, Ember, and Moonlit backdrops → jobs 16–18.
 - Raw old-leader strategy art → job 23, with job 11 retained for lore.
 - Reused Story, Swarm, Arcade, Discovery, and Control cards → jobs 19–23.
+
