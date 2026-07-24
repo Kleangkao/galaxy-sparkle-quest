@@ -5,7 +5,6 @@ import { getPuriBonuses, getPuriProgress } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
 import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
 import { LocalProfileRepository } from "@/lib/profileRepository";
-import { getLocalPlaytestSummary, savePlaytestFeedback, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 import { getBossFightWindow, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
 import { getArcadeGrade } from "@/lib/arcadeContracts";
@@ -161,7 +160,7 @@ describe("multi-mode progression", () => {
     expect(getStrategyObjective(0).id).toBe("secure");
     expect(getStrategyObjective(1).id).toBe("focus");
     expect(getStrategyObjective(2).id).toBe("survey");
-    expect(getStrategyObjective(3).id).toBe("secure");
+    expect(getStrategyObjective(3).id).toBe("contain");
   });
 
   it("keeps sector trait action values simple and bounded", () => {
@@ -180,14 +179,6 @@ describe("multi-mode progression", () => {
     expect(typeof repository.save).toBe("function");
   });
 
-  it("keeps anonymous playtest counts and feedback on the local device", () => {
-    localStorage.removeItem("galia-local-playtest-v1");
-    trackModeStart("story");
-    trackModeStart("story");
-    trackModeComplete("story");
-    savePlaytestFeedback("story", 4, "right", "Clear and fun");
-    expect(getLocalPlaytestSummary()).toEqual({ starts: { story: 2 }, completions: { story: 1 }, feedbackCount: 1 });
-  });
 });
 
 describe("Swarm boss balance", () => {

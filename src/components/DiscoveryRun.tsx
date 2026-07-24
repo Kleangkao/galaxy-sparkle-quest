@@ -5,6 +5,7 @@ import { getPilot } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { DISCOVERY_BIOMES, DiscoveryBiome, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
 import ConfirmActionDialog, { ConfirmAction } from "@/components/ConfirmActionDialog";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   gameState: GameState;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
+  const { tr } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
   const modifiers = getGameplayModifiers(gameState);
@@ -32,7 +34,7 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const complete = requiredFinds > 0 && found.filter((id) => id < requiredFinds).length === requiredFinds;
   const guidedId = puri.discoveryHint ? points.find((item) => !found.includes(item.id))?.id : undefined;
   const crystalReward = Math.ceil(found.length * puri.rewardMultiplier * modifiers.crystalMultiplier);
-  const masteryGain = complete ? 12 : found.length;
+  const masteryGain = complete ? 20 : found.length;
 
   useEffect(() => () => { if (scanTimer.current !== null) window.clearTimeout(scanTimer.current); }, []);
 
@@ -62,8 +64,8 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
 
   if (!biome) return (
     <main className="discovery-mode discovery-select relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
-      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><div className="command-kicker">Discovery network · Relaxed hidden-object mode</div><h1>Explore, spot signals, fill your journal.</h1><p>There is no timer and no failure. Pick a biome, click six glowing signal markers, then claim the journal rewards.</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} total finds</small></span></div></header>
-      <section className="discovery-how"><span><strong>1</strong><Compass className="h-4 w-4" /> Pick any biome</span><span><strong>2</strong><MousePointerClick className="h-4 w-4" /> Click all 6 pulsing ? markers</span><span><strong>3</strong><Gift className="h-4 w-4" /> Press Claim journal rewards</span></section>
+      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr("Discovery network · Relaxed hidden-object mode", "เครือข่ายสำรวจ · เล่นสบาย ๆ")}</div><h1>{tr("Explore, spot signals, fill your journal.", "ออกสำรวจ หาสัญญาณ และเติมสมุดบันทึก")}</h1><p>{tr("There is no timer and no failure. Pick a biome, click six glowing signal markers, then claim the journal rewards.", "ไม่มีเวลาและไม่มีแพ้ เลือกพื้นที่ กดหาสัญญาณเรืองแสงให้ครบ 6 จุด แล้วรับรางวัล")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} {tr("total finds", "สิ่งที่พบ")}</small></span></div></header>
+      <section className="discovery-how"><span><strong>1</strong><Compass className="h-4 w-4" /> {tr("Pick any biome", "เลือกพื้นที่")}</span><span><strong>2</strong><MousePointerClick className="h-4 w-4" /> {tr("Find all 6 glowing markers", "หาจุดเรืองแสงให้ครบ 6 จุด")}</span><span><strong>3</strong><Gift className="h-4 w-4" /> {tr("Claim journal rewards", "รับรางวัลจากสมุดบันทึก")}</span></section>
       <section className="discovery-run-guide"><div><BookOpen className="h-4 w-4" /><span>Why play Discovery?<strong>Learn Galia lore and earn crystals, XP, biome mastery, and PURI bond—with no timer or failure.</strong></span></div><div><Gift className="h-4 w-4" /><span>Campaign benefit<strong>{gameState.modeRecords.discoveryFinds >= 18 ? "Field Scanner unlocked: +10% Story companion chance" : `${gameState.modeRecords.discoveryFinds}/18 finds toward +10% Story companion chance`}</strong></span></div></section>
       <section className="discovery-biome-grid">
         {DISCOVERY_BIOMES.map((item) => { const mastery = gameState.modeRecords.discoveryMastery[item.id] || 0; return <button key={item.id} className={`discovery-biome discovery-biome--${item.accent}`} onClick={() => chooseBiome(item)}><img src={item.backdrop} alt="" /><i /><div><span>{item.subtitle}</span><h2>{item.name}</h2><p>{item.description}</p><strong><Compass className="h-4 w-4" /> Explore rotation</strong><small>{getMasteryTier(mastery)} · {mastery}/100 mastery</small></div></button>; })}

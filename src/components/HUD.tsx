@@ -4,7 +4,6 @@ import {
   Crosshair,
   Gamepad2,
   Info,
-  MessageCircleHeart,
   Map,
   PawPrint,
   RefreshCw,
@@ -18,6 +17,7 @@ import {
 import { motion } from "framer-motion";
 import { GameState, getRank, getXPProgress, getFaction, canClaimDaily, countControlled, PLANETS } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export type AppScreen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy" | "progress";
 
@@ -28,7 +28,6 @@ interface Props {
   onClaimDaily?: () => void;
   onLogoClick?: () => void;
   onOpenSettings?: () => void;
-  onOpenFeedback?: () => void;
 }
 
 interface DockItem {
@@ -49,8 +48,8 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
 
-export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings, onOpenFeedback }: Props) {
-  const { t } = useI18n();
+export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings }: Props) {
+  const { t, tr } = useI18n();
   const rank = getRank(gameState.level);
   const xpInfo = getXPProgress(gameState.xp, gameState.level);
   const faction = getFaction(gameState.faction);
@@ -74,7 +73,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
             <button className={`faction-switch ${faction.colorClass}`} onClick={onLogoClick} title="Switch faction without deleting progress">
               <RefreshCw className="h-3.5 w-3.5" />
               <span>{faction.name}</span>
-              <small>Switch faction</small>
+              <small>{tr("Switch faction", "เปลี่ยนฝ่าย")}</small>
             </button>
           )}
           {controlled > 0 && <span className="status-chip"><Shield className="h-3.5 w-3.5" /> {controlled}/{PLANETS.length}</span>}
@@ -93,9 +92,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
           <button className="status-icon-button" onClick={onOpenSettings} aria-label="Game settings" title="Game settings">
             <Settings className="h-4 w-4" />
           </button>
-          <button className="status-icon-button" onClick={onOpenFeedback} aria-label="Send playtest feedback" title="Playtest feedback">
-            <MessageCircleHeart className="h-4 w-4" />
-          </button>
+          <LanguageToggle />
         </div>
       </header>
 
@@ -109,12 +106,22 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
 }
 
 function DockButton({ item, activeScreen, onNavigate }: { item: DockItem; activeScreen: AppScreen; onNavigate: (screen: AppScreen) => void }) {
+  const { tr } = useI18n();
   const Icon = item.icon;
   const isActive = item.active(activeScreen);
   return (
     <button className={isActive ? "is-active" : ""} onClick={() => onNavigate(item.screen)} aria-current={isActive ? "page" : undefined}>
       <Icon className="h-4 w-4" />
-      <span>{item.label}</span>
+      <span>{tr(item.label, {
+        Modes: "โหมด",
+        Story: "เนื้อเรื่อง",
+        Swarm: "ฝ่าศัตรู",
+        Arcade: "ยิงเป้า",
+        Discover: "สำรวจ",
+        Control: "วางแผน",
+        Progress: "ความคืบหน้า",
+        Crew: "จัดทีม",
+      }[item.label] ?? item.label)}</span>
     </button>
   );
 }

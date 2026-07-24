@@ -22,7 +22,6 @@ import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { profileRepository } from "@/lib/profileRepository";
 import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
-import { FeedbackMode, trackModeComplete, trackModeStart } from "@/lib/playtestFeedback";
 import type { RunResultData } from "@/components/UnifiedRunResults";
 import type { ConfirmAction } from "@/components/ConfirmActionDialog";
 
@@ -51,7 +50,6 @@ const StoryExpeditionConsole = lazy(() => import("@/components/StoryExpeditionCo
 const SettingsPanel = lazy(() => import("@/components/SettingsPanel"));
 const CaptainProgress = lazy(() => import("@/components/CaptainProgress"));
 const GuidedFlight = lazy(() => import("@/components/GuidedFlight"));
-const PlaytestFeedback = lazy(() => import("@/components/PlaytestFeedback"));
 const UnifiedRunResults = lazy(() => import("@/components/UnifiedRunResults"));
 const ConfirmActionDialog = lazy(() => import("@/components/ConfirmActionDialog"));
 
@@ -73,7 +71,7 @@ const screenTransition = {
 };
 
 export default function Index() {
-  const { t } = useI18n();
+  const { t, tr } = useI18n();
   const [gameState, setGameState] = useState<GameState>(() => validateAndRepairState(profileRepository.load(profileRepository.getActiveFaction())));
   const [activePlanet, setActivePlanet] = useState<Planet | null>(null);
   const [screen, setScreen] = useState<Screen>("hub");
@@ -81,7 +79,6 @@ export default function Index() {
   const [hatchingEgg, setHatchingEgg] = useState<AlienEgg | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [guidedOpen, setGuidedOpen] = useState(() => !hasSeenGuidedFlight(gameState.faction));
-  const [feedback, setFeedback] = useState<{ open: boolean; mode: FeedbackMode }>({ open: false, mode: "overall" });
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const [runResult, setRunResult] = useState<RunResultData | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
@@ -174,6 +171,31 @@ export default function Index() {
     });
   }, [gameState.faction]);
 
+  const handleExportSave = useCallback(() => {
+    if (!gameState.faction) return;
+    const blob = new Blob([JSON.stringify(gameState, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `guardians-of-galia-${gameState.faction}-save.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast(tr("Save downloaded.", "ดาวน์โหลดเซฟแล้ว"));
+  }, [gameState, tr]);
+
+  const handleImportSave = useCallback(async (file: File) => {
+    if (!gameState.faction) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as Partial<GameState>;
+      const repaired = validateAndRepairState({ ...parsed, faction: gameState.faction });
+      profileRepository.save(repaired);
+      setGameState(repaired);
+      toast(tr("Save imported.", "นำเข้าเซฟแล้ว"));
+    } catch {
+      toast.error(tr("This save file could not be opened.", "เปิดไฟล์เซฟนี้ไม่ได้"));
+    }
+  }, [gameState.faction, tr]);
+
   const handleCollect = useCallback(
     (crystals: number, xp: number, petName: string | null) => {
       updateState((prev) => {
@@ -258,7 +280,6 @@ export default function Index() {
         };
       });
       setRunResult({ mode: "story", title: activePlanet ? `${activePlanet.name} secured` : "Story expedition complete", outcome: petName ? `${petName} joined your archive and the signal trail advanced.` : "The signal trail advanced and your faction influence increased.", crystals, xp });
-      trackModeComplete("story");
     },
     [activePlanet, t, updateState]
   );
@@ -338,7 +359,6 @@ export default function Index() {
 
   const handleChooseMode = (mode: PlayMode) => {
     playClickSound();
-    if (mode !== "arcade") trackModeStart(mode);
     if (mode === "story") setScreen("map");
     else if (mode === "arcade") setScreen("arcade-select");
     else setScreen(mode);
@@ -366,7 +386,6 @@ export default function Index() {
       };
     });
     setRunResult({ mode: result.variant, title: result.won ? (result.variant === "swarm" ? "Ahr defeated" : `Contract cleared · Grade ${result.grade ?? "B"}`) : "Rewards secured", outcome: result.variant === "arcade" && result.accuracy !== undefined ? `${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; refine the route and return."}` : result.won ? "Full clear rewards and mastery were banked." : "Partial rewards were banked; upgrade and return stronger.", crystals: result.crystals, xp: result.xp, score: result.score, mastery: result.grade ? `Grade ${result.grade}` : undefined });
-    trackModeComplete(result.variant);
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
@@ -379,7 +398,6 @@ export default function Index() {
     });
     setRunResult({ mode: "discovery", title: "Field journal complete", outcome: "Six signals were recorded and this biome's research rank advanced.", crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery` });
     toast("Field journal saved. Discovery rewards added.");
-    trackModeComplete("discovery");
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
@@ -393,7 +411,6 @@ export default function Index() {
     });
     setRunResult({ mode: "strategy", title: objectiveComplete ? "Command objective complete" : "Command cycle banked", outcome: objectiveComplete ? "Your faction secured the objective bonus and advanced its frontier network." : "Your influence was saved; the objective remains a target for the next cycle.", crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle" });
     toast("Command cycle saved to the frontier.");
-    trackModeComplete("strategy");
   };
 
   const dismissGuidedFlight = () => {
@@ -404,8 +421,6 @@ export default function Index() {
   const navigateFromHud = (next: Screen) => {
     playClickSound();
     setActivePlanet(null);
-    const mode: Partial<Record<Screen, FeedbackMode>> = { map: "story", swarm: "swarm", discovery: "discovery", strategy: "strategy" };
-    if (mode[next]) trackModeStart(mode[next]!);
     setScreen(next);
   };
 
@@ -430,7 +445,6 @@ export default function Index() {
         onClaimDaily={screen === "map" ? handleClaimDaily : undefined}
         onLogoClick={handleReturnToFactionSelect}
         onOpenSettings={() => setSettingsOpen(true)}
-        onOpenFeedback={() => setFeedback({ open: true, mode: "overall" })}
       />
 
       <AnimatePresence mode="wait">
@@ -451,7 +465,7 @@ export default function Index() {
             <StoryExpeditionConsole
               gameState={gameState}
               onHome={() => setScreen("hub")}
-              onLaunch={(planet) => { trackModeStart("story"); playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
+              onLaunch={(planet) => { playTravelSound(); setActivePlanet(planet); setScreen("planet"); }}
             />
           </Suspense>
         </ScreenErrorBoundary>
@@ -521,7 +535,7 @@ export default function Index() {
               <ArcadeContracts
                 gameState={gameState}
                 onBack={() => setScreen("hub")}
-                onStart={(contract: ArcadeContract) => { trackModeStart("arcade"); setActiveArcadeContract(contract.id); setScreen("arcade"); }}
+                onStart={(contract: ArcadeContract) => { setActiveArcadeContract(contract.id); setScreen("arcade"); }}
               />
             </Suspense>
           </ScreenErrorBoundary>
@@ -599,8 +613,9 @@ export default function Index() {
           onSwitchFaction={handleReturnToFactionSelect}
           onResetProgress={handleResetProgress}
           onReplayOnboarding={() => { setSettingsOpen(false); setGuidedOpen(true); }}
+          onExportSave={handleExportSave}
+          onImportSave={handleImportSave}
         />
-        <PlaytestFeedback open={feedback.open} mode={feedback.mode} onOpenChange={(open) => setFeedback((current) => ({ ...current, open }))} onSubmitted={() => toast("Thanks! Your anonymous playtest note was saved.")} />
         <ConfirmActionDialog action={confirmAction} onClose={() => setConfirmAction(null)} />
       </Suspense>
 
@@ -614,7 +629,7 @@ export default function Index() {
         <Suspense fallback={null}>
           <GuidedFlight
             gameState={gameState}
-            onStartStory={() => { dismissGuidedFlight(); trackModeStart("story"); setScreen("map"); }}
+            onStartStory={() => { dismissGuidedFlight(); setScreen("map"); }}
             onOpenCrew={() => { dismissGuidedFlight(); setScreen("shop"); }}
             onDismiss={dismissGuidedFlight}
           />

@@ -188,12 +188,14 @@ interface I18nContextValue {
   lang: Lang;
   setLang: (lang: Lang) => void;
   t: (key: TranslationKey) => string;
+  tr: (en: string, th: string) => string;
 }
 
 const I18nContext = createContext<I18nContextValue>({
   lang: "en",
   setLang: () => {},
   t: (key) => translations[key]?.en || key,
+  tr: (en) => en,
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -223,8 +225,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return translations[key]?.[lang] || translations[key]?.en || key;
   };
 
+  const tr = (en: string, th: string) => lang === "th" ? th : en;
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = "ltr";
+  }, [lang]);
+
   return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
+    <I18nContext.Provider value={{ lang, setLang, t, tr }}>
       {children}
     </I18nContext.Provider>
   );

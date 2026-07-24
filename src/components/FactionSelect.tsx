@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FACTIONS, FactionId } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const FACTION_IMAGES: Record<FactionId, string> = {
   mud: "/assets/galia-current/mud-leader-charon-master-v2.webp",
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export default function FactionSelect({ onSelect }: Props) {
-  const { t } = useI18n();
+  const { t, tr } = useI18n();
   const [selected, setSelected] = useState<FactionId | null>(null);
 
   const handleSelect = (id: FactionId) => setSelected(id);
@@ -40,8 +41,9 @@ export default function FactionSelect({ onSelect }: Props) {
 
   return (
     <div className="space-bg min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 relative overflow-y-auto">
+      <div className="absolute right-4 top-4 z-20"><LanguageToggle /></div>
       <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-slide-up max-w-4xl">
-        <div className="command-kicker mb-3">An original frontier adventure</div>
+        <div className="command-kicker mb-3">{tr("An original frontier adventure", "การผจญภัยครั้งใหม่ในกาเลีย")}</div>
         <h1
           className="mx-auto mb-1 whitespace-nowrap text-[clamp(2rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.04em] text-white sm:mb-2"
           style={{
@@ -52,7 +54,7 @@ export default function FactionSelect({ onSelect }: Props) {
           Guardians of Galia
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
-          Choose who you want to play today. You can switch factions anytime without deleting another faction’s progress.
+          {tr("Choose who you want to play today. You can switch factions anytime without deleting another faction’s progress.", "วันนี้อยากอยู่ฝ่ายไหน? เปลี่ยนฝ่ายได้ตลอด และเซฟของแต่ละฝ่ายจะไม่หาย")}
         </p>
       </div>
 
@@ -78,13 +80,13 @@ export default function FactionSelect({ onSelect }: Props) {
                 {faction.emoji} {faction.name}
               </div>
               <div className="text-xs sm:text-sm font-semibold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                {faction.subtitle}
+                {faction.id === "mud" ? t("mudSubtitle") : faction.id === "oni" ? t("oniSubtitle") : t("usturSubtitle")}
               </div>
               <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed sm:flex-1">
-                {faction.description}
+                {faction.id === "mud" ? t("mudDescription") : faction.id === "oni" ? t("oniDescription") : t("usturDescription")}
               </p>
               <div className={`mt-3 flex min-h-[44px] w-full items-center justify-center rounded-2xl px-3 py-2 text-center text-xs font-bold leading-snug sm:min-h-[56px] sm:px-4 sm:text-sm ${getBonusClassName(faction.id)}`}>
-                {faction.bonusText}
+                {faction.id === "mud" ? t("mudBonus2") : faction.id === "oni" ? t("oniBonus") : t("usturBonus")}
               </div>
             </div>
             {selected === faction.id && (
@@ -110,10 +112,10 @@ export default function FactionSelect({ onSelect }: Props) {
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.1 }}
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
           />
-          <span className="relative z-10">Continue with {selectedFaction.name} →</span>
+          <span className="relative z-10">{tr(`Continue with ${selectedFaction.name} →`, `เล่นฝ่าย ${selectedFaction.name} →`)}</span>
         </motion.button>
       )}
-      <p className="mt-3 max-w-xl text-center text-xs text-muted-foreground">Each faction keeps its own local save, crew, rewards, and campaign progress.</p>
+      <p className="mt-3 max-w-xl text-center text-xs text-muted-foreground">{tr("Each faction keeps its own save, crew, rewards, and Story progress.", "แต่ละฝ่ายมีเซฟ ทีม รางวัล และเนื้อเรื่องแยกกัน")}</p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { getPuriBonuses } from "@/lib/puriBond";
 import { useCombatInput } from "@/hooks/useCombatInput";
 import { playBossWarningSound, playEnemyBreakSound, playFailSound, playImpactSound, playPerkSound, playPickupSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 import { getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
+import { useI18n } from "@/lib/i18n";
 
 type Point = { x: number; y: number };
 type EnemyKind = "chaser" | "dasher" | "orbiter" | "boss";
@@ -39,13 +40,14 @@ const makeArena = (bonusHull = 0): ArenaState => ({
 });
 
 export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onComplete }: Props) {
+  const { tr } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
   const modifiers = getGameplayModifiers(gameState);
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
   const duration = SWARM_BALANCE.duration + modifiers.missionTimeBonus;
   const bossTime = SWARM_BALANCE.bossTime;
-  const objectiveText = "Survive, build perks, then defeat Ahr";
+  const objectiveText = tr("Build perks and defeat Ahr before extraction", "เลือกพลังและกำจัด Ahr ก่อนหมดเวลา");
   const aimBonus = gameState.accessibility.aimHelp === "wide" ? 9 : 0;
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -56,11 +58,11 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
   const arena = useRef<ArenaState>(makeArena(startingHullBonus));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...arena.current }));
-  const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, overdrive: false });
+  const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, repairCount: 0, overdrive: false, phaseDrive: false, guardianCore: false });
 
   const reset = useCallback(() => {
     arena.current = makeArena(startingHullBonus);
-    upgrades.current = { damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, overdrive: false };
+    upgrades.current = { damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, repairCount: 0, overdrive: false, phaseDrive: false, guardianCore: false };
     completedRef.current = false;
     setFrame({ ...arena.current }); setEnded(false); setWon(false); setUpgradeLevel(null); setPaused(false); setRunning(true);
   }, [startingHullBonus]);
@@ -135,9 +137,11 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
             if (!arena.current.bossSpawned || arena.current.bossDefeated) return;
             const projectileCount = SWARM_BALANCE.bossProjectileCount + (phaseTwo ? 4 : 0);
             for (let i = 0; i < projectileCount; i++) {
-              const a = i / projectileCount * Math.PI * 2 + (phaseTwo ? Math.PI / projectileCount : 0);
-              arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * SWARM_BALANCE.bossProjectileSpeed, vy: Math.sin(a) * SWARM_BALANCE.bossProjectileSpeed, size: 7, life: 4 });
+              const alternatingSpiral = phaseTwo && Math.floor(enemy.phase) % 2 ? Math.PI / projectileCount : 0;
+              const a = i / projectileCount * Math.PI * 2 + alternatingSpiral;
+              arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * SWARM_BALANCE.bossProjectileSpeed, vy: Math.sin(a) * SWARM_BALANCE.bossProjectileSpeed, size: phaseTwo ? 8 : 7, life: 4 });
             }
+            enemy.phase += 1;
           }, SWARM_BALANCE.bossTelegraphSeconds * 1000 / gameState.accessibility.combatSpeed);
         }
       });
@@ -164,13 +168,19 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
   }, [aimBonus, bossTime, duration, finish, gameState.accessibility.combatSpeed, inputVector, modifiers.combatDamage, modifiers.combatFireRate, paused, puri.combatMagnet, running, upgradeLevel]);
 
   const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "pulse" | "repair") => {
-    if (kind === "repair") arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32);
+    if (kind === "repair") { arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32); upgrades.current.repairCount += 1; }
     else if (kind === "pulse") upgrades.current.pulseCooldown *= 0.82;
     else upgrades.current[kind] *= kind === "damage" ? 1.3 : kind === "fireRate" ? 1.2 : 1.22;
     if (!upgrades.current.overdrive && upgrades.current.damage > 1 && upgrades.current.fireRate > 1) {
       upgrades.current.overdrive = true;
       upgrades.current.damage *= 1.08;
       upgrades.current.fireRate *= 1.08;
+    }
+    if (!upgrades.current.phaseDrive && upgrades.current.speed > 1 && upgrades.current.magnet > 1) {
+      upgrades.current.phaseDrive = true; upgrades.current.speed *= 1.08; upgrades.current.magnet *= 1.18;
+    }
+    if (!upgrades.current.guardianCore && upgrades.current.pulseCooldown < 1 && upgrades.current.repairCount > 0) {
+      upgrades.current.guardianCore = true; arena.current.maxHp += 12; arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 12);
     }
     setUpgradeLevel(null);
     playPerkSound();
@@ -192,8 +202,8 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       {frame.hazards.map((hazard) => <span key={hazard.id} className="combat-hazard" style={{ left: `${hazard.x / WIDTH * 100}%`, top: `${hazard.y / HEIGHT * 100}%` }} />)}
       {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
-      {!running && !ended && <div className="combat-overlay"><div className="command-kicker">60-second survival build</div><h1>Swarm Protocol</h1><p>Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.</p><div className="swarm-start-summary"><span><strong>1</strong>Dodge & collect</span><span><strong>2</strong>Choose perks</span><span><strong>3</strong>Defeat Ahr</span></div><small>Guaranteed: crystals + XP + PURI bond · Clear adds a larger bonus</small><button onClick={reset}><Play className="h-4 w-4" /> Begin easier run</button></div>}
-      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">Perk level {upgradeLevel}</div><h2>Choose your build</h2><p>The run is paused. Combine Power + Rapid once to evolve Overdrive (+8% to both).</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>Power<strong>+30% damage</strong></button><button onClick={() => chooseUpgrade("fireRate")}>Rapid<strong>+20% fire rate</strong></button><button onClick={() => chooseUpgrade("speed")}>Boost<strong>+22% speed</strong></button><button onClick={() => chooseUpgrade("magnet")}>Magnet<strong>+22% pickup range</strong></button><button onClick={() => chooseUpgrade("pulse")}>Pulse Core<strong>-18% pulse cooldown</strong></button><button onClick={() => chooseUpgrade("repair")}>Repair<strong>Restore 32 hull</strong></button></div></div>}
+      {!running && !ended && <div className="combat-overlay"><div className="command-kicker">{tr("60-second survival build", "เอาตัวรอด 60 วินาที")}</div><h1>{tr("Swarm Protocol", "ฝ่าฝูงศัตรู")}</h1><p>{tr("Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.", "ปืนจะยิงให้อัตโนมัติ ขยับด้วย WASD หรือปุ่มลูกศร เก็บพลังจากศัตรู แล้วเลือกความสามารถใหม่เมื่อเกมหยุด กด Space เพื่อปล่อยคลื่นป้องกัน")}</p><div className="swarm-start-summary"><span><strong>1</strong>{tr("Dodge & collect", "หลบและเก็บพลัง")}</span><span><strong>2</strong>{tr("Choose perks", "เลือกความสามารถ")}</span><span><strong>3</strong>{tr("Defeat Ahr", "กำจัด Ahr")}</span></div><small>{tr("Every run gives crystals, XP, and PURI bond. A clear gives a bigger bonus.", "เล่นจบทุกครั้งได้คริสตัล XP และความสนิทกับ PURI ถ้าชนะจะได้โบนัสเพิ่ม")}</small><button onClick={reset}><Play className="h-4 w-4" /> {tr("Begin run", "เริ่มเล่น")}</button></div>}
+      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `ความสามารถระดับ ${upgradeLevel}`)}</div><h2>{tr("Choose your build", "เลือกแนวทางของคุณ")}</h2><p>{tr("The run is paused. Pair Power + Rapid, Boost + Magnet, or Pulse + Repair to unlock an evolution.", "เกมหยุดอยู่ เลือก Power + Rapid, Boost + Magnet หรือ Pulse + Repair เพื่อปลดพลังผสม")}</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>Power<strong>{tr("+30% damage", "พลังโจมตี +30%")}</strong></button><button onClick={() => chooseUpgrade("fireRate")}>Rapid<strong>{tr("+20% fire rate", "ยิงเร็วขึ้น 20%")}</strong></button><button onClick={() => chooseUpgrade("speed")}>Boost<strong>{tr("+22% speed", "เคลื่อนที่เร็วขึ้น 22%")}</strong></button><button onClick={() => chooseUpgrade("magnet")}>Magnet<strong>{tr("+22% pickup range", "ระยะเก็บพลัง +22%")}</strong></button><button onClick={() => chooseUpgrade("pulse")}>Pulse Core<strong>{tr("-18% pulse cooldown", "รอใช้ Pulse สั้นลง 18%")}</strong></button><button onClick={() => chooseUpgrade("repair")}>Repair<strong>{tr("Restore 32 hull", "ซ่อมยาน 32 หน่วย")}</strong></button></div></div>}
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? "AHR CORE CLEARED" : "RUN BANKED"}</div>}
     </div></div>
     <div className="combat-touch" aria-label="Movement controls"><button {...combatInput.directionHandlers("up")} aria-label="Move up">▲</button><button {...combatInput.directionHandlers("left")} aria-label="Move left">◀</button><button {...combatInput.directionHandlers("down")} aria-label="Move down">▼</button><button {...combatInput.directionHandlers("right")} aria-label="Move right">▶</button></div>

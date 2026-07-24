@@ -14,6 +14,7 @@ import {
 } from "@/lib/gameState";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { SECTOR_TRAITS, StrategyAction, getStrategyActionValues, getStrategyObjective, isStrategyObjectiveComplete } from "@/lib/strategyMissions";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   gameState: GameState;
@@ -32,6 +33,7 @@ const cloneInfluence = (influence: GameState["influence"]): GameState["influence
 );
 
 export default function FrontierControl({ gameState, onBack, onComplete }: Props) {
+  const { tr } = useI18n();
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
   const modifiers = getGameplayModifiers(gameState);
   const startingActions = 4 + puri.strategyActions;
@@ -102,14 +104,18 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
 
   const recommendedAction: StrategyAction = objective.id === "survey" ? "scan" : inf[playerFaction] < 65 ? "reinforce" : "disrupt";
   const recommendedLabel = recommendedAction === "scan" ? "Deploy a safe signal relay" : recommendedAction === "reinforce" ? "Reinforce this sector" : "Disrupt the leading rival";
+  const leadingRival = sortedInfluence.find((item) => item.id !== playerFaction);
+  const opponentPlan = actions > 0 && leadingRival
+    ? `${leadingRival.name} ${trait.trait === "volatile" ? tr("will push hard here", "จะเพิ่มกำลังในพื้นที่นี้") : tr("is watching this sector", "กำลังจับตาพื้นที่นี้")}`
+    : tr("No rival move remains this cycle", "รอบนี้ฝ่ายคู่แข่งจะไม่ขยับแล้ว");
 
   if (!started) {
     return (
       <main className="strategy-mode strategy-intro relative z-10 mx-auto min-h-screen max-w-5xl px-5 pb-28 pt-28 lg:px-8">
         <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button>
-        <div className="command-kicker">Frontier Control · Four-turn map puzzle</div>
-        <h1>Win the objective in {startingActions} moves.</h1>
-        <p>This is a short turn-based puzzle, not real-time combat. Complete the single objective shown below using all your command moves, then bank the cycle.</p>
+        <div className="command-kicker">{tr("Frontier Control · Four-turn map puzzle", "วางแผนยึดพื้นที่ · ใช้คำสั่ง 4 ครั้ง")}</div>
+        <h1>{tr(`Win the objective in ${startingActions} moves.`, `ทำเป้าหมายให้สำเร็จใน ${startingActions} คำสั่ง`)}</h1>
+        <p>{tr("This is a short turn-based puzzle, not real-time combat. Complete the objective, use every move, then bank the cycle.", "โหมดนี้เป็นเกมวางแผนสั้น ๆ ไม่ต้องรีบ ทำเป้าหมาย ใช้คำสั่งให้ครบ แล้วรับรางวัล")}</p>
         <section className="strategy-how">
           <div><strong>1</strong><Flag className="h-5 w-5" /><span>Pick a sector<small>Yellow outline marks the objective target.</small></span></div>
           <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>Spend {startingActions} actions<small>Relay is safe, Reinforce is strong, Disrupt slows a rival.</small></span></div>
@@ -132,6 +138,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
         </div>{history.length > 0 && <div className="strategy-history"><span>Your moves</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
         <aside className="strategy-dossier"><div className="strategy-dossier__leader"><img src={LEADERS[playerFaction]} alt="" /><div><span>{faction.name} command</span><strong>{lore.name}</strong><small>{lore.threat}</small></div></div><p>{lore.story}</p>
           {showHint ? <div className="strategy-recommendation"><Lightbulb className="h-4 w-4" /><span>Tactical hint<strong>{recommendedLabel}</strong></span></div> : <button className="strategy-recommendation" onClick={() => setShowHint(true)}><Lightbulb className="h-4 w-4" /><span>Need a tactical hint?<strong>Reveal one recommendation</strong></span></button>}
+          <div className="strategy-recommendation"><Radio className="h-4 w-4" /><span>{tr("Opponent plan", "แผนของฝ่ายคู่แข่ง")}<strong>{opponentPlan}</strong></span></div>
           <div className="sector-trait"><Waves className="h-4 w-4" /><span>Sector rule<strong>{trait.name}</strong><small>{trait.effect}</small></span></div>
           <div className="strategy-bars">{sortedInfluence.map((item) => <div key={item.id}><span>{item.name}<b>{item.value}/100</b></span><i><em className={`bar-${item.id}`} style={{ width: `${item.value}%` }} /></i></div>)}</div>
           <div className="strategy-status"><Flag className="h-4 w-4" /><span>Current status</span><strong>{controller ? `${controller.toUpperCase()} secured` : "Contested / neutral"}</strong></div>

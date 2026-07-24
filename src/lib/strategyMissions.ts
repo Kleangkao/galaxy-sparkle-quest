@@ -16,7 +16,7 @@ export const SECTOR_TRAITS: Record<string, { trait: SectorTrait; name: string; e
 );
 
 export interface StrategyObjective {
-  id: "secure" | "focus" | "survey";
+  id: "secure" | "focus" | "survey" | "contain";
   name: string;
   description: string;
   targetPlanetId: string;
@@ -24,10 +24,11 @@ export interface StrategyObjective {
 
 export function getStrategyObjective(cycle: number): StrategyObjective {
   const target = PLANETS[(cycle * 3 + 1) % PLANETS.length];
-  const type = cycle % 3;
+  const type = cycle % 4;
   if (type === 0) return { id: "secure", name: "Secure a sector", description: "Bring any neutral or rival sector to 100 influence.", targetPlanetId: target.id };
   if (type === 1) return { id: "focus", name: `Stabilize ${getSectorLore(target.id).name}`, description: "Reach 65 influence in the highlighted sector.", targetPlanetId: target.id };
-  return { id: "survey", name: "Map three sectors", description: "Use command actions in three different sectors.", targetPlanetId: target.id };
+  if (type === 2) return { id: "survey", name: "Map three sectors", description: "Use command actions in three different sectors.", targetPlanetId: target.id };
+  return { id: "contain", name: `Contain rivals at ${getSectorLore(target.id).name}`, description: "Reach 50 friendly influence and keep every rival below 40.", targetPlanetId: target.id };
 }
 
 export function isStrategyObjectiveComplete(objective: StrategyObjective, state: GameState, startControlled: number, touched: string[]) {
@@ -37,7 +38,9 @@ export function isStrategyObjectiveComplete(objective: StrategyObjective, state:
     return now > startControlled;
   }
   if (objective.id === "focus") return state.influence[objective.targetPlanetId]?.[state.faction] >= 65;
-  return new Set(touched).size >= 3;
+  if (objective.id === "survey") return new Set(touched).size >= 3;
+  const sector = state.influence[objective.targetPlanetId];
+  return sector[state.faction] >= 50 && Object.entries(sector).every(([id, value]) => id === state.faction || value < 40);
 }
 
 export function getStrategyActionValues(planetId: string) {

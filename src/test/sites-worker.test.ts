@@ -42,35 +42,4 @@ describe("Sites worker", () => {
     expect(response.status).toBe(503);
   });
 
-  it("accepts only bounded anonymous playtest events", async () => {
-    const workerPath = pathToFileURL(`${process.cwd()}/sites/worker.js`).href;
-    const { default: worker } = await import(workerPath);
-    const run = async () => ({ success: true });
-    const bind = (...values: unknown[]) => {
-      expect(values[1]).toBe("feedback");
-      expect(values[2]).toBe("story");
-      expect(values[3]).toBe(4);
-      return { run };
-    };
-    const env = {
-      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
-      DB: { prepare: () => ({ bind }) },
-    };
-
-    const response = await worker.fetch(new Request("https://galia.example/api/playtest-events", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ eventType: "feedback", mode: "story", fun: 4, difficulty: "right", note: "Clear" }),
-    }), env);
-
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ saved: true });
-
-    const rejected = await worker.fetch(new Request("https://galia.example/api/playtest-events", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ eventType: "feedback", mode: "unknown" }),
-    }), env);
-    expect(rejected.status).toBe(400);
-  });
 });

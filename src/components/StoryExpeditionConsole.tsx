@@ -26,6 +26,7 @@ import {
   isStoryChapterUnlocked,
 } from "@/lib/gameState";
 import { getStoryReplayMultiplier } from "@/lib/progressionGuidance";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   gameState: GameState;
@@ -47,6 +48,7 @@ const BIOME_LABELS: Record<Planet["biome"], string> = {
 };
 
 export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: Props) {
+  const { tr } = useI18n();
   const unlocked = PLANETS.filter((planet) => isStoryChapterUnlocked(planet, gameState));
   const recommended = unlocked.find((planet) => !gameState.visitedPlanets.includes(planet.id)) ?? unlocked.at(-1) ?? PLANETS[0];
   const [selectedId, setSelectedId] = useState(recommended.id);
@@ -83,10 +85,10 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
         <div className="story-console__hero-copy">
           <button className="story-console__back" onClick={onHome}><ArrowLeft className="h-4 w-4" /> All modes</button>
           <div className="command-kicker"><Radio className="h-3.5 w-3.5" /> Campaign signal online</div>
-          <h1>Story Expeditions</h1>
-          <p>Trace one living signal across ten chapters. Choose a route, complete a short mission, and change who controls the frontier.</p>
+          <h1>{tr("Story Expeditions", "ผจญภัยตามเนื้อเรื่อง")}</h1>
+          <p>{tr("Trace one living signal across ten chapters. Choose a route, complete a short mission, and change who controls the frontier.", "ตามหาความจริงของสัญญาณลึกลับผ่าน 10 บท เลือกเส้นทาง ทำภารกิจ และช่วยฝ่ายของเราดูแลพื้นที่")}</p>
           <button className="story-console__continue" onClick={() => onLaunch(recommended)}>
-            <Compass className="h-4 w-4" /> {gameState.visitedPlanets.length ? "Continue campaign" : "Begin chapter one"} <ArrowRight className="h-4 w-4" />
+            <Compass className="h-4 w-4" /> {gameState.visitedPlanets.length ? tr("Continue campaign", "เล่นเนื้อเรื่องต่อ") : tr("Begin chapter one", "เริ่มบทแรก")} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
         <div className="story-console__hero-stats" aria-label="Campaign progress">
