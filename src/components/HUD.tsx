@@ -48,6 +48,19 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
 
+const RANK_THAI: Record<string, string> = {
+  Cadet: "นักเรียนฝึกหัด",
+  Explorer: "นักสำรวจ",
+  Navigator: "นักนำทาง",
+  Pilot: "นักบิน",
+  Captain: "กัปตัน",
+  Commander: "ผู้บัญชาการ",
+  Admiral: "จอมพลอวกาศ",
+  "Star Master": "เจ้าแห่งดวงดาว",
+  "Galaxy Hero": "วีรบุรุษแห่งกาเลีย",
+  "Cosmic Legend": "ตำนานจักรวาล",
+};
+
 export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings }: Props) {
   const { t, tr } = useI18n();
   const rank = getRank(gameState.level);
@@ -62,7 +75,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
         <div className="app-status-bar__captain">
           <Sparkles className="h-4 w-4 text-cosmic-yellow" />
           <div>
-            <strong>{tr(rank.name, rank.name === "Explorer" ? "นักสำรวจ" : rank.name)}</strong>
+            <strong>{tr(rank.name, RANK_THAI[rank.name] ?? rank.name)}</strong>
             <span>{gameState.xp}/{xpInfo.next} {t("xp")}</span>
           </div>
           <i aria-label={`${Math.round(xpInfo.progress)}% to next rank`}><b style={{ width: `${xpInfo.progress}%` }} /></i>
@@ -80,7 +93,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
           <span className="status-chip status-chip--crystals">◆ {gameState.crystals}</span>
           {dailyAvailable && onClaimDaily && (
             <motion.button className="daily-chip" onClick={onClaimDaily} animate={{ scale: [1, 1.04, 1] }} transition={{ duration: 1.8, repeat: Infinity }}>
-              Daily +
+              {tr("Daily", "รายวัน")} +
             </motion.button>
           )}
           <button className="status-icon-button" onClick={() => onNavigate("pets")} aria-label={tr(`Companions, ${gameState.pets.length} owned`, `เพื่อนร่วมทาง ${gameState.pets.length} ตัว`)} title={tr("Companions", "เพื่อนร่วมทาง")}>
