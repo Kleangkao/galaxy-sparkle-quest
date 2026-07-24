@@ -1,10 +1,15 @@
 // Lightweight game audio generated with Web Audio API. No external files are required.
 let audioCtx: AudioContext | null = null;
 let soundMode: "full" | "quiet" | "off" = "full";
+let musicMode: "full" | "quiet" | "off" = "quiet";
 let ambienceTimer: number | null = null;
 
 export function setSoundMode(mode: "full" | "quiet" | "off") {
   soundMode = mode;
+}
+
+export function setMusicMode(mode: "full" | "quiet" | "off") {
+  musicMode = mode;
   if (mode === "off") stopModeAmbience();
 }
 
@@ -14,15 +19,16 @@ function getCtx(): AudioContext {
   return audioCtx;
 }
 
-function playTone(freq: number, duration: number, type: OscillatorType = "sine", vol = 0.15, ramp = true) {
-  if (soundMode === "off") return;
+function playTone(freq: number, duration: number, type: OscillatorType = "sine", vol = 0.15, ramp = true, channel: "sound" | "music" = "sound") {
+  const volumeMode = channel === "music" ? musicMode : soundMode;
+  if (volumeMode === "off") return;
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(vol * (soundMode === "quiet" ? 0.38 : 1), ctx.currentTime);
+    gain.gain.setValueAtTime(vol * (volumeMode === "quiet" ? 0.38 : 1), ctx.currentTime);
     if (ramp) gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -52,7 +58,7 @@ export function stopModeAmbience() {
 
 export function startModeAmbience(mode: "hub" | "story" | "swarm" | "arcade" | "discovery" | "strategy" | "progress") {
   stopModeAmbience();
-  if (soundMode === "off") return;
+  if (musicMode === "off") return;
   const palettes = {
     hub: [220, 330], story: [196, 294], swarm: [110, 165], arcade: [330, 495],
     discovery: [262, 392], strategy: [147, 220], progress: [247, 370],
@@ -60,8 +66,8 @@ export function startModeAmbience(mode: "hub" | "story" | "swarm" | "arcade" | "
   const notes = palettes[mode];
   let flip = false;
   ambienceTimer = window.setInterval(() => {
-    if (document.hidden || soundMode === "off") return;
-    playTone(flip ? notes[0] : notes[1], 1.6, "sine", 0.012);
+    if (document.hidden || musicMode === "off") return;
+    playTone(flip ? notes[0] : notes[1], 1.6, "sine", 0.012, true, "music");
     flip = !flip;
   }, 4200);
 }

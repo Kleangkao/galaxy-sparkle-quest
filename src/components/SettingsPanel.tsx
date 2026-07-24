@@ -1,9 +1,10 @@
 import { useRef } from "react";
-import { Contrast, Download, Gauge, Keyboard, Languages, Maximize2, RotateCcw, Settings2, Sparkles, Target, Upload, Users, Volume2 } from "lucide-react";
+import { Contrast, Download, Gauge, HardDrive, Keyboard, Languages, Maximize2, RotateCcw, Settings2, Sparkles, Target, Upload, Users, Volume2 } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
+import { GAME_VERSION, RELEASE_CHANNEL } from "@/lib/release";
 
 interface Props {
   open: boolean;
@@ -56,12 +57,19 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
           </SettingsGroup>
 
           <SettingsGroup icon={Volume2} title={tr("Audio & vibration", "เสียงและการสั่น")} description={tr("Control game sounds and controller vibration.", "ปรับเสียงเกมและการสั่นของจอย")}>
-            <SettingRow label={tr("Game audio", "เสียงเกม")} detail={tr("Quiet keeps cues soft. Off mutes the game.", "เบาจะลดเสียงลง ปิดจะปิดเสียงเกมทั้งหมด")}>
+            <SettingRow label={tr("Sound effects", "เสียงเอฟเฟกต์")} detail={tr("Shots, pickups, warnings, and menu sounds.", "เสียงยิง เก็บของ คำเตือน และเสียงเมนู")}>
               <SegmentedControl value={settings.sound} options={[
                 { value: "full", label: tr("Full", "เต็ม") },
                 { value: "quiet", label: tr("Quiet", "เบา") },
                 { value: "off", label: tr("Off", "ปิด") },
               ]} onChange={(sound) => onChange({ ...settings, sound: sound as GameState["accessibility"]["sound"] })} />
+            </SettingRow>
+            <SettingRow label={tr("Background music", "เพลงพื้นหลัง")} detail={tr("Separate from gameplay sound effects.", "ปรับแยกจากเสียงเอฟเฟกต์ของเกม")}>
+              <SegmentedControl value={settings.music} options={[
+                { value: "full", label: tr("Full", "เต็ม") },
+                { value: "quiet", label: tr("Quiet", "เบา") },
+                { value: "off", label: tr("Off", "ปิด") },
+              ]} onChange={(music) => onChange({ ...settings, music: music as GameState["accessibility"]["music"] })} />
             </SettingRow>
           </SettingsGroup>
 
@@ -117,7 +125,8 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             </div>
           </section>
 
-          <div className="game-settings__note"><Contrast className="h-4 w-4" /><span>{tr("Settings save automatically and can be changed anytime.", "การตั้งค่าจะบันทึกอัตโนมัติและเปลี่ยนได้ตลอด")}</span></div>
+          <div className="game-settings__note"><HardDrive className="h-4 w-4" /><span>{tr("Progress saves in this browser on this device. Download a backup before changing devices, clearing browser data, or using private browsing.", "เซฟเกมอยู่ในเบราว์เซอร์ของเครื่องนี้ ควรดาวน์โหลดไฟล์สำรองก่อนเปลี่ยนเครื่อง ล้างข้อมูลเบราว์เซอร์ หรือใช้โหมดไม่ระบุตัวตน")}</span></div>
+          <div className="game-settings__note"><Contrast className="h-4 w-4" /><span>{tr("Settings save automatically and can be changed anytime.", "การตั้งค่าจะบันทึกอัตโนมัติและเปลี่ยนได้ตลอด")} · {RELEASE_CHANNEL} v{GAME_VERSION}</span></div>
         </div>
       </DialogContent>
     </Dialog>

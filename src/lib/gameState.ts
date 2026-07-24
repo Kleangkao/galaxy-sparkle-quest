@@ -280,6 +280,7 @@ export interface GameState {
     aimHelp: "standard" | "wide";
     contrast: "standard" | "high";
     sound: "full" | "quiet" | "off";
+    music: "full" | "quiet" | "off";
     screenShake: "full" | "off";
   };
 }
@@ -517,6 +518,7 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
       aimHelp: source?.accessibility?.aimHelp === "wide" ? "wide" : "standard",
       contrast: source?.accessibility?.contrast === "high" ? "high" : "standard",
       sound: source?.accessibility?.sound === "off" ? "off" : source?.accessibility?.sound === "quiet" ? "quiet" : "full",
+      music: source?.accessibility?.music === "off" ? "off" : source?.accessibility?.music === "full" ? "full" : "quiet",
       screenShake: source?.accessibility?.screenShake === "off" ? "off" : "full",
     },
   };

@@ -37,7 +37,7 @@ describe("multi-mode progression", () => {
       strategyCycles: 0,
       strategyObjectives: 0,
     });
-    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full", screenShake: "full" });
+    expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full", music: "quiet", screenShake: "full" });
     expect(state.upgradeTiers).toMatchObject({ shield: 0, booster: 0, scanner: 0 });
   });
 

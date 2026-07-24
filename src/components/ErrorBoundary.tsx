@@ -24,18 +24,16 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, countdown: 5 };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, _errorInfo: ErrorInfo) {
     logError(error, this.props.fallbackScreen || "component");
-    console.warn("[SelfHealing] Caught error:", error.message);
-
-    // Start auto-recovery countdown
+    console.warn("[Recovery] Caught error:", error.message);
     this.timer = setInterval(() => {
-      this.setState((prev) => {
-        if (prev.countdown <= 1) {
+      this.setState((previous) => {
+        if (previous.countdown <= 1) {
           this.handleReload();
-          return prev;
+          return previous;
         }
-        return { ...prev, countdown: prev.countdown - 1 };
+        return { ...previous, countdown: previous.countdown - 1 };
       });
     }, 1000);
   }
@@ -55,46 +53,34 @@ export default class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (this.state.hasError) {
-      return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
-          <div className="text-center space-y-6 p-8 max-w-sm mx-auto animate-fade-in">
-            {/* Friendly animated icon */}
-            <div className="text-6xl animate-bounce">🛸</div>
+    if (!this.state.hasError) return this.props.children;
 
-            <h2
-              className="text-2xl font-bold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              มีปัญหานิดหน่อย
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              กำลังแก้ให้อยู่...
-            </p>
-            <p className="text-xs text-muted-foreground/60">
-              Oops! Something went wrong. Fixing it...
-            </p>
-
-            {/* Countdown */}
-            <div className="text-muted-foreground text-sm">
-              ⏳ Auto-reload in{" "}
-              <span className="font-bold text-accent">{this.state.countdown}s</span>
-            </div>
-
-            {/* Manual reload button */}
-            <button
-              onClick={this.handleReload}
-              className="px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              🔄 โหลดเกมใหม่
-            </button>
-            <p className="text-xs text-muted-foreground/50">Reload Game</p>
-          </div>
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
+        <div className="mx-auto max-w-sm space-y-5 p-8 text-center" role="alert">
+          <div className="text-5xl" aria-hidden="true">⚠</div>
+          <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+            Game paused safely
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            เกมหยุดชั่วคราวเพื่อป้องกันข้อมูลเสียหาย
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Progress saved in this browser remains safe. Reloading in{" "}
+            <span className="font-bold text-accent">{this.state.countdown}s</span>
+          </p>
+          <button
+            onClick={this.handleReload}
+            className="rounded-2xl bg-primary px-6 py-3 text-lg font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Reload game · โหลดเกมใหม่
+          </button>
+          <p className="text-xs text-muted-foreground/50">
+            If this repeats, tell the person who shared the game and include the page address.
+          </p>
         </div>
-      );
-    }
-
-    return this.props.children;
+      </div>
+    );
   }
 }

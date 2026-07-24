@@ -4,16 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   canClaimDaily,
   createNewGameState,
+  getGameplayModifiers,
   loadGame,
   PLANETS,
   resetGame,
   saveGame,
+  SHIP_UPGRADES,
 } from "@/lib/gameState";
 import { useCombatInput } from "@/hooks/useCombatInput";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 import PlanetExplore from "@/components/PlanetExplore";
+import { MISSION_BRIEFS } from "@/lib/missionBriefs";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
 const ONI_SAVE_KEY = "cosmic-explorer-save-v2:oni";
@@ -198,5 +201,32 @@ describe("public test release hardening", () => {
 
     expect(screen.getByText(/Live Mission HUD/)).toBeInTheDocument();
     expect(screen.getByText(/Crystal Flight School/)).toBeInTheDocument();
+  });
+
+  it("keeps the fully upgraded crystal economy within a controlled multiplier", () => {
+    const base = createNewGameState("mud");
+    const maximized = {
+      ...base,
+      activePilot: "nova-reyes",
+      upgrades: SHIP_UPGRADES.map((upgrade) => upgrade.id),
+      upgradeTiers: Object.fromEntries(SHIP_UPGRADES.map((upgrade) => [upgrade.id, 3])),
+      modeRecords: { ...base.modeRecords, strategyObjectives: 2 },
+    };
+    const multiplier = getGameplayModifiers(maximized).crystalMultiplier;
+
+    expect(multiplier).toBeGreaterThan(1);
+    expect(multiplier).toBeLessThanOrEqual(4);
+    expect(Number.isFinite(multiplier)).toBe(true);
+  });
+
+  it("ships a ten-chapter campaign with a complete final extraction brief", () => {
+    expect(PLANETS).toHaveLength(10);
+    const finale = PLANETS[9];
+    const brief = MISSION_BRIEFS[finale.id];
+
+    expect(finale.id).toBe("golden-galaxy");
+    expect(brief.encounters).toMatch(/enemies|hazards/i);
+    expect(brief.completion).toMatch(/every counter/i);
+    expect(brief.transmission).toMatch(/ends here/i);
   });
 });

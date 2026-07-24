@@ -78,7 +78,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
             <strong>{tr(rank.name, RANK_THAI[rank.name] ?? rank.name)}</strong>
             <span>{gameState.xp}/{xpInfo.next} {t("xp")}</span>
           </div>
-          <i aria-label={`${Math.round(xpInfo.progress)}% to next rank`}><b style={{ width: `${xpInfo.progress}%` }} /></i>
+          <i role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(xpInfo.progress)} aria-label={`${Math.round(xpInfo.progress)}% to next rank`}><b style={{ width: `${xpInfo.progress}%` }} /></i>
         </div>
 
         <div className="app-status-bar__actions">

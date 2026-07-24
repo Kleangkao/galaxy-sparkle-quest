@@ -5,6 +5,7 @@ import { getArcadeContract, getArcadeGrade } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
+import { useI18n } from "@/lib/i18n";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
@@ -39,6 +40,7 @@ const makeState = (magazine = BASE_MAGAZINE): ShooterState => ({
 });
 
 export default function ArcadeShooter({ gameState, contractId, onBack, onComplete }: Props) {
+  const { tr } = useI18n();
   const contract = getArcadeContract(contractId);
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
@@ -59,10 +61,10 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   const [frame, setFrame] = useState(() => ({ ...stateRef.current }));
 
   const objectiveText = contract.objective === "boss"
-    ? "Break the Ahr core"
+    ? tr("Break the Ahr core", "ทำลายแกนพลัง Ahr")
     : contract.objective === "energy"
-      ? `Tag ${contract.target} crystal signals`
-      : `Score ${contract.target.toLocaleString()} points`;
+      ? tr(`Tag ${contract.target} crystal signals`, `ยิงสัญญาณคริสตัล ${contract.target} จุด`)
+      : tr(`Score ${contract.target.toLocaleString()} points`, `ทำคะแนน ${contract.target.toLocaleString()}`);
 
   const finish = useCallback((success: boolean) => {
     if (completedRef.current) return;
@@ -227,22 +229,22 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   return (
     <main className="arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8">
       <header className="arcade-shooter__header">
-        <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Assignments</button>
-        <div><div className="command-kicker">Arcade Ops · Mouse aim challenge</div><h1>{contract.name}</h1><p>{objectiveText}. Move the reticle, click to fire, and press R to reload.</p></div>
+        <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Assignments", "เลือกภารกิจ")}</button>
+        <div><div className="command-kicker">{tr("Arcade Ops · Mouse aim challenge", "ยิงเป้า · เล็งด้วยเมาส์")}</div><h1>{contract.name}</h1><p>{objectiveText}. {tr("Move the reticle, click to fire, and press R to reload.", "ขยับเป้า คลิกเพื่อยิง และกด R เพื่อเติมกระสุน")}</p></div>
         <div className="arcade-shooter__loadout"><span>{pilot.name}</span><strong>{tool.name}</strong></div>
       </header>
 
       <section className="arcade-mission-strip">
-        <div><Target className="h-4 w-4" /><span>Objective<strong>{objectiveText}</strong></span></div>
-        <div><Trophy className="h-4 w-4" /><span>Reward route<strong>4+ crystals · 4+ XP · clear bonus</strong></span></div>
-        <div><Zap className="h-4 w-4" /><span>Skill<strong>Aim · timing · reload</strong></span></div>
+        <div><Target className="h-4 w-4" /><span>{tr("Objective", "เป้าหมาย")}<strong>{objectiveText}</strong></span></div>
+        <div><Trophy className="h-4 w-4" /><span>{tr("Rewards", "รางวัล")}<strong>{tr("4+ crystals · 4+ XP · clear bonus", "คริสตัล 4+ · XP 4+ · โบนัสเมื่อผ่าน")}</strong></span></div>
+        <div><Zap className="h-4 w-4" /><span>{tr("Skill", "ทักษะ")}<strong>{tr("Aim · timing · reload", "เล็ง · จังหวะ · เติมกระสุน")}</strong></span></div>
       </section>
 
       <section className="arcade-shooter__hud">
-        <div><span>Time</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
-        <div><span>Score</span><strong>{frame.score.toLocaleString()}</strong></div>
-        <div><span>Accuracy</span><strong>{frame.shotsFired ? Math.round(frame.hits / frame.shotsFired * 100) : 100}%</strong></div>
-        <div><span>{contract.objective === "energy" ? "Signals" : "Ammo"}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
+        <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
+        <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
+        <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? Math.round(frame.hits / frame.shotsFired * 100) : 100}%</strong></div>
+        <div><span>{contract.objective === "energy" ? tr("Signals", "สัญญาณ") : tr("Ammo", "กระสุน")}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
 
@@ -260,7 +262,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               className={`arcade-target is-${target.kind}`}
               style={{ left: `${target.x / WIDTH * 100}%`, top: `${target.y / HEIGHT * 100}%`, width: target.size * 2 + (gameState.accessibility.aimHelp === "wide" ? 14 : 0), height: target.size * 2 + (gameState.accessibility.aimHelp === "wide" ? 14 : 0) }}
               onPointerDown={(event) => { event.stopPropagation(); shootTarget(target.id); }}
-              aria-label={target.kind === "decoy" ? "Do not shoot decoy" : `Shoot ${target.kind}`}
+              aria-label={target.kind === "decoy" ? tr("Do not shoot decoy", "ห้ามยิงเป้าหลอก") : tr(`Shoot ${target.kind}`, "ยิงเป้าหมาย")}
             >
               {target.kind === "boss" ? <><img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="" /><span className="arcade-target__weakpoint" /></> : target.kind === "crystal" ? "◆" : target.kind === "decoy" ? "!" : ""}
               {target.kind === "boss" && <i><b style={{ width: `${target.hp / target.maxHp * 100}%` }} /></i>}
@@ -272,21 +274,21 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
           {!running && !ended && (
             <div className="arcade-overlay">
               <MousePointer2 className="h-8 w-8 text-cosmic-orange" />
-              <div className="command-kicker">Different from Swarm</div>
-              <h2>You aim. You shoot.</h2>
-              <p>Track moving targets with your mouse. Click to fire, avoid red decoys, and manage your {magazine}-round magazine.</p>
-              <button onClick={(event) => { event.stopPropagation(); reset(); }}><Play className="h-4 w-4" /> Start assignment</button>
+              <div className="command-kicker">{tr("Manual shooting challenge", "ภารกิจยิงด้วยตัวเอง")}</div>
+              <h2>{tr("You aim. You shoot.", "คุณเป็นคนเล็งและยิง")}</h2>
+              <p>{tr(`Track moving targets with your mouse. Avoid red decoys and manage your ${magazine}-round magazine.`, `เล็งเป้าที่กำลังขยับด้วยเมาส์ หลีกเลี่ยงเป้าหลอกสีแดง และจัดการกระสุน ${magazine} นัด`)}</p>
+              <button onClick={(event) => { event.stopPropagation(); reset(); }}><Play className="h-4 w-4" /> {tr("Start assignment", "เริ่มภารกิจ")}</button>
             </div>
           )}
-          {paused && <div className="arcade-overlay"><h2>Paused</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> Resume</button></div>}
+          {paused && <div className="arcade-overlay"><h2>{tr("Paused", "หยุดชั่วคราว")}</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> {tr("Resume", "เล่นต่อ")}</button></div>}
           {ended && <div className="combat-run-finished" aria-hidden="true">{won ? "CONTRACT CLEARED" : "RUN BANKED"}</div>}
         </div>
       </div>
 
       <footer className="arcade-shooter__controls">
-        <span>{frame.reloading > 0 ? `Reloading ${Math.ceil(frame.reloading * 10) / 10}s` : "Mouse · aim and fire"}</span>
-        <button onClick={reload} disabled={!running || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · Reload</button>
-        <button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? "Resume" : "Pause"}</button>
+        <span>{frame.reloading > 0 ? tr(`Reloading ${Math.ceil(frame.reloading * 10) / 10}s`, `กำลังเติมกระสุน ${Math.ceil(frame.reloading * 10) / 10} วิ`) : tr("Mouse · aim and fire", "เมาส์ · เล็งและยิง")}</span>
+        <button onClick={reload} disabled={!running || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · {tr("Reload", "เติมกระสุน")}</button>
+        <button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button>
       </footer>
     </main>
   );

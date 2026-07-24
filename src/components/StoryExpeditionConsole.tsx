@@ -187,7 +187,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
 
           <div className="story-dossier__influence">
             <div><span><Shield className="h-4 w-4" /> {tr("Sector influence", "คะแนนพื้นที่")}</span><strong>{controller ? tr(`${controller.toUpperCase()} controlled`, `${controller.toUpperCase()} ดูแลอยู่`) : tr("Contested frontier", "พื้นที่กำลังแข่งขัน")}</strong></div>
-            <i aria-label={`MUD ${influence.mud}, ONI ${influence.oni}, USTUR ${influence.ustur}`}>
+            <i role="img" aria-label={`MUD ${influence.mud}, ONI ${influence.oni}, USTUR ${influence.ustur}`}>
               <b className="is-mud" style={{ width: `${influence.mud / totalInfluence * 100}%` }} />
               <b className="is-oni" style={{ width: `${influence.oni / totalInfluence * 100}%` }} />
               <b className="is-ustur" style={{ width: `${influence.ustur / totalInfluence * 100}%` }} />

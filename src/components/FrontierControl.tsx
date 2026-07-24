@@ -66,6 +66,14 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   const xpReward = 6 + (objectiveComplete ? 4 : 0);
   const sortedInfluence = useMemo(() => FACTIONS.map((item) => ({ ...item, value: inf[item.id] })).sort((a, b) => b.value - a.value), [inf]);
   const turn = startingActions - actions + 1;
+  const objectiveName = objective.id === "secure" ? tr("Secure a sector", "ยึดพื้นที่ 1 แห่ง")
+    : objective.id === "survey" ? tr("Map three sectors", "สำรวจ 3 พื้นที่")
+      : objective.id === "focus" ? tr(objective.name, `เพิ่มคะแนนใน ${getSectorLore(objective.targetPlanetId).name}`)
+        : tr(objective.name, `หยุดคู่แข่งที่ ${getSectorLore(objective.targetPlanetId).name}`);
+  const objectiveDescription = objective.id === "secure" ? tr(objective.description, "เพิ่มคะแนนพื้นที่ว่างหรือพื้นที่คู่แข่งให้ถึง 100")
+    : objective.id === "survey" ? tr(objective.description, "ใช้คำสั่งในพื้นที่ต่างกันให้ครบ 3 แห่ง")
+      : objective.id === "focus" ? tr(objective.description, "เพิ่มคะแนนฝ่ายเราในพื้นที่ที่มีกรอบสีเหลืองให้ถึง 65")
+        : tr(objective.description, "เพิ่มคะแนนฝ่ายเราให้ถึง 50 และกดคู่แข่งทุกฝ่ายให้ต่ำกว่า 40");
 
   const act = (action: StrategyAction) => {
     if (!started || actions <= 0 || claimed) return;
@@ -103,7 +111,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   };
 
   const recommendedAction: StrategyAction = objective.id === "survey" ? "scan" : inf[playerFaction] < 65 ? "reinforce" : "disrupt";
-  const recommendedLabel = recommendedAction === "scan" ? "Deploy a safe signal relay" : recommendedAction === "reinforce" ? "Reinforce this sector" : "Disrupt the leading rival";
+  const recommendedLabel = recommendedAction === "scan" ? tr("Deploy a safe signal relay", "วางเครื่องส่งสัญญาณแบบปลอดภัย") : recommendedAction === "reinforce" ? tr("Reinforce this sector", "เพิ่มกำลังในพื้นที่นี้") : tr("Disrupt the leading rival", "ขัดขวางฝ่ายคู่แข่งที่นำอยู่");
   const leadingRival = sortedInfluence.find((item) => item.id !== playerFaction);
   const opponentPlan = actions > 0 && leadingRival
     ? `${leadingRival.name} ${trait.trait === "volatile" ? tr("will push hard here", "จะเพิ่มกำลังในพื้นที่นี้") : tr("is watching this sector", "กำลังจับตาพื้นที่นี้")}`
@@ -112,39 +120,39 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   if (!started) {
     return (
       <main className="strategy-mode strategy-intro relative z-10 mx-auto min-h-screen max-w-5xl px-5 pb-28 pt-28 lg:px-8">
-        <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button>
+        <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button>
         <div className="command-kicker">{tr("Frontier Control · Four-turn map puzzle", "วางแผนยึดพื้นที่ · ใช้คำสั่ง 4 ครั้ง")}</div>
         <h1>{tr(`Win the objective in ${startingActions} moves.`, `ทำเป้าหมายให้สำเร็จใน ${startingActions} คำสั่ง`)}</h1>
         <p>{tr("This is a short turn-based puzzle, not real-time combat. Complete the objective, use every move, then bank the cycle.", "โหมดนี้เป็นเกมวางแผนสั้น ๆ ไม่ต้องรีบ ทำเป้าหมาย ใช้คำสั่งให้ครบ แล้วรับรางวัล")}</p>
         <section className="strategy-how">
-          <div><strong>1</strong><Flag className="h-5 w-5" /><span>Pick a sector<small>Yellow outline marks the objective target.</small></span></div>
-          <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>Spend {startingActions} actions<small>Relay is safe, Reinforce is strong, Disrupt slows a rival.</small></span></div>
-          <div><strong>3</strong><Gift className="h-5 w-5" /><span>Bank the cycle<small>Earn 6+ crystals, 6+ XP, PURI bond, and capture bonuses.</small></span></div>
+          <div><strong>1</strong><Flag className="h-5 w-5" /><span>{tr("Pick a sector", "เลือกพื้นที่")}<small>{tr("Yellow outline marks the objective target.", "กรอบสีเหลืองคือพื้นที่เป้าหมาย")}</small></span></div>
+          <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>{tr(`Spend ${startingActions} actions`, `ใช้คำสั่ง ${startingActions} ครั้ง`)}<small>{tr("Relay is safe, Reinforce is strong, Disrupt slows a rival.", "ส่งสัญญาณปลอดภัย เพิ่มกำลังได้คะแนนมาก ขัดขวางช่วยลดคะแนนคู่แข่ง")}</small></span></div>
+          <div><strong>3</strong><Gift className="h-5 w-5" /><span>{tr("Bank the cycle", "จบรอบและรับรางวัล")}<small>{tr("Earn crystals, XP, PURI bond, and capture bonuses.", "รับคริสตัล XP ความสนิทกับ PURI และโบนัสยึดพื้นที่")}</small></span></div>
         </section>
-        <section className="strategy-intro__mission"><Radio className="h-6 w-6" /><div><span>This cycle’s objective</span><h2>{objective.name}</h2><p>{objective.description}</p></div><b>{startingActions} moves</b></section>
-        <section className="strategy-intro__mission"><Gift className="h-6 w-6" /><div><span>Why play Frontier Control?</span><h2>Turn Story influence into a strategic advantage</h2><p>Every cycle gives crystals, XP, and PURI bond. Complete 2 objectives to permanently earn +10% crystals in every mode.</p></div><b>{Math.min(gameState.modeRecords.strategyObjectives, 2)}/2</b></section>
-        <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> Start command cycle</button>
+        <section className="strategy-intro__mission"><Radio className="h-6 w-6" /><div><span>{tr("This cycle’s objective", "เป้าหมายรอบนี้")}</span><h2>{objectiveName}</h2><p>{objectiveDescription}</p></div><b>{tr(`${startingActions} moves`, `${startingActions} คำสั่ง`)}</b></section>
+        <section className="strategy-intro__mission"><Gift className="h-6 w-6" /><div><span>{tr("Why play Frontier Control?", "เล่นโหมดวางแผนแล้วได้อะไร?")}</span><h2>{tr("Turn Story influence into a strategic advantage", "ใช้คะแนนพื้นที่ช่วยให้ทุกโหมดได้รางวัลดีขึ้น")}</h2><p>{tr("Every cycle gives crystals, XP, and PURI bond. Complete 2 objectives to permanently earn +10% crystals in every mode.", "ทุกรอบได้คริสตัล XP และเพิ่มความสนิทกับ PURI ทำเป้าหมายครบ 2 รอบ รับคริสตัลเพิ่ม 10% ในทุกโหมดแบบถาวร")}</p></div><b>{Math.min(gameState.modeRecords.strategyObjectives, 2)}/2</b></section>
+        <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> {tr("Start command cycle", "เริ่มรอบวางแผน")}</button>
       </main>
     );
   }
 
   return (
     <main className="strategy-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
-      <header className="strategy-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> Modes</button><div><div className="command-kicker">Four-turn map puzzle · Cycle {cycle + 1}</div><h1>Frontier Control</h1><p>Turn {Math.min(turn, startingActions)} of {startingActions}: select a sector, then choose one action.</p></div><div className="strategy-actions"><span>Moves left</span><strong>{actions}</strong></div></header>
-      <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>Your win condition this cycle</span><strong>{objective.name}</strong><p>{objective.description} Spend every move, then bank the cycle. After the training cycles, tactical hints are optional.</p></div><b>{objectiveComplete ? "Complete · bonus secured" : objective.id === "survey" ? `${new Set(touched).size}/3 sectors` : "In progress"}</b></section>
+      <header className="strategy-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr(`Four-turn map puzzle · Cycle ${cycle + 1}`, `เกมวางแผน 4 คำสั่ง · รอบ ${cycle + 1}`)}</div><h1>{tr("Frontier Control", "วางแผนยึดพื้นที่")}</h1><p>{tr(`Turn ${Math.min(turn, startingActions)} of ${startingActions}: select a sector, then choose one action.`, `คำสั่ง ${Math.min(turn, startingActions)} จาก ${startingActions}: เลือกพื้นที่ แล้วเลือกคำสั่ง`)}</p></div><div className="strategy-actions"><span>{tr("Moves left", "เหลือคำสั่ง")}</span><strong>{actions}</strong></div></header>
+      <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>{tr("Your win condition this cycle", "เงื่อนไขผ่านรอบนี้")}</span><strong>{objectiveName}</strong><p>{objectiveDescription} {tr("Use every move, then bank the cycle.", "ใช้คำสั่งให้ครบ แล้วจบรอบเพื่อรับรางวัล")}</p></div><b>{objectiveComplete ? tr("Complete · bonus secured", "สำเร็จ · ได้โบนัส") : objective.id === "survey" ? tr(`${new Set(touched).size}/3 sectors`, `${new Set(touched).size}/3 พื้นที่`) : tr("In progress", "กำลังทำ")}</b></section>
       <section className="strategy-layout">
-        <div className="strategy-map"><div className="strategy-map__header"><span>Choose a sector</span><small>{controlledNow}/10 under {faction.name} control</small></div><div className="strategy-sector-grid">
+        <div className="strategy-map"><div className="strategy-map__header"><span>{tr("Choose a sector", "เลือกพื้นที่")}</span><small>{tr(`${controlledNow}/10 under ${faction.name} control`, `${faction.name} ควบคุม ${controlledNow}/10 พื้นที่`)}</small></div><div className="strategy-sector-grid">
           {PLANETS.map((planet, index) => { const sectorController = getPlanetController(workingInfluence[planet.id]); const leader = FACTIONS.find((item) => item.id === sectorController); const target = objective.targetPlanetId === planet.id && objective.id === "focus"; return <button key={planet.id} onClick={() => setSelectedId(planet.id)} className={`${selected.id === planet.id ? "is-selected" : ""} ${sectorController ? `is-${sectorController}` : ""} ${target ? "is-objective" : ""}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{planet.emoji} {getSectorLore(planet.id).name}</strong><small>{leader ? `${leader.name} control` : SECTOR_TRAITS[planet.id].name}</small></button>; })}
-        </div>{history.length > 0 && <div className="strategy-history"><span>Your moves</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
+        </div>{history.length > 0 && <div className="strategy-history"><span>{tr("Your moves", "คำสั่งที่ใช้")}</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
         <aside className="strategy-dossier"><div className="strategy-dossier__leader"><img src={LEADERS[playerFaction]} alt="" /><div><span>{faction.name} command</span><strong>{lore.name}</strong><small>{lore.threat}</small></div></div><p>{lore.story}</p>
-          {showHint ? <div className="strategy-recommendation"><Lightbulb className="h-4 w-4" /><span>Tactical hint<strong>{recommendedLabel}</strong></span></div> : <button className="strategy-recommendation" onClick={() => setShowHint(true)}><Lightbulb className="h-4 w-4" /><span>Need a tactical hint?<strong>Reveal one recommendation</strong></span></button>}
+          {showHint ? <div className="strategy-recommendation"><Lightbulb className="h-4 w-4" /><span>{tr("Tactical hint", "คำแนะนำ")}<strong>{recommendedLabel}</strong></span></div> : <button className="strategy-recommendation" onClick={() => setShowHint(true)}><Lightbulb className="h-4 w-4" /><span>{tr("Need a tactical hint?", "ต้องการคำแนะนำไหม?")}<strong>{tr("Reveal one recommendation", "ดูคำแนะนำ 1 ข้อ")}</strong></span></button>}
           <div className="strategy-recommendation"><Radio className="h-4 w-4" /><span>{tr("Opponent plan", "แผนของฝ่ายคู่แข่ง")}<strong>{opponentPlan}</strong></span></div>
-          <div className="sector-trait"><Waves className="h-4 w-4" /><span>Sector rule<strong>{trait.name}</strong><small>{trait.effect}</small></span></div>
+          <div className="sector-trait"><Waves className="h-4 w-4" /><span>{tr("Sector rule", "กติกาพื้นที่")}<strong>{trait.name}</strong><small>{trait.effect}</small></span></div>
           <div className="strategy-bars">{sortedInfluence.map((item) => <div key={item.id}><span>{item.name}<b>{item.value}/100</b></span><i><em className={`bar-${item.id}`} style={{ width: `${item.value}%` }} /></i></div>)}</div>
-          <div className="strategy-status"><Flag className="h-4 w-4" /><span>Current status</span><strong>{controller ? `${controller.toUpperCase()} secured` : "Contested / neutral"}</strong></div>
-          <div className="strategy-choices"><button className={showHint && recommendedAction === "scan" ? "is-recommended" : ""} onClick={() => act("scan")} disabled={actions <= 0}><Eye className="h-5 w-5" /><span><strong>Deploy relay safely</strong><small>+{values.scan} influence · rivals do not react</small></span></button><button className={showHint && recommendedAction === "reinforce" ? "is-recommended" : ""} onClick={() => act("reinforce")} disabled={actions <= 0}><ShieldPlus className="h-5 w-5" /><span><strong>Reinforce strongly</strong><small>+{values.reinforce} influence · rivals also move</small></span></button><button className={showHint && recommendedAction === "disrupt" ? "is-recommended" : ""} onClick={() => act("disrupt")} disabled={actions <= 0}><Waves className="h-5 w-5" /><span><strong>Disrupt rival</strong><small>-{values.disrupt} rival · +8 friendly influence</small></span></button></div>
-          {actions <= 0 && !claimed && <button className="strategy-complete" onClick={claim}><CheckCircle2 className="h-4 w-4" /> Bank this command cycle</button>}
-          {claimed && <div className="strategy-reward">Cycle saved · +{crystalReward} crystals · +{xpReward} XP · PURI +{objectiveComplete ? 2 : 1}</div>}
+          <div className="strategy-status"><Flag className="h-4 w-4" /><span>{tr("Current status", "สถานะตอนนี้")}</span><strong>{controller ? tr(`${controller.toUpperCase()} secured`, `${controller.toUpperCase()} ควบคุม`) : tr("Contested / neutral", "กำลังแข่งขัน / ยังไม่มีฝ่ายคุม")}</strong></div>
+          <div className="strategy-choices"><button className={showHint && recommendedAction === "scan" ? "is-recommended" : ""} onClick={() => act("scan")} disabled={actions <= 0}><Eye className="h-5 w-5" /><span><strong>{tr("Deploy relay safely", "ส่งสัญญาณแบบปลอดภัย")}</strong><small>{tr(`+${values.scan} influence · rivals do not react`, `คะแนน +${values.scan} · คู่แข่งไม่ขยับ`)}</small></span></button><button className={showHint && recommendedAction === "reinforce" ? "is-recommended" : ""} onClick={() => act("reinforce")} disabled={actions <= 0}><ShieldPlus className="h-5 w-5" /><span><strong>{tr("Reinforce strongly", "เพิ่มกำลังเต็มที่")}</strong><small>{tr(`+${values.reinforce} influence · rivals also move`, `คะแนน +${values.reinforce} · คู่แข่งขยับด้วย`)}</small></span></button><button className={showHint && recommendedAction === "disrupt" ? "is-recommended" : ""} onClick={() => act("disrupt")} disabled={actions <= 0}><Waves className="h-5 w-5" /><span><strong>{tr("Disrupt rival", "ขัดขวางคู่แข่ง")}</strong><small>{tr(`-${values.disrupt} rival · +8 friendly influence`, `คู่แข่ง -${values.disrupt} · ฝ่ายเรา +8`)}</small></span></button></div>
+          {actions <= 0 && !claimed && <button className="strategy-complete" onClick={claim}><CheckCircle2 className="h-4 w-4" /> {tr("Bank this command cycle", "จบรอบและรับรางวัล")}</button>}
+          {claimed && <div className="strategy-reward">{tr(`Cycle saved · +${crystalReward} crystals · +${xpReward} XP · PURI +${objectiveComplete ? 2 : 1}`, `จบรอบแล้ว · คริสตัล +${crystalReward} · XP +${xpReward} · PURI +${objectiveComplete ? 2 : 1}`)}</div>}
         </aside>
       </section>
     </main>

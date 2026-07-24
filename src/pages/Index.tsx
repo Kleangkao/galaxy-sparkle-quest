@@ -10,7 +10,7 @@ import {
   getGameplayModifiers,
 } from "@/lib/gameState";
 import { generateEgg, AlienEgg, AlienPet, ALIEN_PETS } from "@/lib/pets";
-import { playClickSound, playTravelSound, setSoundMode, startModeAmbience, stopModeAmbience } from "@/lib/sounds";
+import { playClickSound, playTravelSound, setMusicMode, setSoundMode, startModeAmbience, stopModeAmbience } from "@/lib/sounds";
 import {
   startAutoSave, stopAutoSave, startHealthCheck, stopHealthCheck,
   validateAndRepairState, logError,
@@ -108,6 +108,7 @@ export default function Index() {
 
   useEffect(() => {
     setSoundMode(gameState.accessibility.sound);
+    setMusicMode(gameState.accessibility.music);
     const ambientMode = screen === "map" || screen === "planet" ? "story"
       : screen === "arcade" || screen === "arcade-select" ? "arcade"
         : screen === "strategy" ? "strategy"
@@ -116,7 +117,7 @@ export default function Index() {
               : screen === "swarm" ? "swarm" : "hub";
     startModeAmbience(ambientMode);
     return stopModeAmbience;
-  }, [gameState.accessibility.sound, screen]);
+  }, [gameState.accessibility.music, gameState.accessibility.sound, screen]);
 
   const updateState = useCallback((updater: (prev: GameState) => GameState) => {
     setGameState((prev) => {

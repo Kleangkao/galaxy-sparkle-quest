@@ -3,6 +3,7 @@ import { ArrowLeft, Check, Crosshair, Gauge, Radar, Shield, UserRound, Zap } fro
 import { GameState } from "@/lib/gameState";
 import { PILOTS, TOOLS, getLoadoutPath, getPilotUnlock, getToolUnlock } from "@/lib/loadouts";
 import ShipUpgradeShop from "@/components/ShipUpgradeShop";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   gameState: GameState;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function CrewHangar(props: Props) {
+  const { tr } = useI18n();
   const [view, setView] = useState<"crew" | "ship">("crew");
 
   if (view === "ship") {
@@ -35,28 +37,28 @@ export default function CrewHangar(props: Props) {
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <button onClick={props.onBack} className="hangar-back">
-        <ArrowLeft className="h-4 w-4" /> Frontier
+        <ArrowLeft className="h-4 w-4" /> {tr("Frontier", "กลับ")}
       </button>
 
       <header className="hangar-header">
         <div>
-          <div className="command-kicker">Crew deck · Loadout online</div>
-          <h1>Crew & Hangar</h1>
-          <p>Choose one pilot for your overall play style and one weapon for combat. Every listed effect is active in the modes it names.</p>
+          <div className="command-kicker">{tr("Crew deck · Loadout online", "จัดทีม · ชุดพร้อมใช้งาน")}</div>
+          <h1>{tr("Crew & Hangar", "จัดทีมและโรงเก็บยาน")}</h1>
+          <p>{tr("Choose one pilot for your overall play style and one weapon for combat. Every effect names the modes where it works.", "เลือกนักบิน 1 คนตามสไตล์ที่ชอบ และเลือกอาวุธ 1 ชิ้นสำหรับโหมดต่อสู้ แต่ละความสามารถจะบอกชัดว่าใช้กับโหมดไหน")}</p>
         </div>
-        <button className="hangar-ship-link" onClick={() => setView("ship")}>Ship systems →</button>
+        <button className="hangar-ship-link" onClick={() => setView("ship")}>{tr("Ship systems", "ระบบยาน")} →</button>
       </header>
 
       <section className="loadout-summary" aria-label="Active expedition loadout">
-        <div><UserRound /><span>Active pilot</span><strong>{activePilot.name}</strong><small>{activePilot.effect}</small></div>
-        <div><Radar /><span>Equipped tool</span><strong>{activeTool.name}</strong><small>{activeTool.effect}</small></div>
-        <div><Gauge /><span>Play style</span><strong>{getLoadoutPath(activePilot.id, activeTool.id)}</strong><small>{activePilot.callsign} build · change between missions</small></div>
+        <div><UserRound /><span>{tr("Active pilot", "นักบินที่ใช้")}</span><strong>{activePilot.name}</strong><small>{activePilot.effect}</small></div>
+        <div><Radar /><span>{tr("Equipped tool", "อาวุธที่ใช้")}</span><strong>{activeTool.name}</strong><small>{activeTool.effect}</small></div>
+        <div><Gauge /><span>{tr("Play style", "สไตล์การเล่น")}</span><strong>{getLoadoutPath(activePilot.id, activeTool.id)}</strong><small>{tr(`${activePilot.callsign} build · change between missions`, `ชุด ${activePilot.callsign} · เปลี่ยนได้ระหว่างภารกิจ`)}</small></div>
       </section>
 
       <section className="hangar-section" aria-labelledby="pilot-roster-title">
         <div className="hangar-section__heading">
-          <div><span>01</span><div><h2 id="pilot-roster-title">Pilot roster</h2><p>Your pilot sets the expedition's main strength.</p></div></div>
-          <small>Earn pilots through Story and mastery challenges</small>
+          <div><span>01</span><div><h2 id="pilot-roster-title">{tr("Pilot roster", "รายชื่อนักบิน")}</h2><p>{tr("Your pilot sets the expedition's main strength.", "นักบินกำหนดความสามารถหลักของทีม")}</p></div></div>
+          <small>{tr("Earn pilots through Story and mastery challenges", "ปลดล็อกนักบินจากเนื้อเรื่องและภารกิจความชำนาญ")}</small>
         </div>
         <div className="pilot-grid">
           {PILOTS.map((pilot) => {
@@ -64,14 +66,14 @@ export default function CrewHangar(props: Props) {
             const unlock = getPilotUnlock(pilot.id, props.gameState);
             return (
               <button key={pilot.id} disabled={!unlock.unlocked} className={`pilot-card ${active ? "is-active" : ""} ${!unlock.unlocked ? "opacity-55" : ""}`} onClick={() => unlock.unlocked && props.onSetPilot(pilot.id)}>
-                <img src={pilot.image} alt="" />
+                <img src={pilot.image} alt={pilot.name} />
                 <span className="pilot-card__role">{pilot.role}</span>
                 <div className="pilot-card__content">
                   <div><small>{pilot.callsign}</small><h3>{pilot.name}</h3></div>
-                  {active && <span className="pilot-card__check"><Check className="h-4 w-4" /> Active</span>}
+                  {active && <span className="pilot-card__check"><Check className="h-4 w-4" /> {tr("Active", "กำลังใช้")}</span>}
                   <p>{pilot.tagline}</p>
                   <strong>{pilot.effect}</strong>
-                  {!unlock.unlocked && <small>Locked · {unlock.requirement}</small>}
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirement}`)}</small>}
                 </div>
               </button>
             );
@@ -81,8 +83,8 @@ export default function CrewHangar(props: Props) {
 
       <section className="hangar-section" aria-labelledby="tool-rack-title">
         <div className="hangar-section__heading">
-          <div><span>02</span><div><h2 id="tool-rack-title">Combat weapons</h2><p>Weapons affect Swarm or Arcade combat only. Story exploration is improved by pilots and ship systems.</p></div></div>
-          <small>One tool equipped</small>
+          <div><span>02</span><div><h2 id="tool-rack-title">{tr("Combat weapons", "อาวุธต่อสู้")}</h2><p>{tr("Weapons affect Swarm or Arcade only. Story is improved by pilots and ship systems.", "อาวุธมีผลกับโหมดฝ่าฝูงศัตรูหรือยิงเป้าเท่านั้น ส่วนเนื้อเรื่องใช้ความสามารถนักบินและระบบยาน")}</p></div></div>
+          <small>{tr("One tool equipped", "เลือกใช้ได้ 1 ชิ้น")}</small>
         </div>
         <div className="tool-grid">
           {TOOLS.map((tool) => {
@@ -91,10 +93,10 @@ export default function CrewHangar(props: Props) {
             const Icon = tool.effectType === "quickdraw" ? Zap : tool.effectType === "power" ? Crosshair : Shield;
             return (
               <button key={tool.id} disabled={!unlock.unlocked} className={`tool-card ${active ? "is-active" : ""} ${!unlock.unlocked ? "opacity-55" : ""}`} onClick={() => unlock.unlocked && props.onSetTool(tool.id)}>
-                <div className="tool-card__image"><img src={tool.image} alt="" /></div>
+                <div className="tool-card__image"><img src={tool.image} alt={tool.name} /></div>
                 <div className="tool-card__copy">
                   <span>{tool.family}</span><h3>{tool.name}</h3><p><Icon className="h-4 w-4" />{tool.effect}</p>
-                  {!unlock.unlocked && <small>Locked · {unlock.requirement}</small>}
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirement}`)}</small>}
                 </div>
                 {active && <Check className="tool-card__check h-5 w-5" />}
               </button>
