@@ -62,7 +62,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
         <div className="app-status-bar__captain">
           <Sparkles className="h-4 w-4 text-cosmic-yellow" />
           <div>
-            <strong>{rank.name}</strong>
+            <strong>{tr(rank.name, rank.name === "Explorer" ? "นักสำรวจ" : rank.name)}</strong>
             <span>{gameState.xp}/{xpInfo.next} {t("xp")}</span>
           </div>
           <i aria-label={`${Math.round(xpInfo.progress)}% to next rank`}><b style={{ width: `${xpInfo.progress}%` }} /></i>
@@ -70,7 +70,7 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
 
         <div className="app-status-bar__actions">
           {faction && (
-            <button className={`faction-switch ${faction.colorClass}`} onClick={onLogoClick} title="Switch faction without deleting progress">
+            <button className={`faction-switch ${faction.colorClass}`} onClick={onLogoClick} title={tr("Switch faction without deleting progress", "เปลี่ยนฝ่ายได้โดยเซฟเดิมไม่หาย")}>
               <RefreshCw className="h-3.5 w-3.5" />
               <span>{faction.name}</span>
               <small>{tr("Switch faction", "เปลี่ยนฝ่าย")}</small>
@@ -83,20 +83,20 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
               Daily +
             </motion.button>
           )}
-          <button className="status-icon-button" onClick={() => onNavigate("pets")} aria-label={`Companions, ${gameState.pets.length} owned`} title="Companions">
+          <button className="status-icon-button" onClick={() => onNavigate("pets")} aria-label={tr(`Companions, ${gameState.pets.length} owned`, `เพื่อนร่วมทาง ${gameState.pets.length} ตัว`)} title={tr("Companions", "เพื่อนร่วมทาง")}>
             <PawPrint className="h-4 w-4" /><span>{gameState.pets.length}</span>
           </button>
-          <button className="status-icon-button" onClick={() => onNavigate("info")} aria-label="Game guide" title="Game guide">
+          <button className="status-icon-button" onClick={() => onNavigate("info")} aria-label={tr("Game guide", "คู่มือเกม")} title={tr("Game guide", "คู่มือเกม")}>
             <Info className="h-4 w-4" />
           </button>
-          <button className="status-icon-button" onClick={onOpenSettings} aria-label="Game settings" title="Game settings">
+          <button className="status-icon-button" onClick={onOpenSettings} aria-label={tr("Game settings", "ตั้งค่าเกม")} title={tr("Game settings", "ตั้งค่าเกม")}>
             <Settings className="h-4 w-4" />
           </button>
           <LanguageToggle />
         </div>
       </header>
 
-      <nav className="command-dock hide-scrollbar" aria-label="Game modes">
+      <nav className="command-dock hide-scrollbar" aria-label={tr("Game modes", "โหมดเกม")}>
         {DOCK_ITEMS.map((item) => (
           <DockButton key={item.label} item={item} activeScreen={activeScreen} onNavigate={onNavigate} />
         ))}

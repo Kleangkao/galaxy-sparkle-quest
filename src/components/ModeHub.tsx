@@ -71,35 +71,35 @@ export default function ModeHub({ gameState, onChoose }: Props) {
     <main className="mode-hub relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <header className="mode-hub__header">
         <div>
-          <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> Galia operations network</div>
-          <h1>{tr("Choose today’s", "วันนี้อยากเล่น")}<br /><span>{tr("frontier operation.", "แบบไหน?")}</span></h1>
-          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Every operation advances the same campaign.", "จัดทีม Guardian ตามหาความจริงของสัญญาณลึกลับ และเตรียมตัวไปยัง Aurora Crown ทุกโหมดช่วยให้การผจญภัยเดินหน้าต่อ")}</p>
-          <div className="mode-mood-picker" aria-label="Choose by mood">
-            <span><Heart className="h-3.5 w-3.5" /> {tr("Choose by mood", "เลือกตามอารมณ์")}</span>
-            <button onClick={() => onChoose("discovery")}>{tr("Explore calmly", "สำรวจแบบสบาย ๆ")}</button>
-            <button onClick={() => onChoose("arcade")}>{tr("Take direct action", "อยากยิงเป้า")}</button>
-            <button onClick={() => onChoose("story")}>{tr("Continue campaign", "เล่นเนื้อเรื่องต่อ")}</button>
+          <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> {tr("Galia operations network", "ศูนย์ภารกิจแห่งกาเลีย")}</div>
+          <h1>{tr("Choose today’s", "วันนี้อยากออกไป")}<br /><span>{tr("frontier operation.", "ผจญภัยแบบไหน?")}</span></h1>
+          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Every operation advances the same campaign.", "รวมทีม Guardian ออกตามหาที่มาของสัญญาณปริศนา และเตรียมพร้อมก่อนเดินทางสู่ Aurora Crown ไม่ว่าจะเลือกเล่นโหมดไหน ทีมของคุณก็แข็งแกร่งขึ้น")}</p>
+          <div className="mode-mood-picker" aria-label={tr("Choose by mood", "เลือกเกมตามสไตล์ที่อยากเล่น")}>
+            <span><Heart className="h-3.5 w-3.5" /> {tr("Choose by mood", "เลือกตามใจวันนี้")}</span>
+            <button onClick={() => onChoose("discovery")}>{tr("Explore calmly", "เดินสำรวจชิล ๆ")}</button>
+            <button onClick={() => onChoose("arcade")}>{tr("Take direct action", "ลุยยิงให้สนุก")}</button>
+            <button onClick={() => onChoose("story")}>{tr("Continue campaign", "ไปต่อกับเนื้อเรื่อง")}</button>
           </div>
         </div>
         <div className="mode-hub__aside">
           <div className="mode-hub__captain">
             <img src={pilot.image} alt="" />
-            <div><span>Ready pilot</span><strong>{pilot.name}</strong><small>{pilot.callsign} loadout</small></div>
+            <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${pilot.callsign}`)}</small></div>
           </div>
-          <button onClick={() => onChoose(autoMode)}><WandSparkles className="h-4 w-4" /> Pick a surprise for me!</button>
+          <button onClick={() => onChoose(autoMode)}><WandSparkles className="h-4 w-4" /> {tr("Pick a surprise for me!", "สุ่มโหมดให้หน่อย!")}</button>
         </div>
       </header>
 
-      <section className="mode-records" aria-label="Mode records">
-        <div><span>Swarm best</span><strong>{records.swarmHighScore.toLocaleString()}</strong></div>
-        <div><span>Discoveries</span><strong>{records.discoveryFinds}</strong></div>
-        <div><span>Control wins</span><strong>{records.strategyWins}</strong></div>
-        <div><span>Arcade best</span><strong>{records.arcadeHighScore.toLocaleString()}</strong></div>
+      <section className="mode-records" aria-label={tr("Mode records", "สถิติแต่ละโหมด")}>
+        <div><span>{tr("Swarm best", "คะแนนฝ่าศัตรู")}</span><strong>{records.swarmHighScore.toLocaleString()}</strong></div>
+        <div><span>{tr("Discoveries", "สิ่งที่ค้นพบ")}</span><strong>{records.discoveryFinds}</strong></div>
+        <div><span>{tr("Control wins", "ชนะศึกวางแผน")}</span><strong>{records.strategyWins}</strong></div>
+        <div><span>{tr("Arcade best", "คะแนนยิงเป้า")}</span><strong>{records.arcadeHighScore.toLocaleString()}</strong></div>
       </section>
 
       <PuriBondPanel bond={records.puriBond} />
 
-      <section className="mode-grid" aria-label="Game modes">
+      <section className="mode-grid" aria-label={tr("Game modes", "โหมดเกม")}>
         {MODES.map((mode, index) => {
           const Icon = mode.icon;
           const copy = lang === "th" ? mode.th : mode;

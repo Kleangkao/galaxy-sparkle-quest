@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@700;800;900&family=K2D:wght@500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -68,6 +68,71 @@
     --sidebar-border: 240 20% 22%;
     --sidebar-ring: 280 80% 65%;
   }
+}
+
+/* Thai is treated as its own typographic system, not as a font fallback. */
+html[lang="th"] {
+  --font-body: 'Noto Sans Thai', sans-serif;
+  --font-display: 'K2D', sans-serif;
+  --font-hero: 'K2D', sans-serif;
+}
+
+html[lang="th"] body {
+  font-weight: 500;
+  line-height: 1.65;
+  word-break: normal;
+}
+
+html[lang="th"] :is(h1, h2, h3, h4, strong, button) {
+  letter-spacing: 0 !important;
+}
+
+html[lang="th"] :is(.command-kicker, .mode-records span, .mode-card__topline, .combat-hud span, .app-status-bar small) {
+  letter-spacing: .02em;
+}
+
+html[lang="th"] .mode-hub__header h1 {
+  max-width: 44rem;
+  font-size: clamp(2.7rem, 5vw, 4.45rem);
+  font-weight: 700;
+  line-height: 1.16;
+}
+
+html[lang="th"] .mode-hub__header > div:first-child > p {
+  max-width: 48rem;
+  font-size: .82rem;
+  line-height: 1.85;
+}
+
+html[lang="th"] .mode-card__copy h2 {
+  font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+html[lang="th"] .mode-card__copy p {
+  font-size: .72rem;
+  line-height: 1.75;
+}
+
+html[lang="th"] .mode-card__facts span {
+  line-height: 1.55;
+}
+
+html[lang="th"] .command-dock button {
+  min-width: 6.4rem;
+  padding-inline: .85rem;
+}
+
+html[lang="th"] .command-dock button span {
+  font-size: .66rem;
+  white-space: nowrap;
+}
+
+html[lang="th"] .game-settings__row small,
+html[lang="th"] .game-settings__section-title small {
+  font-size: .64rem;
+  line-height: 1.65;
 }
 
 /* Combat depth: assignment board, readable threats, and play assists */
