@@ -452,7 +452,7 @@ export default function Index() {
         <motion.div key="mode-hub" {...screenTransition}>
           <ScreenErrorBoundary screenName="mode-hub" onFallback={() => setScreen("map")}>
             <Suspense fallback={<ScreenLoadingFallback label="Opening activity network..." />}>
-              <ModeHub gameState={gameState} onChoose={handleChooseMode} />
+              <ModeHub gameState={gameState} onChoose={handleChooseMode} onOpenProgress={() => setScreen("progress")} onOpenCrew={() => setScreen("shop")} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>

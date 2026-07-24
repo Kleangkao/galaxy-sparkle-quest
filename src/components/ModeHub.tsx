@@ -1,4 +1,4 @@
-import { ArrowRight, Binoculars, Crosshair, Gamepad2, Heart, Map, Sparkles, Swords, WandSparkles } from "lucide-react";
+import { ArrowRight, Binoculars, Crosshair, Gamepad2, Map, Sparkles, Swords, Trophy, Users } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { getPilot } from "@/lib/loadouts";
 import PuriBondPanel from "@/components/PuriBondPanel";
@@ -9,6 +9,8 @@ export type PlayMode = "story" | "arcade" | "discovery" | "strategy" | "swarm";
 interface Props {
   gameState: GameState;
   onChoose: (mode: PlayMode) => void;
+  onOpenProgress: () => void;
+  onOpenCrew: () => void;
 }
 
 const MODES: Array<{
@@ -61,11 +63,10 @@ const MODES: Array<{
   },
 ];
 
-export default function ModeHub({ gameState, onChoose }: Props) {
+export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCrew }: Props) {
   const { lang, tr } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const records = gameState.modeRecords;
-  const autoMode = (["discovery", "arcade", "swarm", "strategy"] as PlayMode[])[new Date().getDay() % 4];
 
   return (
     <main className="mode-hub relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
@@ -74,28 +75,18 @@ export default function ModeHub({ gameState, onChoose }: Props) {
           <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> {tr("Galia operations network", "ศูนย์ภารกิจแห่งกาเลีย")}</div>
           <h1>{tr("Choose today’s", "วันนี้อยากออกไป")}<br /><span>{tr("frontier operation.", "ผจญภัยแบบไหน?")}</span></h1>
           <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Every operation advances the same campaign.", "รวมทีม Guardian ออกตามหาที่มาของสัญญาณปริศนา และเตรียมพร้อมก่อนเดินทางสู่ Aurora Crown ไม่ว่าจะเลือกเล่นโหมดไหน ทีมของคุณก็แข็งแกร่งขึ้น")}</p>
-          <div className="mode-mood-picker" aria-label={tr("Choose by mood", "เลือกเกมตามสไตล์ที่อยากเล่น")}>
-            <span><Heart className="h-3.5 w-3.5" /> {tr("Choose by mood", "เลือกตามใจวันนี้")}</span>
-            <button onClick={() => onChoose("discovery")}>{tr("Explore calmly", "เดินสำรวจชิล ๆ")}</button>
-            <button onClick={() => onChoose("arcade")}>{tr("Take direct action", "ลุยยิงให้สนุก")}</button>
-            <button onClick={() => onChoose("story")}>{tr("Continue campaign", "ไปต่อกับเนื้อเรื่อง")}</button>
-          </div>
         </div>
         <div className="mode-hub__aside">
           <div className="mode-hub__captain">
             <img src={pilot.image} alt="" />
             <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${pilot.callsign}`)}</small></div>
           </div>
-          <button onClick={() => onChoose(autoMode)}><WandSparkles className="h-4 w-4" /> {tr("Pick a surprise for me!", "สุ่มโหมดให้หน่อย!")}</button>
+          <div className="mode-hub__utility">
+            <button onClick={onOpenProgress}><Trophy className="h-4 w-4" /> {tr("Progress", "ความคืบหน้า")}</button>
+            <button onClick={onOpenCrew}><Users className="h-4 w-4" /> {tr("Crew", "จัดทีม")}</button>
+          </div>
         </div>
       </header>
-
-      <section className="mode-records" aria-label={tr("Mode records", "สถิติแต่ละโหมด")}>
-        <div><span>{tr("Swarm best", "คะแนนฝ่าศัตรู")}</span><strong>{records.swarmHighScore.toLocaleString()}</strong></div>
-        <div><span>{tr("Discoveries", "สิ่งที่ค้นพบ")}</span><strong>{records.discoveryFinds}</strong></div>
-        <div><span>{tr("Control wins", "ชนะศึกวางแผน")}</span><strong>{records.strategyWins}</strong></div>
-        <div><span>{tr("Arcade best", "คะแนนยิงเป้า")}</span><strong>{records.arcadeHighScore.toLocaleString()}</strong></div>
-      </section>
 
       <PuriBondPanel bond={records.puriBond} />
 

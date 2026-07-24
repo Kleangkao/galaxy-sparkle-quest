@@ -135,6 +135,26 @@ html[lang="th"] .game-settings__section-title small {
   line-height: 1.65;
 }
 
+html[lang="th"] .mode-hub__header .command-kicker,
+html[lang="th"] .story-console__hero-copy .command-kicker {
+  margin-bottom: .85rem;
+}
+
+html[lang="th"] .mode-hub__header h1,
+html[lang="th"] .story-console__hero h1 {
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+html[lang="th"] .story-console__hero-copy {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+html[lang="th"] .story-dossier__title h2 {
+  line-height: 1.2;
+}
+
 /* Combat depth: assignment board, readable threats, and play assists */
 .arcade-contracts__header { display:grid; grid-template-columns:auto 1fr auto; gap:1.25rem; align-items:center; margin-bottom:1.5rem; }
 .arcade-contracts__header > button, .arcade-contract__copy button { display:flex; align-items:center; justify-content:center; gap:.5rem; border:1px solid hsl(var(--border)); border-radius:.8rem; padding:.7rem 1rem; background:hsl(var(--card)/.78); font-weight:800; }
@@ -430,6 +450,9 @@ html[lang="th"] .game-settings__section-title small {
   .mode-hub__captain { display: flex; width: 16rem; height: 5rem; overflow: hidden; align-items: center; border: 1px solid hsl(var(--cosmic-cyan) / 0.22); border-radius: 1rem; background: hsl(var(--card) / 0.58); }
   .mode-hub__aside { display: flex; flex-direction: column; gap: 0.45rem; }
   .mode-hub__aside > button { display: flex; min-height: 2.4rem; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid hsl(var(--cosmic-purple) / 0.3); border-radius: 0.7rem; background: hsl(var(--cosmic-purple) / 0.08); color: hsl(var(--cosmic-purple)); font-size: 0.65rem; font-weight: 900; }
+  .mode-hub__utility { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; }
+  .mode-hub__utility button { display:flex; min-height:2.4rem; align-items:center; justify-content:center; gap:.35rem; border:1px solid hsl(var(--border)/.6); border-radius:.7rem; background:hsl(var(--card)/.5); color:hsl(var(--foreground)/.8); font-size:.64rem; font-weight:850; }
+  .mode-hub__utility button:hover { border-color:hsl(var(--cosmic-cyan)/.35); color:hsl(var(--cosmic-cyan)); }
   .mode-hub__captain img { width: 5rem; height: 100%; object-fit: cover; object-position: top; }
   .mode-hub__captain div { display: flex; min-width: 0; flex-direction: column; padding: 0.75rem; }
   .mode-hub__captain span, .mode-hub__captain small { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em; color: hsl(var(--muted-foreground)); }
@@ -544,10 +567,6 @@ html[lang="th"] .game-settings__section-title small {
 .command-kicker { display:inline-flex; align-items:center; gap:.4rem; border:1px solid hsl(var(--cosmic-cyan)/.24); border-radius:999px; background:hsl(var(--cosmic-cyan)/.075); padding:.35rem .65rem; color:hsl(var(--cosmic-cyan)); }
 .mode-hub::before,.mode-hub::after { position:fixed; z-index:-1; width:22rem; height:22rem; border-radius:999px; content:""; filter:blur(80px); pointer-events:none; }
 .mode-hub::before { left:-8rem; top:18%; background:hsl(var(--cosmic-purple)/.12); }.mode-hub::after { right:-7rem; bottom:5%; background:hsl(var(--cosmic-cyan)/.1); }
-.mode-mood-picker { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; margin-top:1rem; }
-.mode-mood-picker>span,.mode-mood-picker button { display:inline-flex; min-height:2.15rem; align-items:center; gap:.35rem; border-radius:999px; padding:.4rem .7rem; font-size:.62rem; font-weight:850; }
-.mode-mood-picker>span { color:hsl(var(--cosmic-pink)); }.mode-mood-picker button { border:1px solid hsl(var(--border)/.65); background:hsl(var(--card)/.58); color:hsl(var(--foreground)/.78); transition:transform .15s ease,background .15s ease,color .15s ease; }
-.mode-mood-picker button:hover { transform:translateY(-2px); background:hsl(var(--cosmic-purple)/.16); color:white; }
 .mode-records { border-radius:1.35rem !important; }.mode-records div { border:1px solid hsl(var(--border)/.28); border-radius:1rem !important; }
 .mode-card::after { position:absolute; right:-1rem; bottom:-1rem; width:4rem; height:4rem; border:1px solid hsl(var(--mode)/.15); border-radius:999px; content:""; box-shadow:-2.4rem -1.2rem 0 -.65rem hsl(var(--mode)/.06); }
 .app-status-bar,.command-dock { background:linear-gradient(90deg,hsl(var(--card)/.96),hsl(250 30% 13%/.96)); }
@@ -559,9 +578,9 @@ html[lang="th"] .game-settings__section-title small {
 .story-dossier__rewards>div,.captain-progress__summary>div { border-radius:1rem; background:linear-gradient(145deg,hsl(var(--background)/.3),hsl(var(--cosmic-purple)/.045)); }
 .story-dossier__launch,.story-console__continue { border-radius:999px; }
 button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offset:3px; }
-@media (max-width:850px){.mode-mood-picker>span{width:100%}.mode-card__body,.mode-card--feature .mode-card__body{grid-template-columns:minmax(0,1fr) minmax(8rem,11rem)}}
+@media (max-width:850px){.mode-card__body,.mode-card--feature .mode-card__body{grid-template-columns:minmax(0,1fr) minmax(8rem,11rem)}}
 @media (max-width:560px){.mode-card{min-height:0;padding:.85rem}.mode-card__topline{align-items:flex-start}.mode-card__topline small{max-width:7rem;text-align:right}.mode-card__body,.mode-card--feature .mode-card__body{grid-template-columns:1fr;padding-top:3.25rem}.mode-card__art{grid-row:1;min-height:9rem}.mode-card__copy h2{font-size:1.85rem}.mode-card__copy strong{margin-top:.85rem}.mode-card__facts{max-width:100%}}
-@media (prefers-reduced-motion:reduce){.mode-card,.mode-card__art,.mode-mood-picker button{transition:none!important}.mode-card:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){.mode-card,.mode-card__art{transition:none!important}.mode-card:hover{transform:none}}
 
 /* Product shell and mode clarity rework */
 .app-status-bar {
@@ -1209,11 +1228,16 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 /* Current Galia art library: keep masters readable instead of enlarging or cropping faces. */
 .mode-card__art {
   display: grid;
+  align-self: center;
+  min-height: 0;
+  height: 12rem;
   place-items: center;
   background:
     radial-gradient(circle at 50% 38%, hsl(var(--mode) / .17), transparent 56%),
     hsl(var(--background) / .72);
 }
+.mode-hub { padding-top: 5.6rem !important; }
+.mode-card--feature .mode-card__art { height: 15rem; }
 .mode-card__art img {
   width: 100%;
   height: 100%;
@@ -1221,6 +1245,15 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
   object-position: center;
   padding: .38rem;
   filter: saturate(.94) brightness(.94);
+}
+.mode-card--arcade .mode-card__art img,
+.mode-card--discovery .mode-card__art img,
+.mode-card--strategy .mode-card__art img {
+  padding: .6rem;
+}
+@media (max-width:560px) {
+  .mode-card__art,
+  .mode-card--feature .mode-card__art { height: 9.5rem; }
 }
 .mode-card--arcade .mode-card__art img,
 .mode-card--discovery .mode-card__art img { padding: .18rem; }
