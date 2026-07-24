@@ -54,7 +54,7 @@ export default function FactionSelect({ onSelect }: Props) {
           Guardians of Galia
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
-          {tr("Choose who you want to play today. You can switch factions anytime without deleting another faction’s progress.", "วันนี้อยากอยู่ฝ่ายไหน? เปลี่ยนฝ่ายได้ตลอด และเซฟของแต่ละฝ่ายจะไม่หาย")}
+          {tr("Choose who you want to play today. You can switch factions anytime without deleting another faction’s progress.", "วันนี้อยากเล่นฝ่ายไหน? เปลี่ยนฝ่ายได้ทุกเมื่อ และเซฟของแต่ละฝ่ายจะไม่หาย")}
         </p>
       </div>
 
@@ -71,7 +71,7 @@ export default function FactionSelect({ onSelect }: Props) {
               <img
                 src={FACTION_IMAGES[faction.id]}
                 alt={faction.name}
-                className="h-full w-full object-contain object-center p-1.5"
+                className="h-full w-full object-cover object-top"
               />
               <span>{FACTION_LEADERS[faction.id]}</span>
             </div>
