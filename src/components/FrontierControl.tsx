@@ -1,19 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, Eye, Flag, Gamepad2, Gift, Lightbulb, Radio, ShieldPlus, Sparkles, Waves } from "lucide-react";
-import {
-  FACTIONS,
-  FactionId,
-  GameState,
-  INFLUENCE_TO_CAPTURE,
-  PLANETS,
-  getFaction,
-  getPlanetController,
-  getSectorLore,
-  simulateRivalInfluence,
-  getGameplayModifiers,
-} from "@/lib/gameState";
-import { getPuriBonuses } from "@/lib/puriBond";
-import { SECTOR_TRAITS, StrategyAction, getStrategyActionValues, getStrategyObjective, isStrategyObjectiveComplete } from "@/lib/strategyMissions";
+import { ArrowLeft, CheckCircle2, Flag, Gauge, Heart, Radio, Rocket, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { GameState, INFLUENCE_TO_CAPTURE, PLANETS, getPlanetController, getSectorLore } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -22,147 +9,109 @@ interface Props {
   onComplete: (result: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => void;
 }
 
-const LEADERS = {
-  mud: "/assets/galia-current/mud-leader-charon-master-v2.webp",
-  oni: "/assets/galia-plush-tech/canonical/oni-leader-master-v1.jpg",
-  ustur: "/assets/galia-plush-tech/canonical/ustur-leader-master-v1.jpg",
-};
+type RouteChoice = { planetIndex: number; signal: number; damage: number; kind: "safe" | "risk" };
 
-const cloneInfluence = (influence: GameState["influence"]): GameState["influence"] => Object.fromEntries(
-  Object.entries(influence).map(([planetId, values]) => [planetId, { ...values }]),
-);
+const ROUTES: RouteChoice[][] = [
+  [{ planetIndex: 1, signal: 22, damage: 0, kind: "safe" }, { planetIndex: 2, signal: 31, damage: 1, kind: "risk" }],
+  [{ planetIndex: 3, signal: 24, damage: 0, kind: "safe" }, { planetIndex: 4, signal: 34, damage: 1, kind: "risk" }],
+  [{ planetIndex: 5, signal: 25, damage: 0, kind: "safe" }, { planetIndex: 6, signal: 36, damage: 1, kind: "risk" }],
+  [{ planetIndex: 7, signal: 27, damage: 0, kind: "safe" }, { planetIndex: 8, signal: 38, damage: 1, kind: "risk" }],
+];
+
+const cloneInfluence = (influence: GameState["influence"]): GameState["influence"] =>
+  Object.fromEntries(Object.entries(influence).map(([id, values]) => [id, { ...values }]));
 
 export default function FrontierControl({ gameState, onBack, onComplete }: Props) {
   const { tr } = useI18n();
-  const puri = getPuriBonuses(gameState.modeRecords.puriBond);
-  const modifiers = getGameplayModifiers(gameState);
-  const startingActions = 4 + puri.strategyActions;
-  const [cycle] = useState(gameState.modeRecords.strategyCycles);
-  const [objective] = useState(() => getStrategyObjective(cycle));
-  const [selectedId, setSelectedId] = useState(objective.targetPlanetId);
-  const [actions, setActions] = useState(startingActions);
-  const [touched, setTouched] = useState<string[]>([]);
-  const [history, setHistory] = useState<string[]>([]);
-  const [resolvingId, setResolvingId] = useState<string | null>(null);
-  const [turnFeed, setTurnFeed] = useState<string | null>(null);
+  const faction = gameState.faction ?? "mud";
   const [started, setStarted] = useState(false);
-  const [showHint, setShowHint] = useState(cycle < 2);
+  const [step, setStep] = useState(0);
+  const [signal, setSignal] = useState(0);
+  const [hull, setHull] = useState(3);
+  const [route, setRoute] = useState<RouteChoice[]>([]);
+  const [resolved, setResolved] = useState(false);
   const [claimed, setClaimed] = useState(false);
-  const [workingInfluence, setWorkingInfluence] = useState<GameState["influence"]>(() => cloneInfluence(gameState.influence));
-  const [startControlled] = useState(() => Object.values(gameState.influence).filter((inf) => getPlanetController(inf) === gameState.faction).length);
-
-  const selected = PLANETS.find((planet) => planet.id === selectedId) ?? PLANETS[0];
-  const lore = getSectorLore(selected.id);
-  const trait = SECTOR_TRAITS[selected.id];
-  const values = getStrategyActionValues(selected.id);
-  const inf = workingInfluence[selected.id];
-  const controller = getPlanetController(inf);
-  const playerFaction = gameState.faction ?? "mud";
-  const faction = getFaction(playerFaction)!;
-  const controlledNow = Object.values(workingInfluence).filter((sector) => getPlanetController(sector) === playerFaction).length;
-  const captures = Math.max(0, controlledNow - startControlled);
-  const previewState = { ...gameState, influence: workingInfluence };
-  const objectiveComplete = isStrategyObjectiveComplete(objective, previewState, startControlled, touched);
-  const baseReward = 6 + captures * 5 + (objectiveComplete ? 5 : 0);
-  const crystalReward = Math.ceil(baseReward * puri.rewardMultiplier * modifiers.crystalMultiplier);
-  const xpReward = 6 + (objectiveComplete ? 4 : 0);
-  const sortedInfluence = useMemo(() => FACTIONS.map((item) => ({ ...item, value: inf[item.id] })).sort((a, b) => b.value - a.value), [inf]);
-  const turn = startingActions - actions + 1;
-  const objectiveName = objective.id === "secure" ? tr("Secure a sector", "ยึดพื้นที่ 1 แห่ง")
-    : objective.id === "survey" ? tr("Map three sectors", "สำรวจ 3 พื้นที่")
-      : objective.id === "focus" ? tr(objective.name, `เพิ่มคะแนนใน ${getSectorLore(objective.targetPlanetId).name}`)
-        : tr(objective.name, `หยุดคู่แข่งที่ ${getSectorLore(objective.targetPlanetId).name}`);
-  const objectiveDescription = objective.id === "secure" ? tr(objective.description, "เพิ่มคะแนนพื้นที่ว่างหรือพื้นที่คู่แข่งให้ถึง 100")
-    : objective.id === "survey" ? tr(objective.description, "ใช้คำสั่งในพื้นที่ต่างกันให้ครบ 3 แห่ง")
-      : objective.id === "focus" ? tr(objective.description, "เพิ่มคะแนนฝ่ายเราในพื้นที่ที่มีกรอบสีเหลืองให้ถึง 65")
-        : tr(objective.description, "เพิ่มคะแนนฝ่ายเราให้ถึง 50 และกดคู่แข่งทุกฝ่ายให้ต่ำกว่า 40");
-
-  const act = (action: StrategyAction) => {
-    if (!started || actions <= 0 || claimed) return;
-    const planet = PLANETS.find((candidate) => candidate.id === selected.id);
-    if (!planet) return;
-    setWorkingInfluence((currentInfluence) => {
-      const current = currentInfluence[selected.id] || { mud: 0, oni: 0, ustur: 0 };
-      let next = { ...current };
-      if (action === "disrupt") {
-        const rival = (["mud", "oni", "ustur"] as FactionId[]).filter((id) => id !== playerFaction).sort((a, b) => next[b] - next[a])[0];
-        next[rival] = Math.max(0, next[rival] - values.disrupt);
-        next[playerFaction] = Math.min(INFLUENCE_TO_CAPTURE, next[playerFaction] + 8);
-      } else {
-        next[playerFaction] = Math.min(INFLUENCE_TO_CAPTURE, next[playerFaction] + values[action]);
-        if (action === "reinforce") {
-          next = simulateRivalInfluence(next, playerFaction, planet);
-          if (values.rivalPressure > 1) {
-            const rival = (["mud", "oni", "ustur"] as FactionId[]).filter((id) => id !== playerFaction).sort((a, b) => next[b] - next[a])[0];
-            next[rival] = Math.min(INFLUENCE_TO_CAPTURE - 1, next[rival] + 5);
-          }
-        }
-      }
-      return { ...currentInfluence, [selected.id]: next };
+  const workingInfluence = useMemo(() => {
+    const next = cloneInfluence(gameState.influence);
+    route.forEach((choice) => {
+      const planet = PLANETS[choice.planetIndex];
+      next[planet.id] = { ...next[planet.id], [faction]: Math.min(INFLUENCE_TO_CAPTURE, next[planet.id][faction] + choice.signal) };
     });
-    setTouched((current) => current.includes(selected.id) ? current : [...current, selected.id]);
-    const label = action === "scan"
-      ? tr(`Safe relay: ${lore.name} +${values.scan}`, `ส่งสัญญาณ: ${lore.name} +${values.scan}`)
-      : action === "reinforce"
-        ? tr(`Power push: ${lore.name} +${values.reinforce}; rival responded`, `เพิ่มกำลัง: ${lore.name} +${values.reinforce}; คู่แข่งโต้กลับ`)
-        : tr(`Jammed the leading rival at ${lore.name}`, `รบกวนคู่แข่งที่ ${lore.name}`);
-    setHistory((current) => [label, ...current].slice(0, 4));
-    setTurnFeed(label);
-    setResolvingId(selected.id);
-    window.setTimeout(() => setResolvingId(null), 600);
-    setActions((value) => value - 1);
+    return next;
+  }, [faction, gameState.influence, route]);
+  const startControlled = Object.values(gameState.influence).filter((value) => getPlanetController(value) === faction).length;
+  const controlledNow = Object.values(workingInfluence).filter((value) => getPlanetController(value) === faction).length;
+  const captures = Math.max(0, controlledNow - startControlled);
+  const objectiveComplete = signal >= 95 && hull > 0 && step === ROUTES.length;
+
+  const choose = (choice: RouteChoice) => {
+    if (resolved || claimed || step >= ROUTES.length) return;
+    const nextHull = Math.max(0, hull - choice.damage);
+    const nextSignal = signal + choice.signal;
+    const nextStep = step + 1;
+    setRoute((current) => [...current, choice]);
+    setHull(nextHull);
+    setSignal(nextSignal);
+    setStep(nextStep);
+    if (nextHull <= 0 || nextStep >= ROUTES.length) setResolved(true);
   };
 
   const claim = () => {
-    if (claimed || actions > 0) return;
+    if (!resolved || claimed) return;
     setClaimed(true);
     onComplete({ captures, objectiveComplete, influence: workingInfluence });
   };
 
-  const recommendedAction: StrategyAction = objective.id === "survey" ? "scan" : inf[playerFaction] < 65 ? "reinforce" : "disrupt";
-  const recommendedLabel = recommendedAction === "scan" ? tr("Deploy a safe signal relay", "วางเครื่องส่งสัญญาณแบบปลอดภัย") : recommendedAction === "reinforce" ? tr("Reinforce this sector", "เพิ่มกำลังในพื้นที่นี้") : tr("Disrupt the leading rival", "ขัดขวางฝ่ายคู่แข่งที่นำอยู่");
-  const leadingRival = sortedInfluence.find((item) => item.id !== playerFaction);
-  const opponentPlan = actions > 0 && leadingRival
-    ? `${leadingRival.name} ${trait.trait === "volatile" ? tr("will push hard here", "จะเพิ่มกำลังในพื้นที่นี้") : tr("is watching this sector", "กำลังจับตาพื้นที่นี้")}`
-    : tr("No rival move remains this cycle", "รอบนี้ฝ่ายคู่แข่งจะไม่ขยับแล้ว");
+  if (!started) return (
+    <main className="strategy-mode strategy-intro relative z-10 mx-auto min-h-screen max-w-5xl px-5 pb-28 pt-28 lg:px-8">
+      <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button>
+      <div className="command-kicker">{tr("Frontier Relay · Four route decisions", "เส้นทางแนวหน้า · เลือกทาง 4 ครั้ง")}</div>
+      <h1>{tr("Carry the signal across the frontier.", "ส่งสัญญาณให้ถึงแนวหน้า")}</h1>
+      <p>{tr("Choose one of two sectors at each jump. Safe routes protect your hull; risky routes charge the signal faster. Finish with 95 signal and at least 1 hull.", "แต่ละช่วงเลือกได้ 2 ทาง ทางปลอดภัยช่วยรักษายาน ทางเสี่ยงเติมสัญญาณได้เร็วกว่า จบให้ได้ 95 สัญญาณ และเหลือพลังยานอย่างน้อย 1")}</p>
+      <section className="strategy-how">
+        <div><strong>1</strong><Rocket className="h-5 w-5" /><span>{tr("Choose four jumps", "เลือกเส้นทาง 4 ครั้ง")}<small>{tr("Only one route can be taken each turn.", "แต่ละครั้งเลือกได้เพียง 1 ทาง")}</small></span></div>
+        <div><strong>2</strong><Gauge className="h-5 w-5" /><span>{tr("Reach 95 signal", "เก็บสัญญาณให้ถึง 95")}<small>{tr("Risky sectors charge more signal.", "ทางเสี่ยงให้สัญญาณมากกว่า")}</small></span></div>
+        <div><strong>3</strong><Heart className="h-5 w-5" /><span>{tr("Keep hull above zero", "อย่าให้พลังยานหมด")}<small>{tr("Three risky routes will destroy the relay ship.", "เลือกทางเสี่ยง 3 ครั้ง ยานจะเสียหายจนหมด")}</small></span></div>
+      </section>
+      <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> {tr("Launch relay ship", "ปล่อยยานส่งสัญญาณ")}</button>
+    </main>
+  );
 
-  if (!started) {
-    return (
-      <main className="strategy-mode strategy-intro relative z-10 mx-auto min-h-screen max-w-5xl px-5 pb-28 pt-28 lg:px-8">
-        <button className="strategy-intro__back" onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button>
-        <div className="command-kicker">{tr("Frontier Control · Four-turn map puzzle", "วางแผนยึดพื้นที่ · ใช้คำสั่ง 4 ครั้ง")}</div>
-        <h1>{tr(`Win the objective in ${startingActions} moves.`, `ทำเป้าหมายให้สำเร็จใน ${startingActions} คำสั่ง`)}</h1>
-        <p>{tr("This is a short turn-based puzzle, not real-time combat. Complete the objective, use every move, then bank the cycle.", "โหมดนี้เป็นเกมวางแผนสั้น ๆ ไม่ต้องรีบ ทำเป้าหมาย ใช้คำสั่งให้ครบ แล้วรับรางวัล")}</p>
-        <section className="strategy-how">
-          <div><strong>1</strong><Flag className="h-5 w-5" /><span>{tr("Pick a sector", "เลือกพื้นที่")}<small>{tr("Yellow outline marks the objective target.", "กรอบสีเหลืองคือพื้นที่เป้าหมาย")}</small></span></div>
-          <div><strong>2</strong><Gamepad2 className="h-5 w-5" /><span>{tr(`Spend ${startingActions} actions`, `ใช้คำสั่ง ${startingActions} ครั้ง`)}<small>{tr("Relay is safe, Reinforce is strong, Disrupt slows a rival.", "ส่งสัญญาณปลอดภัย เพิ่มกำลังได้คะแนนมาก ขัดขวางช่วยลดคะแนนคู่แข่ง")}</small></span></div>
-          <div><strong>3</strong><Gift className="h-5 w-5" /><span>{tr("Bank the cycle", "จบรอบและรับรางวัล")}<small>{tr("Earn crystals, XP, PURI bond, and capture bonuses.", "รับคริสตัล XP ความสนิทกับ PURI และโบนัสยึดพื้นที่")}</small></span></div>
-        </section>
-        <section className="strategy-intro__mission"><Radio className="h-6 w-6" /><div><span>{tr("This cycle’s objective", "เป้าหมายรอบนี้")}</span><h2>{objectiveName}</h2><p>{objectiveDescription}</p></div><b>{tr(`${startingActions} moves`, `${startingActions} คำสั่ง`)}</b></section>
-        <section className="strategy-intro__mission"><Gift className="h-6 w-6" /><div><span>{tr("Why play Frontier Control?", "เล่นโหมดวางแผนแล้วได้อะไร?")}</span><h2>{tr("Turn Story influence into a strategic advantage", "ใช้คะแนนพื้นที่ช่วยให้ทุกโหมดได้รางวัลดีขึ้น")}</h2><p>{tr("Every cycle gives crystals, XP, and PURI bond. Complete 2 objectives to permanently earn +10% crystals in every mode.", "ทุกรอบได้คริสตัล XP และเพิ่มความสนิทกับ PURI ทำเป้าหมายครบ 2 รอบ รับคริสตัลเพิ่ม 10% ในทุกโหมดแบบถาวร")}</p></div><b>{Math.min(gameState.modeRecords.strategyObjectives, 2)}/2</b></section>
-        <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> {tr("Start command cycle", "เริ่มรอบวางแผน")}</button>
-      </main>
-    );
-  }
-
+  const currentChoices = ROUTES[Math.min(step, ROUTES.length - 1)];
   return (
-    <main className="strategy-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
-      <header className="strategy-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr(`Four-turn map puzzle · Cycle ${cycle + 1}`, `เกมวางแผน 4 คำสั่ง · รอบ ${cycle + 1}`)}</div><h1>{tr("Frontier Control", "วางแผนยึดพื้นที่")}</h1><p>{tr(`Turn ${Math.min(turn, startingActions)} of ${startingActions}: select a sector, then choose one action.`, `คำสั่ง ${Math.min(turn, startingActions)} จาก ${startingActions}: เลือกพื้นที่ แล้วเลือกคำสั่ง`)}</p></div><div className="strategy-actions"><span>{tr("Moves left", "เหลือคำสั่ง")}</span><strong>{actions}</strong></div></header>
-      <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>{tr("Your win condition this cycle", "เงื่อนไขผ่านรอบนี้")}</span><strong>{objectiveName}</strong><p>{objectiveDescription} {tr("Use every move, then bank the cycle.", "ใช้คำสั่งให้ครบ แล้วจบรอบเพื่อรับรางวัล")}</p></div><b>{objectiveComplete ? tr("Complete · bonus secured", "สำเร็จ · ได้โบนัส") : objective.id === "survey" ? tr(`${new Set(touched).size}/3 sectors`, `${new Set(touched).size}/3 พื้นที่`) : tr("In progress", "กำลังทำ")}</b></section>
-      <section className="strategy-layout">
-        <div className="strategy-map"><div className="strategy-map__header"><span>{tr("Choose a sector", "เลือกพื้นที่")}</span><small>{tr(`${controlledNow}/10 under ${faction.name} control`, `${faction.name} ควบคุม ${controlledNow}/10 พื้นที่`)}</small></div><div className="strategy-sector-grid">
-          {PLANETS.map((planet, index) => { const sectorController = getPlanetController(workingInfluence[planet.id]); const leader = FACTIONS.find((item) => item.id === sectorController); const target = objective.targetPlanetId === planet.id && objective.id === "focus"; return <button key={planet.id} onClick={() => setSelectedId(planet.id)} className={`${selected.id === planet.id ? "is-selected" : ""} ${sectorController ? `is-${sectorController}` : ""} ${target ? "is-objective" : ""} ${resolvingId === planet.id ? "is-resolving" : ""}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{planet.emoji} {getSectorLore(planet.id).name}</strong><small>{leader ? tr(`${leader.name} control`, `${leader.name} ควบคุม`) : SECTOR_TRAITS[planet.id].name}</small></button>; })}
-        </div>{turnFeed && <div className="strategy-turn-feed"><Radio className="h-4 w-4" /><span>{tr("Turn resolved", "สรุปคำสั่งล่าสุด")}<strong>{turnFeed}</strong></span></div>}{history.length > 0 && <div className="strategy-history"><span>{tr("Your moves", "คำสั่งที่ใช้")}</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
-        <aside className="strategy-dossier"><div className="strategy-dossier__leader"><img src={LEADERS[playerFaction]} alt="" /><div><span>{faction.name} command</span><strong>{lore.name}</strong><small>{lore.threat}</small></div></div><p>{lore.story}</p>
-          {showHint ? <div className="strategy-recommendation"><Lightbulb className="h-4 w-4" /><span>{tr("Tactical hint", "คำแนะนำ")}<strong>{recommendedLabel}</strong></span></div> : <button className="strategy-recommendation" onClick={() => setShowHint(true)}><Lightbulb className="h-4 w-4" /><span>{tr("Need a tactical hint?", "ต้องการคำแนะนำไหม?")}<strong>{tr("Reveal one recommendation", "ดูคำแนะนำ 1 ข้อ")}</strong></span></button>}
-          <div className="strategy-recommendation"><Radio className="h-4 w-4" /><span>{tr("Opponent plan", "แผนของฝ่ายคู่แข่ง")}<strong>{opponentPlan}</strong></span></div>
-          <div className="sector-trait"><Waves className="h-4 w-4" /><span>{tr("Sector rule", "กติกาพื้นที่")}<strong>{trait.name}</strong><small>{trait.effect}</small></span></div>
-          <div className="strategy-bars">{sortedInfluence.map((item) => <div key={item.id}><span>{item.name}<b>{item.value}/100</b></span><i><em className={`bar-${item.id}`} style={{ width: `${item.value}%` }} /></i></div>)}</div>
-          <div className="strategy-status"><Flag className="h-4 w-4" /><span>{tr("Current status", "สถานะตอนนี้")}</span><strong>{controller ? tr(`${controller.toUpperCase()} secured`, `${controller.toUpperCase()} ควบคุม`) : tr("Contested / neutral", "กำลังแข่งขัน / ยังไม่มีฝ่ายคุม")}</strong></div>
-          <div className="strategy-choices"><button className={showHint && recommendedAction === "scan" ? "is-recommended" : ""} onClick={() => act("scan")} disabled={actions <= 0}><Eye className="h-5 w-5" /><span><strong>{tr("Deploy relay safely", "ส่งสัญญาณแบบปลอดภัย")}</strong><small>{tr(`+${values.scan} influence · rivals do not react`, `คะแนน +${values.scan} · คู่แข่งไม่ขยับ`)}</small></span></button><button className={showHint && recommendedAction === "reinforce" ? "is-recommended" : ""} onClick={() => act("reinforce")} disabled={actions <= 0}><ShieldPlus className="h-5 w-5" /><span><strong>{tr("Reinforce strongly", "เพิ่มกำลังเต็มที่")}</strong><small>{tr(`+${values.reinforce} influence · rivals also move`, `คะแนน +${values.reinforce} · คู่แข่งขยับด้วย`)}</small></span></button><button className={showHint && recommendedAction === "disrupt" ? "is-recommended" : ""} onClick={() => act("disrupt")} disabled={actions <= 0}><Waves className="h-5 w-5" /><span><strong>{tr("Disrupt rival", "ขัดขวางคู่แข่ง")}</strong><small>{tr(`-${values.disrupt} rival · +8 friendly influence`, `คู่แข่ง -${values.disrupt} · ฝ่ายเรา +8`)}</small></span></button></div>
-          {actions <= 0 && !claimed && <button className="strategy-complete" onClick={claim}><CheckCircle2 className="h-4 w-4" /> {tr("Bank this command cycle", "จบรอบและรับรางวัล")}</button>}
-          {claimed && <div className="strategy-reward">{tr(`Cycle saved · +${crystalReward} crystals · +${xpReward} XP · PURI +${objectiveComplete ? 2 : 1}`, `จบรอบแล้ว · คริสตัล +${crystalReward} · XP +${xpReward} · PURI +${objectiveComplete ? 2 : 1}`)}</div>}
-        </aside>
+    <main className="strategy-mode relative z-10 mx-auto min-h-screen max-w-6xl px-5 pb-28 pt-28 lg:px-8">
+      <header className="strategy-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr("Frontier Relay", "เส้นทางแนวหน้า")}</div><h1>{tr("Build the signal route", "สร้างเส้นทางส่งสัญญาณ")}</h1><p>{resolved ? tr("Route complete. Check the result and bank the flight.", "เดินทางจบแล้ว ตรวจผลและรับรางวัล") : tr(`Jump ${step + 1} of 4 · choose one sector`, `ช่วงที่ ${step + 1} จาก 4 · เลือก 1 พื้นที่`)}</p></div></header>
+
+      <section className={`relay-status ${objectiveComplete ? "is-complete" : ""}`}>
+        <div><Radio /><span>{tr("Signal charge", "พลังสัญญาณ")}<strong>{signal}/95</strong></span><i><b style={{ width: `${Math.min(100, signal / 95 * 100)}%` }} /></i></div>
+        <div><Heart /><span>{tr("Relay hull", "พลังยาน")}<strong>{hull}/3</strong></span><i><b style={{ width: `${hull / 3 * 100}%` }} /></i></div>
+      </section>
+
+      <section className="relay-flight">
+        <div className="relay-flight__trail">
+          <span className="is-start"><Flag />{tr("Start", "เริ่ม")}</span>
+          {route.map((choice, index) => <span key={`${choice.planetIndex}-${index}`} className={`is-${choice.kind}`}><Rocket />{getSectorLore(PLANETS[choice.planetIndex].id).name}<small>+{choice.signal}</small></span>)}
+          {Array.from({ length: 4 - route.length }).map((_, index) => <span key={`empty-${index}`} className="is-empty">{index === 3 - route.length ? <Flag /> : <Radio />}</span>)}
+        </div>
+
+        {!resolved ? <div className="relay-choices">
+          {currentChoices.map((choice) => {
+            const planet = PLANETS[choice.planetIndex];
+            return <button key={planet.id} className={`is-${choice.kind}`} onClick={() => choose(choice)}>
+              <div>{choice.kind === "safe" ? <ShieldCheck /> : <TriangleAlert />}</div>
+              <span>{tr(choice.kind === "safe" ? "Safe route" : "Risk route", choice.kind === "safe" ? "ทางปลอดภัย" : "ทางเสี่ยง")}</span>
+              <h2>{planet.emoji} {getSectorLore(planet.id).name}</h2>
+              <p>{choice.kind === "safe" ? tr("Stable corridor. No hull damage.", "เส้นทางนิ่ง ยานไม่เสียพลัง") : tr("Ion storm. Faster signal, but -1 hull.", "พายุไอออน สัญญาณแรงขึ้น แต่พลังยาน -1")}</p>
+              <strong><Radio /> +{choice.signal} {tr("signal", "สัญญาณ")} {choice.damage ? `· -${choice.damage} ${tr("hull", "พลังยาน")}` : ""}</strong>
+            </button>;
+          })}
+        </div> : <div className={`relay-result ${objectiveComplete ? "is-win" : "is-fail"}`}>
+          {objectiveComplete ? <CheckCircle2 /> : <TriangleAlert />}
+          <h2>{objectiveComplete ? tr("Signal delivered", "ส่งสัญญาณสำเร็จ") : tr("Signal route incomplete", "ส่งสัญญาณไม่สำเร็จ")}</h2>
+          <p>{objectiveComplete ? tr("The frontier relay is online. Your chosen sectors gained faction influence.", "เครือข่ายแนวหน้าทำงานแล้ว พื้นที่ที่เลือกได้รับคะแนนฝ่าย") : hull <= 0 ? tr("The ship took too much damage. Mix safe and risky routes next time.", "ยานเสียหายมากเกินไป รอบหน้าลองสลับทางปลอดภัยกับทางเสี่ยง") : tr("The route needs 95 signal. Choose at least two risky sectors.", "ต้องมีสัญญาณ 95 ขึ้นไป ลองเลือกทางเสี่ยงอย่างน้อย 2 ครั้ง")}</p>
+          {!claimed && <button onClick={claim}>{tr("Bank flight rewards", "รับรางวัลเที่ยวบิน")}</button>}
+          {claimed && <strong>{tr("Flight saved · results ready", "บันทึกเที่ยวบินแล้ว")}</strong>}
+        </div>}
       </section>
     </main>
   );

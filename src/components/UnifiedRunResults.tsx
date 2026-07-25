@@ -17,7 +17,7 @@ export interface RunResultData {
   improvementsTh?: string[];
 }
 
-export default function UnifiedRunResults({ result, gameState, onExit, onCrew }: { result: RunResultData; gameState: GameState; onExit: () => void; onCrew: () => void }) {
+export default function UnifiedRunResults({ result, gameState, onDismiss, onExit, onCrew }: { result: RunResultData; gameState: GameState; onDismiss?: () => void; onExit: () => void; onCrew: () => void }) {
   const { tr } = useI18n();
   const unlocks = getFreshUnlocks(gameState);
   const improvements = result.improvements?.length
@@ -25,7 +25,7 @@ export default function UnifiedRunResults({ result, gameState, onExit, onCrew }:
     : unlocks;
   return <div className="unified-results-backdrop" role="dialog" aria-modal="true" aria-label={`${result.title} results`}>
     <section className="unified-results">
-      <button className="unified-results__close" onClick={onExit} aria-label={tr("Return to mode menu", "กลับหน้าเลือกโหมด")}><X /></button>
+      <button className="unified-results__close" onClick={onDismiss ?? onExit} aria-label={tr("Close results", "ปิดหน้าสรุป")}><X /></button>
       <div className="unified-results__badge"><CheckCircle2 /></div>
       <div className="command-kicker">{tr("Run complete · rewards banked", "จบรอบแล้ว · รับรางวัลเรียบร้อย")}</div>
       <h2>{result.title}</h2><p>{result.outcome}</p>

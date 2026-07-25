@@ -44,7 +44,7 @@ export interface Faction {
 
 export const FACTIONS: Faction[] = [
   {
-    id: "mud", name: "MUD", subtitle: "Forge Vanguard", emoji: "🔴",
+    id: "mud", name: "MUD", subtitle: "Forge Vanguard", emoji: "⚙️",
     description: "Bold frontier engineers who turn wreckage into wonders. Choose MUD for sturdy gear, big salvage, and fearless exploration.",
     bonusText: "+20% salvage from every expedition",
     colorClass: "text-cosmic-pink", glowClass: "glow-text",
@@ -99,7 +99,7 @@ export interface ShipSkin {
 }
 
 export const SHIP_SKINS: ShipSkin[] = [
-  { id: "red-rocket", name: "Red Rocket", emoji: "🔴", cost: 0, requiredLevel: 1 },
+  { id: "red-rocket", name: "Red Rocket", emoji: "🚀", cost: 0, requiredLevel: 1 },
   { id: "candy-ship", name: "Candy Ship", emoji: "🍭", cost: 20, requiredLevel: 2 },
   { id: "ice-ship", name: "Ice Ship", emoji: "❄️", cost: 35, requiredLevel: 3 },
   { id: "jungle-cruiser", name: "Jungle Cruiser", emoji: "🌿", cost: 50, requiredLevel: 4 },

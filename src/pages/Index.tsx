@@ -513,7 +513,8 @@ export default function Index() {
         <ScreenErrorBoundary screenName="planet-explore" onFallback={() => { setActivePlanet(null); setScreen("map"); }}>
           <Suspense fallback={<ScreenLoadingFallback label="Preparing sector..." />}>
             <PlanetExplore planet={activePlanet} gameState={gameState} onCollect={handleCollect}
-              onBack={() => { setActivePlanet(null); setScreen("map"); }} />
+              onBack={() => { setActivePlanet(null); setScreen("map"); }}
+              onContinue={(nextPlanet) => { playTravelSound(); setActivePlanet(nextPlanet); setScreen("planet"); }} />
           </Suspense>
         </ScreenErrorBoundary>
         </motion.div>
@@ -657,7 +658,7 @@ export default function Index() {
 
       {runResult && (
         <Suspense fallback={null}>
-          <UnifiedRunResults result={runResult} gameState={gameState} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
+          <UnifiedRunResults result={runResult} gameState={gameState} onDismiss={() => setRunResult(null)} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
         </Suspense>
       )}
 

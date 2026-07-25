@@ -19,6 +19,7 @@ import PlanetExplore from "@/components/PlanetExplore";
 import { MISSION_BRIEFS } from "@/lib/missionBriefs";
 import UnifiedRunResults from "@/components/UnifiedRunResults";
 import ArcadeShooter from "@/components/ArcadeShooter";
+import { I18nProvider } from "@/lib/i18n";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
 const ONI_SAVE_KEY = "cosmic-explorer-save-v2:oni";
@@ -146,7 +147,7 @@ describe("public test release hardening", () => {
     expect(isOrthogonallyAdjacent(2, 2, 3, 3)).toBe(false);
   });
 
-  it("keeps the completed Strategy objective visible after the parent advances the cycle", () => {
+  it("keeps a completed Frontier Relay result visible after the parent saves it", () => {
     function Harness() {
       const [state, setState] = useState(createNewGameState("oni"));
       return (
@@ -163,14 +164,14 @@ describe("public test release hardening", () => {
     }
 
     render(<Harness />);
-    fireEvent.click(screen.getByRole("button", { name: "Start command cycle" }));
-    const reinforce = screen.getByRole("button", { name: /Reinforce strongly/ });
-    for (let index = 0; index < 4; index += 1) fireEvent.click(reinforce);
-    fireEvent.click(screen.getByRole("button", { name: "Bank this command cycle" }));
+    fireEvent.click(screen.getByRole("button", { name: "Launch relay ship" }));
+    for (let index = 0; index < 4; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /Safe route/ }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Bank flight rewards" }));
 
-    expect(screen.getByText("Secure a sector")).toBeInTheDocument();
-    expect(screen.getByText(/Complete.*bonus secured/)).toBeInTheDocument();
-    expect(screen.queryByText("Stabilize Prism Reach")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Signal delivered" })).toBeInTheDocument();
+    expect(screen.getByText("Flight saved · results ready")).toBeInTheDocument();
   });
 
   it("lets players preview locked Story chapters without launching them", () => {
@@ -196,13 +197,50 @@ describe("public test release hardening", () => {
         gameState={createNewGameState("mud")}
         onCollect={() => undefined}
         onBack={() => undefined}
+        onContinue={() => undefined}
       />,
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Launch Balanced route" }));
 
-    expect(screen.getByText(/Live Mission HUD/)).toBeInTheDocument();
+    expect(screen.getByText(/Live mission/)).toBeInTheDocument();
     expect(screen.getByText(/Crystal Flight School/)).toBeInTheDocument();
+  });
+
+  it("renders the complete Story briefing in Thai when Thai is selected", () => {
+    localStorage.setItem("galaxy-lang", "th");
+    render(
+      <I18nProvider>
+        <PlanetExplore
+          planet={PLANETS[0]}
+          gameState={createNewGameState("mud")}
+          onCollect={() => undefined}
+          onBack={() => undefined}
+          onContinue={() => undefined}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByText("รางวัลผ่านครั้งแรก")).toBeInTheDocument();
+    expect(screen.getByText("ข้อมูลเพื่อนร่วมทาง")).toBeInTheDocument();
+    expect(screen.getByText(/เงื่อนไขผ่าน: เก็บคริสตัล 5 ชิ้น/)).toBeInTheDocument();
+    expect(screen.queryByText("Choose how to play this chapter")).not.toBeInTheDocument();
+  });
+
+  it("places the required glow node in Story chapter 8", () => {
+    render(
+      <PlanetExplore
+        planet={PLANETS[7]}
+        gameState={createNewGameState("mud")}
+        onCollect={() => undefined}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Launch Balanced route" }));
+
+    expect(screen.getAllByText(/Glow nodes 0\/1/).length).toBeGreaterThan(0);
+    expect(screen.getByText("NODE")).toBeInTheDocument();
   });
 
   it("keeps the fully upgraded crystal economy within a controlled multiplier", () => {

@@ -176,11 +176,20 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       if (state.reloading <= 0 && state.ammo === 0) state.ammo = magazine;
 
       for (const target of state.targets) {
-        target.x += target.vx * dt;
-        target.y += target.vy * dt;
+        if (target.kind === "boss") {
+          // Ahr follows a deliberate figure-eight attack path. The previous
+          // edge-bounce made the whole body look like a loose pendulum.
+          target.x = WIDTH * 0.62 + Math.sin(state.elapsed * 0.92) * WIDTH * 0.24;
+          target.y = HEIGHT * 0.46 + Math.sin(state.elapsed * 1.84) * HEIGHT * 0.16;
+        } else {
+          target.x += target.vx * dt;
+          target.y += target.vy * dt;
+        }
         target.life -= dt;
-        if (target.x < target.size || target.x > WIDTH - target.size) target.vx *= -1;
-        if (target.y < target.size || target.y > HEIGHT - target.size) target.vy *= -1;
+        if (target.kind !== "boss") {
+          if (target.x < target.size || target.x > WIDTH - target.size) target.vx *= -1;
+          if (target.y < target.size || target.y > HEIGHT - target.size) target.vy *= -1;
+        }
       }
       state.targets = state.targets.filter((target) => target.life > 0 || target.kind === "boss");
 

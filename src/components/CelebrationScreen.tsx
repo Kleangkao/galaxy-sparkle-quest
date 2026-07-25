@@ -12,10 +12,11 @@ interface Props {
   petEmoji: string | null;
   faction: string | null;
   onDone: () => void;
+  onContinue?: () => void;
 }
 
-export default function CelebrationScreen({ xp, crystals, petName, petEmoji, faction, onDone }: Props) {
-  const { t } = useI18n();
+export default function CelebrationScreen({ xp, crystals, petName, petEmoji, faction, onDone, onContinue }: Props) {
+  const { t, tr } = useI18n();
   const [show, setShow] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
   const [showPet, setShowPet] = useState(false);
@@ -150,7 +151,7 @@ export default function CelebrationScreen({ xp, crystals, petName, petEmoji, fac
               transition={{ delay: 0.38 }}
               className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-xs"
             >
-              {petName ? "Mission logged // new discovery secured" : "Mission logged // rewards secured"}
+              {petName ? tr("Mission logged · new companion secured", "บันทึกภารกิจแล้ว · พบเพื่อนใหม่") : tr("Mission logged · rewards secured", "บันทึกภารกิจและรับรางวัลแล้ว")}
             </motion.p>
 
             {/* Rewards card */}
@@ -224,21 +225,28 @@ export default function CelebrationScreen({ xp, crystals, petName, petEmoji, fac
             {/* Continue */}
             {showButton && (
               <div className="flex flex-col items-center gap-2">
+                {onContinue && <motion.button
+                  initial={{ y: 24, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  onClick={onContinue}
+                  className="min-h-[56px] rounded-2xl bg-cosmic-yellow px-12 py-3.5 text-lg font-black text-accent-foreground shadow-[0_0_30px_hsl(45_95%_60%/0.3)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >{tr("Continue to next chapter →", "เล่นบทถัดไป →")}</motion.button>}
                 <motion.button
                   initial={{ y: 30, opacity: 0, scale: 0.8 }}
                   animate={{ y: 0, opacity: 1, scale: 1 }}
                   transition={{ type: "spring", stiffness: 200 }}
                   whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
                   onClick={onDone}
-                  className="relative min-h-[56px] overflow-hidden rounded-2xl bg-cosmic-yellow px-10 py-3.5 text-lg font-bold text-accent-foreground shadow-[0_0_30px_hsl(45_95%_60%/0.3)] sm:px-14 sm:py-4 sm:text-xl"
+                  className={`relative min-h-[48px] overflow-hidden rounded-2xl px-10 py-3 text-base font-bold ${onContinue ? "border border-border/60 bg-card/70 text-foreground" : "bg-cosmic-yellow text-accent-foreground shadow-[0_0_30px_hsl(45_95%_60%/0.3)]"}`}
                   style={{ fontFamily: "var(--font-display)" }}>
                   <motion.div animate={{ x: ["-100%", "200%"] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10">{t("continueBtn")}</span>
+                  <span className="relative z-10">{onContinue ? tr("Back to chapter map", "กลับหน้าเลือกบท") : t("continueBtn")}</span>
                 </motion.button>
                 <p className="text-[11px] text-muted-foreground sm:text-xs">
-                  Return to the map and continue your expedition.
+                  {onContinue ? tr("You can continue now or choose another chapter.", "ไปบทต่อไปได้เลย หรือกลับไปเลือกบทอื่น") : tr("Return to the map and continue your expedition.", "กลับไปที่แผนที่เพื่อเล่นต่อ")}
                 </p>
               </div>
             )}

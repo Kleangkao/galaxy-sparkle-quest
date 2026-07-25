@@ -160,6 +160,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     crystalGoal: 7,
     petGoal: 1,
     nodeGoal: 1,
+    speedTiles: [[6, 2]],
     requireReturn: false,
     walls: [[1, 4], [2, 4], [3, 4], [4, 4]],
   },
@@ -190,6 +191,19 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     speedTiles: [[6, 1], [6, 6]],
     teleportPairs: [[[0, 0], [7, 7]]],
   },
+};
+
+const STORY_MISSION_TH: Record<string, { name: string; objective: string }> = {
+  "sparkle-moon": { name: "ฝึกบินในถ้ำคริสตัล", objective: "ฝึกเดิน เก็บคริสตัล 5 ชิ้น แล้วกลับมาที่ยาน" },
+  "candy-planet": { name: "ตามรอยสัญญาณมีชีวิต", objective: "เก็บสัญญาณตามลำดับที่ไฮไลต์ไว้" },
+  "frosty-star": { name: "เส้นทางน้ำแข็ง", objective: "เดินทีละช่องและเก็บชิ้นส่วนนำทาง 8 ชิ้น" },
+  "jungle-world": { name: "ป่าเงียบ", objective: "เก็บกุญแจ 8 ชิ้น พร้อมหลบหน่วยลาดตระเวน" },
+  "rainbow-nebula": { name: "ผู้พิทักษ์ปริซึม", objective: "เปิดโหนดปริซึม 5 จุดเพื่อทำลายเกราะ" },
+  "bubbly-bay": { name: "ส่งพลังแรงดัน", objective: "เก็บพลัง 6 ชิ้น แล้วส่งให้วาล์วทั้ง 2 จุด" },
+  "cookie-crater": { name: "คลื่นพลังปล่องดาว", objective: "เก็บตัวปรับเสถียร 6 ชิ้น หลบพื้นที่อันตราย แล้วกลับยาน" },
+  "starlight-shore": { name: "ช่วยเหลือชายฝั่งดาว", objective: "พบเพื่อน เก็บดาว 7 ดวง และเปิดโหนดทางออก" },
+  "crystal-cave": { name: "ภารกิจแนวหน้า", objective: "ชาร์จประตู 2 จุด และเก็บแกนคริสตัล 6 ชิ้น" },
+  "golden-galaxy": { name: "ศึกสุดท้ายแกนออโรรา", objective: "เปิดประตูทั้งสอง พบเพื่อน เก็บแกน 8 ชิ้น แล้วกลับยาน" },
 };
 
 // ─── Planet Themes ───────────────────────────────────────────────
@@ -505,7 +519,7 @@ export default function PlanetExploration({
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(false);
   const completedRef = useRef(false);
-  const { t } = useI18n();
+  const { t, tr } = useI18n();
   const theme = PLANET_THEMES[planetId] || PLANET_THEMES["sparkle-moon"];
   const mission = useMemo(() => MISSION_PROFILES[planetId] ?? ({
     name: "Survey Operation",
@@ -519,6 +533,7 @@ export default function PlanetExploration({
   const [items, setItems] = useState<ExplorationItem[]>(() => mapData.items.map((item) => routeMode === "scout" && item.type === "hidden" ? { ...item, revealed: true } : item));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [timeLeft, setTimeLeft] = useState(missionTimeLimit);
+  const deadlineRef = useRef<number | null>(null);
   const [score, setScore] = useState(0);
   const maxHp = 3 + startingHpBonus;
   const [hp, setHp] = useState(maxHp);
@@ -595,7 +610,21 @@ export default function PlanetExploration({
     return () => clearTimeout(t);
   }, []);
 
-  // Timer (only starts after landing)
+  // The deadline is wall-clock based. Movement and React renders must never
+  // postpone the timer tick on faster or slower machines.
+  useEffect(() => {
+    if (landing || gameOver) {
+      deadlineRef.current = null;
+      return;
+    }
+    if (deadlineRef.current === null) deadlineRef.current = Date.now() + missionTimeLimit * 1000;
+    const timer = window.setInterval(() => {
+      if (deadlineRef.current === null) return;
+      setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
+    }, 200);
+    return () => window.clearInterval(timer);
+  }, [landing, gameOver, missionTimeLimit]);
+
   useEffect(() => {
     if (landing || gameOver) return;
     if (timeLeft <= 0) {
@@ -614,11 +643,8 @@ export default function PlanetExploration({
         setShipReached(true);
         completeOnce(hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier));
       }, 2500);
-      return;
     }
-    const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, gameOver, landing, completeOnce, requiredCollect, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
+  }, [timeLeft, gameOver, landing, completeOnce, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
 
   // Spawn sparkle burst at a grid position
   const spawnSparkles = useCallback((row: number, col: number) => {
@@ -933,10 +959,10 @@ export default function PlanetExploration({
   const canReturn = goalsMet;
   const atShip = playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col;
   const goalBits = [
-    mission.crystalGoal ? `Crystals ${crystalCollected}/${mission.crystalGoal}` : null,
-    mission.petGoal ? `Companion ${petCollected}/${mission.petGoal}` : null,
-    mission.deliveryGoal ? `Deliveries ${deliveryDone}/${mission.deliveryGoal}` : null,
-    mission.nodeGoal ? `Glow nodes ${nodesDone}/${mission.nodeGoal}` : null,
+    mission.crystalGoal ? tr(`Crystals ${crystalCollected}/${mission.crystalGoal}`, `คริสตัล ${crystalCollected}/${mission.crystalGoal}`) : null,
+    mission.petGoal ? tr(`Companion ${petCollected}/${mission.petGoal}`, `เพื่อน ${petCollected}/${mission.petGoal}`) : null,
+    mission.deliveryGoal ? tr(`Deliveries ${deliveryDone}/${mission.deliveryGoal}`, `จุดส่งของ ${deliveryDone}/${mission.deliveryGoal}`) : null,
+    mission.nodeGoal ? tr(`Glow nodes ${nodesDone}/${mission.nodeGoal}`, `โหนดแสง ${nodesDone}/${mission.nodeGoal}`) : null,
   ].filter(Boolean).join("  •  ");
   const bossShield = mission.nodeGoal ? Math.max(0, Math.round((1 - nodesDone / mission.nodeGoal) * 100)) : 0;
 
@@ -1005,20 +1031,23 @@ export default function PlanetExploration({
       {/* HUD Bar */}
       <div className="w-full flex flex-col gap-2 px-2 sm:px-3 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-card/90 backdrop-blur-sm border border-border/60 shadow-lg">
         <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-xs">
-          <span className="rounded-full border border-border/50 bg-background/25 px-2.5 py-1">Live Mission HUD</span>
+          <span className="rounded-full border border-border/50 bg-background/25 px-2.5 py-1">{tr("Live mission", "กำลังทำภารกิจ")}</span>
           <span className={`rounded-full border px-2.5 py-1 ${canReturn ? "border-cosmic-green/30 bg-cosmic-green/10 text-cosmic-green" : "border-cosmic-yellow/25 bg-cosmic-yellow/10 text-cosmic-yellow"}`}>
-            {canReturn ? (mission.requireReturn ? "Return Window Open" : "Extraction Complete") : "Objective In Progress"}
+            {canReturn ? (mission.requireReturn ? tr("Return route open", "กลับยานได้แล้ว") : tr("Extraction ready", "พร้อมกลับอัตโนมัติ")) : tr("Objective in progress", "กำลังทำเป้าหมาย")}
           </span>
         </div>
-        <div className="text-center text-[10px] sm:text-xs font-semibold text-cosmic-cyan">
-          {mission.name}: {mission.objective}
+      <div className="text-center text-[10px] sm:text-xs font-semibold text-cosmic-cyan">
+          {tr(mission.name, STORY_MISSION_TH[planetId]?.name ?? mission.name)}: {tr(mission.objective, STORY_MISSION_TH[planetId]?.objective ?? mission.objective)}
         </div>
         <div className="text-center text-[10px] font-bold text-white/80 sm:text-xs">
-          Finish rule: {mission.requireReturn ? "Complete every counter below, then walk back onto the ship tile." : "Complete every counter below; extraction happens automatically. No return trip needed."}
+          {mission.requireReturn
+            ? tr("Win condition: complete every counter, then walk back onto the ship tile.", "เงื่อนไขผ่าน: ทำตัวนับให้ครบ แล้วเดินกลับมาที่ช่องยาน")
+            : tr("Win condition: complete every counter. Extraction then happens automatically.", "เงื่อนไขผ่าน: ทำตัวนับให้ครบ แล้วระบบจะพากลับอัตโนมัติ")}
         </div>
+        {(mission.enemyCount ?? 0) > 0 && <div className="text-center text-[10px] text-muted-foreground sm:text-xs">{tr("Patrols move continuously. Avoid them—defeating enemies is not required.", "ศัตรูเดินเองตามเวลา แค่หลบให้พ้น ไม่ต้องกำจัดศัตรูก็ผ่านได้")}</div>}
         {mission.bossName && (
           <div className="story-boss-bar" aria-label={`${mission.bossName} shield ${bossShield}%`}>
-            <div><span>Boss encounter</span><strong>{mission.bossName}</strong><small>Shield {bossShield}%</small></div>
+            <div><span>{tr("Boss encounter", "เผชิญหน้าบอส")}</span><strong>{mission.bossName}</strong><small>{tr("Shield", "เกราะ")} {bossShield}%</small></div>
             <i><b style={{ width: `${bossShield}%` }} /></i>
           </div>
         )}
@@ -1084,11 +1113,11 @@ export default function PlanetExploration({
           <span className="text-[8px] sm:text-[10px] opacity-60">({GRID_COLS}×{GRID_ROWS})</span>
         </span>
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">
-          One tile per move · WASD / arrows · {dashReady ? "Hold Shift + direction to use your 2-tile dash" : "cross a swirl node to charge a dash"}
+          {tr("One tile per move · WASD / arrows", "เดินครั้งละ 1 ช่อง · ใช้ WASD หรือปุ่มลูกศร")} · {dashReady ? tr("Hold Shift + direction for a 2-tile dash", "กด Shift พร้อมทิศทางเพื่อพุ่ง 2 ช่อง") : tr("cross a glow node to charge a dash", "เดินผ่านโหนดแสงเพื่อชาร์จพุ่ง")}
         </span>
-        <span className="story-board-legend"><Navigation /> Pilot = you</span>
-        <span className="story-board-legend"><Rocket /> Rocket = extraction</span>
-        <span className="story-board-legend"><Gem /> Glowing badges = collectibles</span>
+        <span className="story-board-legend"><Navigation /> {tr("Pilot = you", "นักบิน = ตัวคุณ")}</span>
+        <span className="story-board-legend"><Rocket /> {tr("Rocket = extraction", "ยาน = จุดกลับ")}</span>
+        <span className="story-board-legend"><Gem /> {tr("Glowing badges = objectives", "สัญลักษณ์เรืองแสง = เป้าหมาย")}</span>
       </div>
 
       {/* Exploration Grid */}
@@ -1218,24 +1247,16 @@ export default function PlanetExploration({
 
                   {/* Enemies */}
                   {enemies.some((enemy) => enemy.row === row && enemy.col === col) && !isPlayer && (
-                    <motion.span
-                      animate={{ scale: [1, 1.08, 1] }}
-                      transition={{ duration: 0.9, repeat: Infinity }}
-                      className="story-enemy-marker"
-                    >
+                    <span className="story-enemy-marker">
                       <Skull aria-hidden="true" /><small>THREAT</small>
-                    </motion.span>
+                    </span>
                   )}
 
                   {/* Player */}
                   {isPlayer && (
-                    <motion.div
-                      layoutId="player"
-                      className="story-player-marker z-10"
-                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    >
+                    <div className="story-player-marker z-10">
                       <span>{pilotImage ? <img src={pilotImage} alt="" /> : <Navigation aria-hidden="true" />}</span><small>YOU</small>
-                    </motion.div>
+                    </div>
                   )}
                 </button>
               );
