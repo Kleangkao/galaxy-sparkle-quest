@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { ALIEN_PETS, AlienPet, AlienEgg, getRarityBorder, getRarityBg, EGG_COLORS } from "@/lib/pets";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Egg, PawPrint, Radio, ShieldCheck, Sparkles } from "lucide-react";
+import { ALIEN_PETS, AlienEgg, EGG_COLORS } from "@/lib/pets";
 import { playClickSound } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 
@@ -15,231 +15,92 @@ interface Props {
 }
 
 export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSetActivePet, onHatchEgg }: Props) {
-  const { t, lang } = useI18n();
-  const ownedLower = ownedPets.map(p => p.toLowerCase());
-  const [tab, setTab] = useState<"pets" | "eggs">("pets");
-  const activeCompanion = ALIEN_PETS.find((pet) => activePet === pet.id || activePet === pet.name);
+  const { tr, lang } = useI18n();
+  const [tab, setTab] = useState<"archive" | "eggs">("archive");
+  const owned = (petId: string, petName: string) => ownedPets.some((value) => value.toLowerCase() === petId || value.toLowerCase() === petName.toLowerCase());
+  const illustrated = ALIEN_PETS.filter((pet) => pet.image);
+  const ownedCount = ALIEN_PETS.filter((pet) => owned(pet.id, pet.name)).length;
+  const active = ALIEN_PETS.find((pet) => activePet === pet.id || activePet === pet.name);
+  const featured = (active?.image ? active : illustrated.find((pet) => owned(pet.id, pet.name))) ?? illustrated[0];
 
   return (
-    <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center overflow-visible px-3 pb-24 pt-28 sm:px-6 sm:pb-28 sm:pt-32 md:px-8">
-      <motion.button
-        onClick={() => { playClickSound(); onBack(); }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed left-4 top-20 z-[60] flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-all hover:bg-card active:scale-95 sm:top-20">
-        <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-        <span className="text-xs sm:text-sm font-bold" style={{ fontFamily: "var(--font-display)" }}>{t("galaxyMap")}</span>
-      </motion.button>
+    <main className="relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
+      <button onClick={() => { playClickSound(); onBack(); }} className="hangar-back">
+        <ArrowLeft className="h-4 w-4" /> {tr("Galaxy map", "แผนที่กาเลีย")}
+      </button>
 
-      <div className="w-full max-w-lg mx-auto pb-4 sm:pb-6">
-        <motion.h2
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="mb-1 whitespace-nowrap text-center text-[clamp(1.125rem,4.2vw,3.75rem)] font-black tracking-[-0.03em] text-white"
-          style={{ fontFamily: "var(--font-hero)" }}
-        >
-          {t("alienPetCollection")}
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-xs sm:text-sm text-muted-foreground text-center mb-3"
-        >
-          {ownedLower.length}/{ALIEN_PETS.length} {t("discovered")}
-        </motion.p>
-        <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <div className="rounded-2xl border border-cosmic-green/15 bg-cosmic-green/5 px-4 py-3">
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-green">Discovered</div>
-            <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{ownedLower.length}/{ALIEN_PETS.length}</div>
+      <div className="companion-archive">
+        <section className="companion-archive__hero">
+          <div className="companion-archive__visual">
+            {featured?.image && <img src={featured.image} alt={featured.name} />}
           </div>
-          <div className="rounded-2xl border border-cosmic-pink/15 bg-cosmic-pink/5 px-4 py-3">
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-pink">Egg Queue</div>
-            <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{eggs.length}</div>
-          </div>
-          <div className="rounded-2xl border border-cosmic-cyan/15 bg-cosmic-cyan/5 px-4 py-3">
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-cyan">Active Companion</div>
-            <div className="mt-1 text-[13px] font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
-              {activeCompanion ? `${activeCompanion.emoji} ${activeCompanion.name}` : "None equipped"}
+          <div className="companion-archive__copy">
+            <div className="command-kicker"><Radio className="h-4 w-4" /> {tr("Companion Archive", "คลังเพื่อนร่วมทาง")}</div>
+            <h1>{tr("Find a friend. Build a bond.", "ออกตามหา แล้วเติบโตไปด้วยกัน")}</h1>
+            <p>{tr(
+              "Companions are practical crew partners, not a separate sticker collection. Equip one ability for every activity and recover new signals through Story and Discovery.",
+              "เพื่อนร่วมทางช่วยทีมได้จริง เลือกใช้ความสามารถได้ 1 อย่างในทุกโหมด และออกตามหาสัญญาณใหม่จากเนื้อเรื่องกับโหมดสำรวจ",
+            )}</p>
+            <div className="companion-archive__stats">
+              <div><span>{tr("Archive records", "บันทึกที่พบ")}</span><strong>{ownedCount}/{ALIEN_PETS.length}</strong></div>
+              <div><span>{tr("Egg signals", "ไข่ที่รอฟัก")}</span><strong>{eggs.length}</strong></div>
+              <div><span>{tr("On your team", "กำลังร่วมทีม")}</span><strong>{active ? active.name : tr("Not selected", "ยังไม่ได้เลือก")}</strong></div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Tabs: Pets / Eggs */}
-        <div className="flex gap-2 mb-4 justify-center">
-          <button
-            onClick={() => { playClickSound(); setTab("pets"); }}
-            className={`min-h-[44px] px-5 py-2 rounded-xl font-bold text-sm transition-all ${
-              tab === "pets" ? "bg-primary text-primary-foreground shadow-lg" : "bg-card/60 text-muted-foreground hover:bg-card/80"
-            }`}
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            🐾 {t("pets")}
-          </button>
-          <button
-            onClick={() => { playClickSound(); setTab("eggs"); }}
-            className={`min-h-[44px] px-5 py-2 rounded-xl font-bold text-sm transition-all relative ${
-              tab === "eggs" ? "bg-primary text-primary-foreground shadow-lg" : "bg-card/60 text-muted-foreground hover:bg-card/80"
-            }`}
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {t("eggs")}
-            {eggs.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-cosmic-pink text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                {eggs.length}
-              </span>
-            )}
-          </button>
+        <div className="mt-4 flex gap-2">
+          <button onClick={() => setTab("archive")} className={`min-h-11 rounded-xl px-5 text-sm font-black ${tab === "archive" ? "bg-primary text-primary-foreground" : "bg-card/60 text-muted-foreground"}`}><PawPrint className="mr-2 inline h-4 w-4" />{tr("Known companions", "เพื่อนที่รู้จัก")}</button>
+          <button onClick={() => setTab("eggs")} className={`min-h-11 rounded-xl px-5 text-sm font-black ${tab === "eggs" ? "bg-primary text-primary-foreground" : "bg-card/60 text-muted-foreground"}`}><Egg className="mr-2 inline h-4 w-4" />{tr(`Incubation (${eggs.length})`, `ห้องฟักไข่ (${eggs.length})`)}</button>
         </div>
 
         <AnimatePresence mode="wait">
-          {tab === "pets" ? (
-            <motion.div key="pets" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-              {ownedLower.length === 0 && (
-                <div className="mb-3 rounded-2xl border border-border/50 bg-card/30 px-4 py-3 text-center text-xs text-muted-foreground">
-                  Your collection is empty right now. Replay sectors marked for pet recovery to fill this archive faster.
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {ALIEN_PETS.map((pet, i) => {
-                  const owned = ownedLower.includes(pet.id) || ownedPets.some(p => p.toLowerCase() === pet.name.toLowerCase());
+          {tab === "archive" ? (
+            <motion.section key="archive" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="companion-records">
+                {illustrated.map((pet) => {
+                  const isOwned = owned(pet.id, pet.name);
                   const isActive = activePet === pet.id || activePet === pet.name;
                   return (
-                    <motion.div
-                      key={pet.id}
-                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: i * 0.06, type: "spring", stiffness: 200 }}
-                      whileHover={owned ? { scale: 1.04, y: -4 } : undefined}
-                      className={`relative rounded-xl sm:rounded-2xl border-2 p-3 sm:p-4 flex flex-col items-center gap-1.5 transition-all
-                        ${owned ? getRarityBorder(pet.rarity) + " " + getRarityBg(pet.rarity) : "border-border/30 bg-card/30 opacity-50"}
-                        ${isActive ? "ring-2 ring-cosmic-yellow ring-offset-1 ring-offset-background" : ""}
-                      `}
-                    >
-                      {/* Active indicator */}
-                      {isActive && (
-                        <span className="absolute -top-2 -right-2 text-base bg-card rounded-full px-1.5 py-0.5 shadow-md border border-cosmic-yellow/50 text-cosmic-yellow font-bold text-[10px]">
-                          {t("activePet")}
-                        </span>
-                      )}
-
-                      {/* Pet emoji with animations */}
-                      <motion.span
-                        className={`flex h-20 w-full items-center justify-center overflow-hidden rounded-xl text-3xl sm:h-24 sm:text-4xl ${owned ? "" : "grayscale"}`}
-                        animate={owned ? {
-                          y: [0, -5, 0],
-                          rotate: [0, 3, -3, 0],
-                          scale: isActive ? [1, 1.1, 1] : 1,
-                        } : {}}
-                        transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.2 }}
-                      >
-                        {pet.image ? <img src={pet.image} alt={owned ? pet.name : "Undiscovered companion"} className="h-full w-full object-cover" /> : pet.emoji}
-                      </motion.span>
-
-                      <span className={`text-xs sm:text-sm font-bold ${owned ? pet.color : "text-muted-foreground"}`}
-                        style={{ fontFamily: "var(--font-display)" }}>
-                        {owned ? pet.name : "???"}
-                      </span>
-
-                      {/* Rarity badge */}
-                      <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        owned
-                          ? pet.rarity === "legendary"
-                            ? "bg-cosmic-yellow/20 text-cosmic-yellow"
-                            : pet.rarity === "rare"
-                              ? "bg-cosmic-cyan/20 text-cosmic-cyan"
-                              : "bg-muted/40 text-muted-foreground"
-                          : "text-muted-foreground/50"
-                      }`}>
-                        {owned ? t(pet.rarity === "legendary" ? "rarityLegendary" : pet.rarity === "rare" ? "rarityRare" : "rarityCommon") : pet.rarity}
-                      </span>
-
-                      {/* Ability */}
-                      {owned && (
-                        <div className="flex items-center gap-1 bg-card/60 px-2 py-1 rounded-lg mt-0.5">
-                          <span className="text-xs">{pet.ability.emoji}</span>
-                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
-                            {lang === "th" ? pet.ability.descTh : pet.ability.descEn}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Set Active button */}
-                      {owned && !isActive && (
-                        <motion.button
-                          onClick={() => { playClickSound(); onSetActivePet(pet.id); }}
-                          whileTap={{ scale: 0.9 }}
-                          className="min-h-[36px] w-full px-2 py-1.5 rounded-lg bg-primary/80 text-primary-foreground text-[10px] sm:text-xs font-bold mt-1 hover:bg-primary transition-colors"
-                          style={{ fontFamily: "var(--font-display)" }}
-                        >
-                          {t("setActivePet")}
-                        </motion.button>
-                      )}
-
-                      {!owned && (
-                        <p className="text-[10px] sm:text-xs text-muted-foreground/50 text-center mt-1">
-                          {t("explorePlanetsToFind")}
-                        </p>
-                      )}
-                    </motion.div>
+                    <article className={`companion-record ${!isOwned ? "opacity-55" : ""}`} key={pet.id}>
+                      <img src={pet.image} alt={isOwned ? pet.name : tr("Unknown companion signal", "สัญญาณเพื่อนที่ยังไม่รู้จัก")} className={!isOwned ? "grayscale" : ""} />
+                      <div className="companion-record__copy">
+                        <div className="command-kicker">{isActive ? tr("Active companion", "กำลังร่วมทีม") : isOwned ? tr("Archive confirmed", "บันทึกแล้ว") : tr("Signal not recovered", "ยังไม่พบสัญญาณ")}</div>
+                        <h3>{isOwned ? pet.name : "UNKNOWN SIGNAL"}</h3>
+                        <p>{isOwned ? (lang === "th" ? pet.ability.descTh : pet.ability.descEn) : tr("Find this companion during Story or Discovery.", "ตามหาได้จากเนื้อเรื่องหรือโหมดสำรวจ")}</p>
+                        {isOwned && !isActive && <button onClick={() => onSetActivePet(pet.id)}>{tr("Add to active crew", "เลือกเข้าร่วมทีม")}</button>}
+                        {isActive && <p className="!text-cosmic-green"><ShieldCheck className="mr-1 inline h-4 w-4" />{tr("Ability is active in supported modes", "ความสามารถพร้อมใช้ในโหมดที่รองรับ")}</p>}
+                      </div>
+                    </article>
                   );
                 })}
               </div>
-            </motion.div>
+              <div className="companion-signals">
+                <div className="flex items-center gap-2 text-sm font-black text-white"><Sparkles className="h-4 w-4 text-cosmic-cyan" />{tr("Uncharted companion signals", "สัญญาณเพื่อนที่ยังไม่ค้นพบ")}</div>
+                <p className="mt-1 text-xs text-muted-foreground">{tr(
+                  "The remaining companions stay encrypted until their final artwork and field record are ready. Their gameplay unlocks remain saved.",
+                  "เพื่อนที่เหลือจะยังเป็นสัญญาณลับจนกว่าภาพและข้อมูลจะพร้อม ความคืบหน้าที่ปลดล็อกไว้ยังอยู่ครบ",
+                )}</p>
+                <div className="companion-signals__track" aria-label={`${ALIEN_PETS.length - illustrated.length} unknown signals`}>
+                  {ALIEN_PETS.slice(illustrated.length).map((pet) => <i key={pet.id} className={owned(pet.id, pet.name) ? "!bg-cosmic-green" : ""} />)}
+                </div>
+              </div>
+            </motion.section>
           ) : (
-            <motion.div key="eggs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-              {eggs.length === 0 ? (
-                <div className="rounded-2xl border border-border/50 bg-card/30 py-12 text-center">
-                  <span className="text-5xl mb-3 block">🥚</span>
-                  <p className="text-sm text-muted-foreground">{t("noEggs")}</p>
-                  <p className="mt-2 text-xs text-muted-foreground/80">
-                    Survey runs and unexplored sectors are your best source of new egg scans.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                  {eggs.map((egg, i) => {
-                    const colors = EGG_COLORS[egg.rarity];
-                    return (
-                      <motion.div
-                        key={egg.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        className={`rounded-xl sm:rounded-2xl border-2 ${colors.border} ${colors.bg} ${colors.glow} p-4 flex flex-col items-center gap-2`}
-                      >
-                        <motion.span
-                          className="text-4xl sm:text-5xl"
-                          animate={{ rotate: [-3, 3, -3], y: [0, -3, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          🥚
-                        </motion.span>
-                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                          egg.rarity === "legendary" ? "bg-cosmic-yellow/20 text-cosmic-yellow" :
-                          egg.rarity === "rare" ? "bg-cosmic-cyan/20 text-cosmic-cyan" :
-                          "bg-muted/40 text-muted-foreground"
-                        }`}>
-                          {t(egg.rarity === "legendary" ? "legendaryEgg" : egg.rarity === "rare" ? "rareEgg" : "commonEgg")}
-                        </span>
-                        <motion.button
-                          onClick={() => { playClickSound(); onHatchEgg(egg); }}
-                          whileTap={{ scale: 0.9 }}
-                          animate={{ scale: [1, 1.05, 1] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                          className="min-h-[40px] w-full px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-md"
-                          style={{ fontFamily: "var(--font-display)" }}
-                        >
-                          {t("hatchEgg")} 🐣
-                        </motion.button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
+            <motion.section key="eggs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {eggs.length === 0 ? <div className="col-span-full rounded-2xl border border-border/50 bg-card/30 p-10 text-center text-sm text-muted-foreground">{tr("No egg signals are waiting. Story and Discovery can uncover them.", "ตอนนี้ยังไม่มีไข่รอฟัก ลองตามหาจากเนื้อเรื่องหรือโหมดสำรวจ")}</div> : eggs.map((egg) => {
+                const colors = EGG_COLORS[egg.rarity];
+                return <article key={egg.id} className={`rounded-2xl border-2 ${colors.border} ${colors.bg} p-5`}>
+                  <Egg className="h-12 w-12 text-cosmic-pink" />
+                  <h2 className="mt-3 font-black text-white">{tr(`${egg.rarity} signal egg`, `ไข่สัญญาณระดับ ${egg.rarity}`)}</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">{tr("Hatch to identify the companion inside.", "ฟักเพื่อดูว่าเพื่อนตัวไหนอยู่ข้างใน")}</p>
+                  <button onClick={() => onHatchEgg(egg)} className="mt-4 w-full rounded-xl bg-primary p-3 text-sm font-black text-primary-foreground">{tr("Begin hatching", "เริ่มฟักไข่")}</button>
+                </article>;
+              })}
+            </motion.section>
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </main>
   );
 }

@@ -43,6 +43,8 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   const [actions, setActions] = useState(startingActions);
   const [touched, setTouched] = useState<string[]>([]);
   const [history, setHistory] = useState<string[]>([]);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [turnFeed, setTurnFeed] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [showHint, setShowHint] = useState(cycle < 2);
   const [claimed, setClaimed] = useState(false);
@@ -99,8 +101,15 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
       return { ...currentInfluence, [selected.id]: next };
     });
     setTouched((current) => current.includes(selected.id) ? current : [...current, selected.id]);
-    const label = action === "scan" ? `Deployed relay at ${lore.name} (+${values.scan})` : action === "reinforce" ? `Reinforced ${lore.name} (+${values.reinforce})` : `Disrupted rival at ${lore.name}`;
+    const label = action === "scan"
+      ? tr(`Safe relay: ${lore.name} +${values.scan}`, `ส่งสัญญาณ: ${lore.name} +${values.scan}`)
+      : action === "reinforce"
+        ? tr(`Power push: ${lore.name} +${values.reinforce}; rival responded`, `เพิ่มกำลัง: ${lore.name} +${values.reinforce}; คู่แข่งโต้กลับ`)
+        : tr(`Jammed the leading rival at ${lore.name}`, `รบกวนคู่แข่งที่ ${lore.name}`);
     setHistory((current) => [label, ...current].slice(0, 4));
+    setTurnFeed(label);
+    setResolvingId(selected.id);
+    window.setTimeout(() => setResolvingId(null), 600);
     setActions((value) => value - 1);
   };
 
@@ -142,8 +151,8 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
       <section className={`strategy-objective ${objectiveComplete ? "is-complete" : ""}`}><Radio className="h-5 w-5" /><div><span>{tr("Your win condition this cycle", "เงื่อนไขผ่านรอบนี้")}</span><strong>{objectiveName}</strong><p>{objectiveDescription} {tr("Use every move, then bank the cycle.", "ใช้คำสั่งให้ครบ แล้วจบรอบเพื่อรับรางวัล")}</p></div><b>{objectiveComplete ? tr("Complete · bonus secured", "สำเร็จ · ได้โบนัส") : objective.id === "survey" ? tr(`${new Set(touched).size}/3 sectors`, `${new Set(touched).size}/3 พื้นที่`) : tr("In progress", "กำลังทำ")}</b></section>
       <section className="strategy-layout">
         <div className="strategy-map"><div className="strategy-map__header"><span>{tr("Choose a sector", "เลือกพื้นที่")}</span><small>{tr(`${controlledNow}/10 under ${faction.name} control`, `${faction.name} ควบคุม ${controlledNow}/10 พื้นที่`)}</small></div><div className="strategy-sector-grid">
-          {PLANETS.map((planet, index) => { const sectorController = getPlanetController(workingInfluence[planet.id]); const leader = FACTIONS.find((item) => item.id === sectorController); const target = objective.targetPlanetId === planet.id && objective.id === "focus"; return <button key={planet.id} onClick={() => setSelectedId(planet.id)} className={`${selected.id === planet.id ? "is-selected" : ""} ${sectorController ? `is-${sectorController}` : ""} ${target ? "is-objective" : ""}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{planet.emoji} {getSectorLore(planet.id).name}</strong><small>{leader ? `${leader.name} control` : SECTOR_TRAITS[planet.id].name}</small></button>; })}
-        </div>{history.length > 0 && <div className="strategy-history"><span>{tr("Your moves", "คำสั่งที่ใช้")}</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
+          {PLANETS.map((planet, index) => { const sectorController = getPlanetController(workingInfluence[planet.id]); const leader = FACTIONS.find((item) => item.id === sectorController); const target = objective.targetPlanetId === planet.id && objective.id === "focus"; return <button key={planet.id} onClick={() => setSelectedId(planet.id)} className={`${selected.id === planet.id ? "is-selected" : ""} ${sectorController ? `is-${sectorController}` : ""} ${target ? "is-objective" : ""} ${resolvingId === planet.id ? "is-resolving" : ""}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{planet.emoji} {getSectorLore(planet.id).name}</strong><small>{leader ? tr(`${leader.name} control`, `${leader.name} ควบคุม`) : SECTOR_TRAITS[planet.id].name}</small></button>; })}
+        </div>{turnFeed && <div className="strategy-turn-feed"><Radio className="h-4 w-4" /><span>{tr("Turn resolved", "สรุปคำสั่งล่าสุด")}<strong>{turnFeed}</strong></span></div>}{history.length > 0 && <div className="strategy-history"><span>{tr("Your moves", "คำสั่งที่ใช้")}</span>{history.map((entry, index) => <small key={`${entry}-${index}`}>{entry}</small>)}</div>}</div>
         <aside className="strategy-dossier"><div className="strategy-dossier__leader"><img src={LEADERS[playerFaction]} alt="" /><div><span>{faction.name} command</span><strong>{lore.name}</strong><small>{lore.threat}</small></div></div><p>{lore.story}</p>
           {showHint ? <div className="strategy-recommendation"><Lightbulb className="h-4 w-4" /><span>{tr("Tactical hint", "คำแนะนำ")}<strong>{recommendedLabel}</strong></span></div> : <button className="strategy-recommendation" onClick={() => setShowHint(true)}><Lightbulb className="h-4 w-4" /><span>{tr("Need a tactical hint?", "ต้องการคำแนะนำไหม?")}<strong>{tr("Reveal one recommendation", "ดูคำแนะนำ 1 ข้อ")}</strong></span></button>}
           <div className="strategy-recommendation"><Radio className="h-4 w-4" /><span>{tr("Opponent plan", "แผนของฝ่ายคู่แข่ง")}<strong>{opponentPlan}</strong></span></div>
