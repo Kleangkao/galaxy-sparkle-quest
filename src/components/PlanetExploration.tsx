@@ -207,7 +207,7 @@ export const MISSION_PROFILES: Record<string, MissionProfile> = {
   },
 };
 
-const STORY_MISSION_TH: Record<string, { name: string; objective: string }> = {
+export const STORY_MISSION_TH: Record<string, { name: string; objective: string }> = {
   "sparkle-moon": { name: "ฝึกบินในถ้ำคริสตัล", objective: "ฝึกเดิน เก็บคริสตัล 5 ชิ้น แล้วกลับมาที่ยาน" },
   "candy-planet": { name: "ตามรอยสัญญาณมีชีวิต", objective: "เก็บสัญญาณตามลำดับที่ไฮไลต์ไว้" },
   "frosty-star": { name: "เส้นทางน้ำแข็ง", objective: "เดินทีละช่องและเก็บชิ้นส่วนนำทาง 8 ชิ้น" },
@@ -406,6 +406,7 @@ const GRID_COLS = 8;
 interface Props {
   planetId: string;
   onComplete: (result: ExplorationResult) => void;
+  suspended?: boolean;
   missionTimeBonus?: number;
   failRewardMultiplier?: number;
   shipEmoji?: string;
@@ -420,6 +421,7 @@ export interface ExplorationResult {
   success: boolean;
   bonus: number;
   reason: "completed" | "timeout" | "hull";
+  salvageRecovered?: boolean;
 }
 
 function StoryItemMarker({ item }: { item: ExplorationItem }) {
@@ -439,7 +441,7 @@ function StoryItemMarker({ item }: { item: ExplorationItem }) {
           : item.type === "star" ? [0, 1]
             : item.type === "relic" ? [3, 3]
               : null;
-  return <span className={`story-item-marker story-item-marker--${item.type}`}>{sprite ? <GaliaSprite sheet="story" column={sprite[0]} row={sprite[1]} /> : <Icon aria-hidden="true" />}<small>{item.type === "robot" ? tr("HELP", "ผู้ช่วย") : item.type === "pet" ? tr("ALLY", "เพื่อน") : item.type === "hidden" ? tr("SCAN", "สแกน") : `+${item.value}`}</small></span>;
+  return <span className={`story-item-marker story-item-marker--${item.type}`}>{sprite ? <GaliaSprite sheet="story" column={sprite[0]} row={sprite[1]} /> : <Icon aria-hidden="true" />}<small>{item.id === "salvage-cargo" ? tr("CARGO", "สินค้า") : item.type === "robot" ? tr("HELP", "ผู้ช่วย") : item.type === "pet" ? tr("ALLY", "เพื่อน") : item.type === "hidden" ? tr("SCAN", "สแกน") : `+${item.value}`}</small></span>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -453,7 +455,7 @@ function coordKey(row: number, col: number) {
   return `${row},${col}`;
 }
 
-function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: ExplorationItem[]; ground: string[][]; decorations: (string | null)[][]; requiredCollect: number } {
+export function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: ExplorationItem[]; ground: string[][]; decorations: (string | null)[][]; requiredCollect: number } {
   const ground: string[][] = [];
   const decorations: (string | null)[][] = [];
   const occupied = new Set<string>();
@@ -545,6 +547,53 @@ function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: Expl
   return { items, ground, decorations, requiredCollect };
 }
 
+export function addStoryRouteItems(
+  items: ExplorationItem[],
+  mission: MissionProfile,
+  routeMode: "scout" | "steady" | "salvage",
+): ExplorationItem[] {
+  const prepared = items.map((item) =>
+    routeMode === "scout" && item.type === "hidden" ? { ...item, revealed: true } : item,
+  );
+  if (routeMode !== "salvage") return prepared;
+
+  const occupied = new Set(prepared.map((item) => coordKey(item.row, item.col)));
+  const blocked = new Set<string>();
+  (mission.walls ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.hazards ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.dropZones ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.speedTiles ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.teleportPairs ?? []).forEach(([a, b]) => {
+    blocked.add(coordKey(a[0], a[1]));
+    blocked.add(coordKey(b[0], b[1]));
+  });
+  const startRow = GRID_ROWS - 1;
+  const startCol = Math.floor(GRID_COLS / 2);
+  const cargoCell = Array.from(getReachableStoryCellKeys(mission.walls, GRID_ROWS, GRID_COLS))
+    .map((key) => key.split(",").map(Number) as Coord)
+    .filter(([row, col]) =>
+      !occupied.has(coordKey(row, col)) &&
+      !blocked.has(coordKey(row, col)) &&
+      Math.abs(row - startRow) + Math.abs(col - startCol) >= 3,
+    )
+    .sort((a, b) => distFromStart(b[0], b[1]) - distFromStart(a[0], a[1]))[0];
+
+  if (!cargoCell) return prepared;
+  return [
+    ...prepared,
+    {
+      id: "salvage-cargo",
+      type: "chest",
+      emoji: "📦",
+      collected: false,
+      revealed: true,
+      row: cargoCell[0],
+      col: cargoCell[1],
+      value: 0,
+    },
+  ];
+}
+
 // ─── Component ───────────────────────────────────────────────────
 export default function PlanetExploration({
   planetId,
@@ -557,11 +606,14 @@ export default function PlanetExploration({
   pilotImage,
   shipSkinId = "red-rocket",
   routeMode = "steady",
+  suspended = false,
 }: Props) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(false);
   const completedRef = useRef(false);
-  const { t, tr } = useI18n();
+  const resolutionTimerRef = useRef<number | null>(null);
+  const resolutionPriorityRef = useRef(0);
+  const { lang, t, tr } = useI18n();
   const theme = PLANET_THEMES[planetId] || PLANET_THEMES["sparkle-moon"];
   const mission = useMemo(() => MISSION_PROFILES[planetId] ?? ({
     name: "Survey Operation",
@@ -577,7 +629,7 @@ export default function PlanetExploration({
       ? tr("Salvage · extra objective and patrol pressure", "เก็บกู้ · มีของให้เก็บและศัตรูเพิ่ม")
       : tr("Balanced · standard objective and pressure", "ปกติ · เป้าหมายและความยากมาตรฐาน");
   const [mapData] = useState(() => generateMap(theme, mission));
-  const [items, setItems] = useState<ExplorationItem[]>(() => mapData.items.map((item) => routeMode === "scout" && item.type === "hidden" ? { ...item, revealed: true } : item));
+  const [items, setItems] = useState<ExplorationItem[]>(() => addStoryRouteItems(mapData.items, mission, routeMode));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [timeLeft, setTimeLeft] = useState(missionTimeLimit);
   const deadlineRef = useRef<number | null>(null);
@@ -608,8 +660,9 @@ export default function PlanetExploration({
   );
   const totalCollected = useRef(0);
   const collectedItemCount = useRef(0);
-  const requiredCollect = mapData.requiredCollect + (routeMode === "salvage" && mission.crystalGoal ? 1 : 0);
+  const requiredCollect = mapData.requiredCollect;
   const effectiveCrystalGoal = mission.crystalGoal ? requiredCollect : 0;
+  const salvageRecovered = items.some((item) => item.id === "salvage-cargo" && item.collected);
   const walls = useMemo(() => new Set((mission.walls ?? []).map(([r, c]) => coordKey(r, c))), [mission.walls]);
   const patrolSight = useMemo(() => {
     if (!mission.patrolVision) return new Set<string>();
@@ -644,10 +697,22 @@ export default function PlanetExploration({
     onComplete(result);
   }, [onComplete]);
 
+  const scheduleResolution = useCallback((result: ExplorationResult, delay: number) => {
+    const priority = result.reason === "hull" ? 3 : result.success ? 2 : 1;
+    if (priority < resolutionPriorityRef.current || completedRef.current) return;
+    resolutionPriorityRef.current = priority;
+    if (resolutionTimerRef.current !== null) window.clearTimeout(resolutionTimerRef.current);
+    resolutionTimerRef.current = window.setTimeout(() => {
+      resolutionTimerRef.current = null;
+      completeOnce(result);
+    }, delay);
+  }, [completeOnce]);
+
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      if (resolutionTimerRef.current !== null) window.clearTimeout(resolutionTimerRef.current);
     };
   }, []);
 
@@ -660,7 +725,7 @@ export default function PlanetExploration({
   // The deadline is wall-clock based. Movement and React renders must never
   // postpone the timer tick on faster or slower machines.
   useEffect(() => {
-    if (landing || gameOver) {
+    if (landing || gameOver || suspended) {
       deadlineRef.current = null;
       return;
     }
@@ -670,7 +735,7 @@ export default function PlanetExploration({
       setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
     }, 200);
     return () => window.clearInterval(timer);
-  }, [landing, gameOver, missionTimeLimit]);
+  }, [landing, gameOver, missionTimeLimit, suspended, timeLeft]);
 
   useEffect(() => {
     if (landing || gameOver) return;
@@ -695,16 +760,15 @@ export default function PlanetExploration({
       const hasEnough = result.complete;
       setMissionResult(hasEnough ? "success" : "fail");
       if (hasEnough) playVictorySound(); else playFailSound();
-      setTimeout(() => {
-        setShipReached(true);
-        completeOnce({
-          success: hasEnough,
-          bonus: hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier),
-          reason: hasEnough ? "completed" : "timeout",
-        });
+      setShipReached(true);
+      scheduleResolution({
+        success: hasEnough,
+        bonus: hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier),
+        reason: hasEnough ? "completed" : "timeout",
+        salvageRecovered,
       }, 2500);
     }
-  }, [timeLeft, gameOver, landing, completeOnce, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
+  }, [timeLeft, gameOver, landing, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier, salvageRecovered, scheduleResolution]);
 
   // Spawn sparkle burst at a grid position
   const spawnSparkles = useCallback((row: number, col: number) => {
@@ -784,6 +848,14 @@ export default function PlanetExploration({
     if (item.type === "chest") {
       setOpeningChest(item.id);
       playChestSound();
+      if (item.id === "salvage-cargo") {
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, collected: true } : i));
+        collectedItemCount.current += 1;
+        addCollectEffect("📦", 0, row, col, "chest");
+        spawnSparkles(row, col);
+        setOpeningChest(null);
+        return true;
+      }
       setTimeout(() => {
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, collected: true } : i));
         setScore(s => s + item.value);
@@ -829,12 +901,12 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("success");
       setShipReached(true);
-      setTimeout(() => completeOnce({ success: true, bonus: totalCollected.current, reason: "completed" }), 800);
+      scheduleResolution({ success: true, bonus: totalCollected.current, reason: "completed", salvageRecovered }, 800);
     }
-  }, [completeOnce, goalsMet, mission.requireReturn]);
+  }, [goalsMet, mission.requireReturn, salvageRecovered, scheduleResolution]);
 
   const movePlayer = useCallback((deltaRow: number, deltaCol: number, useDash = false) => {
-    if (landing || gameOver) return;
+    if (landing || gameOver || suspended) return;
     // Normal inputs always move exactly one tile. A stored dash is only consumed
     // when the player deliberately holds Shift, preventing surprise two-tile jumps.
     const stepCount = getStoryStepCount(dashReady, useDash);
@@ -902,7 +974,7 @@ export default function PlanetExploration({
     }
     playStepSound();
     checkShipReturn(nextRow, nextCol);
-  }, [landing, gameOver, dashReady, mission.bossName, mission.patrolVision, playerPos.row, playerPos.col, walls, hazards, patrolSight, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
+  }, [landing, gameOver, suspended, dashReady, mission.bossName, mission.patrolVision, playerPos.row, playerPos.col, walls, hazards, patrolSight, speedTiles, teleportMap, dropZones, carriedPayload, deliveredZones, activatedNodes, items, collectItem, checkShipReturn, addCollectEffect, applyDamage]);
 
   // Keyboard controls
   useEffect(() => {
@@ -911,19 +983,23 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("fail");
       playFailSound();
-      setTimeout(() => completeOnce({ success: false, bonus: Math.floor(totalCollected.current * failRewardMultiplier), reason: "hull" }), 1200);
+      scheduleResolution({ success: false, bonus: Math.floor(totalCollected.current * failRewardMultiplier), reason: "hull", salvageRecovered }, 1200);
     }
-  }, [hp, landing, gameOver, completeOnce, failRewardMultiplier]);
+  }, [hp, landing, gameOver, failRewardMultiplier, salvageRecovered, scheduleResolution]);
 
   useEffect(() => {
-    if (landing || gameOver || enemies.length === 0) return;
+    if (landing || gameOver || suspended || enemies.length === 0) return;
     const timer = setInterval(() => {
       setEnemies((prev) =>
         prev.map((enemy) => {
           const dirs: Coord[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
           const chase = Math.random() < 0.35;
+          const rowDistance = playerPos.row - enemy.row;
+          const colDistance = playerPos.col - enemy.col;
           const [dr, dc] = chase
-            ? [Math.sign(playerPos.row - enemy.row), Math.sign(playerPos.col - enemy.col)]
+            ? Math.abs(rowDistance) >= Math.abs(colDistance)
+              ? [Math.sign(rowDistance), 0]
+              : [0, Math.sign(colDistance)]
             : dirs[Math.floor(Math.random() * dirs.length)];
           const nr = enemy.row + dr;
           const nc = enemy.col + dc;
@@ -933,17 +1009,17 @@ export default function PlanetExploration({
       );
     }, 900);
     return () => clearInterval(timer);
-  }, [landing, gameOver, enemies.length, playerPos.row, playerPos.col, walls]);
+  }, [landing, gameOver, suspended, enemies.length, playerPos.row, playerPos.col, walls]);
 
   useEffect(() => {
-    if (landing || gameOver || enemies.length === 0) return;
+    if (landing || gameOver || suspended || enemies.length === 0) return;
     const collided = enemies.some((enemy) => enemy.row === playerPos.row && enemy.col === playerPos.col);
     if (collided) {
       applyDamage(playerPos.row, playerPos.col);
       addCollectEffect("👾", 0, playerPos.row, playerPos.col, "robot");
       setPlayerPos({ row: shipPos.current.row, col: shipPos.current.col });
     }
-  }, [enemies, playerPos.row, playerPos.col, landing, gameOver, addCollectEffect, applyDamage]);
+  }, [enemies, playerPos.row, playerPos.col, landing, gameOver, suspended, addCollectEffect, applyDamage]);
 
   useEffect(() => {
     if (landing || gameOver || mission.requireReturn) return;
@@ -952,12 +1028,12 @@ export default function PlanetExploration({
       setMissionResult("success");
       setShipReached(true);
       playVictorySound();
-      setTimeout(() => completeOnce({ success: true, bonus: totalCollected.current, reason: "completed" }), 700);
+      scheduleResolution({ success: true, bonus: totalCollected.current, reason: "completed", salvageRecovered }, 700);
     }
-  }, [completeOnce, goalsMet, landing, gameOver, mission.requireReturn]);
+  }, [goalsMet, landing, gameOver, mission.requireReturn, salvageRecovered, scheduleResolution]);
 
   useEffect(() => {
-    if (landing || gameOver) return;
+    if (landing || gameOver || suspended) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const direction = getMoveDirectionFromKeyboard(e);
       if (!direction) return;
@@ -979,14 +1055,14 @@ export default function PlanetExploration({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [landing, gameOver, movePlayer]);
+  }, [landing, gameOver, suspended, movePlayer]);
 
   // Tap handler
   const handleCellTap = useCallback((row: number, col: number) => {
-    if (landing || gameOver) return;
+    if (landing || gameOver || suspended) return;
     if (!isAdjacent(playerPos.row, playerPos.col, row, col)) return;
     movePlayer(row - playerPos.row, col - playerPos.col);
-  }, [playerPos, landing, gameOver, movePlayer]);
+  }, [playerPos, landing, gameOver, suspended, movePlayer]);
 
   const handleReturnToShip = useCallback(() => {
     if (gameOver || landing) return;
@@ -996,12 +1072,13 @@ export default function PlanetExploration({
     setMissionResult("success");
     setShipReached(true);
     playVictorySound();
-    setTimeout(() => completeOnce({
+    scheduleResolution({
       success: true,
       bonus: totalCollected.current,
       reason: "completed",
-    }), 800);
-  }, [completeOnce, gameOver, landing, playerPos, goalsMet, mission.requireReturn]);
+      salvageRecovered,
+    }, 800);
+  }, [gameOver, landing, playerPos, goalsMet, mission.requireReturn, salvageRecovered, scheduleResolution]);
 
   const handleDpad = useCallback((dir: "up" | "down" | "left" | "right") => {
     if (landing || gameOver) return;
@@ -1137,9 +1214,16 @@ export default function PlanetExploration({
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
             <Clock3 className="h-4 w-4 text-cosmic-green" />
-            <span className={`text-xs sm:text-sm font-bold tabular-nums ${timerColor}`}>{timeLeft}s</span>
+            <span className={`text-xs sm:text-sm font-bold tabular-nums ${timerColor}`}>{timeLeft}{lang === "th" ? " วิ" : "s"}</span>
           </div>
         </div>
+        {routeMode === "salvage" && (
+          <div className={`text-center text-[10px] font-bold sm:text-xs ${salvageRecovered ? "text-cosmic-green" : "text-cosmic-yellow"}`}>
+            {salvageRecovered
+              ? tr("Optional salvage cargo recovered · +25% route bonus secured", "เก็บกล่องเสริมแล้ว · ได้โบนัสเส้นทาง +25%")
+              : tr("Optional: recover the cargo crate for the +25% route bonus", "เป้าหมายเสริม: เก็บกล่องสินค้าเพื่อรับโบนัสเส้นทาง +25%")}
+          </div>
+        )}
         {(mission.enemyCount ?? 0) > 0 && (
           <div className="text-center text-[10px] sm:text-xs font-bold text-destructive">HP {hp}/{maxHp}</div>
         )}
@@ -1319,6 +1403,7 @@ export default function PlanetExploration({
                           data-story-item-type={item.type}
                           aria-label={item.type === "crystal" ? tr("Signal crystal", "คริสตัลสัญญาณ") : undefined}
                         >
+                          {item.id === trailTargetId && <span className="story-trail-label">{tr("TRACK", "ตามรอย")}</span>}
                           <StoryItemMarker item={item} />
                         </motion.span>
                       )}

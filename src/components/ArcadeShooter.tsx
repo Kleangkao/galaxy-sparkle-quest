@@ -15,6 +15,8 @@ type ShotFeedback = { id: number; x: number; y: number; text: string; tone: "hit
 interface Props {
   gameState: GameState;
   contractId?: string;
+  suspended?: boolean;
+  onActiveChange?: (active: boolean) => void;
   onBack: () => void;
   onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "arcade"; contractId: string; accuracy: number; grade: string; participated: boolean }) => void;
 }
@@ -39,8 +41,8 @@ const makeState = (magazine = BASE_MAGAZINE): ShooterState => ({
   bossDefeated: false,
 });
 
-export default function ArcadeShooter({ gameState, contractId, onBack, onComplete }: Props) {
-  const { tr } = useI18n();
+export default function ArcadeShooter({ gameState, contractId, suspended = false, onActiveChange, onBack, onComplete }: Props) {
+  const { lang, tr } = useI18n();
   const contract = getArcadeContract(contractId);
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
@@ -62,6 +64,13 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
   const stateRef = useRef<ShooterState>(makeState(magazine));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...stateRef.current }));
+  const lastTickRef = useRef(0);
+  const effectivePaused = paused || suspended;
+
+  useEffect(() => {
+    onActiveChange?.(running);
+    return () => onActiveChange?.(false);
+  }, [onActiveChange, running]);
 
   const objectiveText = contract.objective === "boss"
     ? tr("Break the Ahr core", "ทำลายแกนพลัง Ahr")
@@ -116,15 +125,15 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
 
   const reload = useCallback(() => {
     const state = stateRef.current;
-    if (!running || paused || state.reloading > 0 || state.ammo === magazine) return;
+    if (!running || effectivePaused || state.reloading > 0 || state.ammo === magazine) return;
     state.reloading = reloadDuration;
     playReloadSound();
     setFrame({ ...state, targets: [...state.targets] });
-  }, [magazine, paused, reloadDuration, running]);
+  }, [effectivePaused, magazine, reloadDuration, running]);
 
   const shootTarget = useCallback((targetId?: number) => {
     const state = stateRef.current;
-    if (!running || paused || state.reloading > 0) return;
+    if (!running || effectivePaused || state.reloading > 0) return;
     if (state.ammo <= 0) { reload(); return; }
     state.ammo -= 1;
     state.shotsFired += 1;
@@ -137,13 +146,13 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     };
     if (!target) {
       state.combo = 0;
-      addFeedback(aimRef.current.x, aimRef.current.y, "MISS", "miss");
+      addFeedback(aimRef.current.x, aimRef.current.y, tr("MISS", "พลาด"), "miss");
     } else if (target.kind === "decoy") {
       state.score = Math.max(0, state.score - 75);
       state.combo = 0;
       state.targets = state.targets.filter((item) => item.id !== target.id);
       pulseGamepad(80, 0.35);
-      addFeedback(target.x, target.y, "-75 DECOY", "danger");
+      addFeedback(target.x, target.y, tr("-75 DECOY", "-75 เป้าหลอก"), "danger");
     } else {
       state.hits += 1;
       playImpactSound();
@@ -156,36 +165,40 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
         state.energy += 1;
         state.score += 90 + Math.min(100, state.combo * 10);
         state.targets = state.targets.filter((item) => item.id !== target.id);
-        addFeedback(target.x, target.y, `SIGNAL +${state.combo}`, "bonus");
+        addFeedback(target.x, target.y, tr(`SIGNAL +${state.combo}`, `สัญญาณ +${state.combo}`), "bonus");
       } else if (target.hp <= 0) {
         playEnemyBreakSound();
         state.score += target.kind === "boss" ? 1800 : 140 + Math.min(160, state.combo * 12);
         if (target.kind === "boss") state.bossDefeated = true;
         state.targets = state.targets.filter((item) => item.id !== target.id);
-        addFeedback(target.x, target.y, target.kind === "boss" ? "CORE BROKEN" : `BREAK x${state.combo}`, "bonus");
+        addFeedback(target.x, target.y, target.kind === "boss" ? tr("CORE BROKEN", "ทำลายแกนแล้ว") : tr(`BREAK x${state.combo}`, `ทำลาย x${state.combo}`), "bonus");
       } else {
         state.score += target.kind === "boss" ? 90 : 35;
-        addFeedback(target.x, target.y, weakPointHit ? "WEAK POINT x2" : target.kind === "boss" ? `CORE ${Math.max(0, Math.ceil(target.hp))}` : `HIT x${state.combo}`, weakPointHit ? "bonus" : "hit");
+        addFeedback(target.x, target.y, weakPointHit ? tr("WEAK POINT x2", "จุดอ่อน x2") : target.kind === "boss" ? tr(`CORE ${Math.max(0, Math.ceil(target.hp))}`, `แกน ${Math.max(0, Math.ceil(target.hp))}`) : tr(`HIT x${state.combo}`, `โดน x${state.combo}`), weakPointHit ? "bonus" : "hit");
       }
     }
     if (state.ammo <= 0) state.reloading = reloadDuration;
     setFrame({ ...state, targets: [...state.targets] });
-  }, [modifiers.combatDamage, paused, reload, reloadDuration, running]);
+  }, [effectivePaused, modifiers.combatDamage, reload, reloadDuration, running, tr]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "r") reload();
-      if (event.key === "Escape" && running) setPaused((value) => !value);
+      if (event.key === "Escape" && running && !suspended) setPaused((value) => !value);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [reload, running]);
+  }, [reload, running, suspended]);
 
   useEffect(() => {
-    if (!running || paused) return;
+    if (!running || effectivePaused) return;
+    lastTickRef.current = performance.now();
     const timer = window.setInterval(() => {
       const state = stateRef.current;
-      const dt = 0.033 * gameState.accessibility.combatSpeed;
+      const now = performance.now();
+      const wallDelta = Math.min(0.1, Math.max(0, (now - lastTickRef.current) / 1000));
+      lastTickRef.current = now;
+      const dt = wallDelta * gameState.accessibility.combatSpeed;
       state.elapsed += dt;
       state.spawnTimer -= dt;
       state.reloading -= dt;
@@ -241,7 +254,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       else if (state.elapsed >= duration) finish(false);
     }, 33);
     return () => window.clearInterval(timer);
-  }, [contract.objective, contract.spawnMultiplier, contract.target, duration, finish, gameState.accessibility.combatSpeed, magazine, paused, running]);
+  }, [contract.objective, contract.spawnMultiplier, contract.target, duration, effectivePaused, finish, gameState.accessibility.combatSpeed, magazine, running]);
 
   useEffect(() => () => {
     if (aimFrameRef.current !== null) cancelAnimationFrame(aimFrameRef.current);
@@ -292,7 +305,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       </section>
 
       <section className="arcade-shooter__hud">
-        <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
+        <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong></div>
         <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
         <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "—"}</strong></div>
         <div><span>{contract.objective === "energy" ? tr("Signals", "สัญญาณ") : tr("Ammo", "กระสุน")}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
@@ -331,15 +344,15 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
               <button onClick={(event) => { event.stopPropagation(); reset(); }}><Play className="h-4 w-4" /> {tr("Start assignment", "เริ่มภารกิจ")}</button>
             </div>
           )}
-          {paused && <div className="arcade-overlay"><h2>{tr("Paused", "หยุดชั่วคราว")}</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> {tr("Resume", "เล่นต่อ")}</button></div>}
+          {paused && !suspended && <div className="arcade-overlay"><h2>{tr("Paused", "หยุดชั่วคราว")}</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> {tr("Resume", "เล่นต่อ")}</button></div>}
           {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("CONTRACT CLEARED", "ผ่านภารกิจแล้ว") : tr("ASSIGNMENT COMPLETE", "จบภารกิจแล้ว")}</div>}
         </div>
       </div>
 
       <footer className="arcade-shooter__controls">
         <span>{frame.reloading > 0 ? tr(`Reloading ${Math.ceil(frame.reloading * 10) / 10}s`, `กำลังเติมกระสุน ${Math.ceil(frame.reloading * 10) / 10} วิ`) : tr("Mouse · aim and fire", "เมาส์ · เล็งและยิง")}</span>
-        <button onClick={reload} disabled={!running || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · {tr("Reload", "เติมกระสุน")}</button>
-        <button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button>
+        <button onClick={reload} disabled={!running || effectivePaused || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · {tr("Reload", "เติมกระสุน")}</button>
+        <button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button>
       </footer>
     </main>
   );

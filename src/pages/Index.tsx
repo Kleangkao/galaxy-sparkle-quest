@@ -53,11 +53,12 @@ const GuidedFlight = lazy(() => import("@/components/GuidedFlight"));
 const UnifiedRunResults = lazy(() => import("@/components/UnifiedRunResults"));
 const ConfirmActionDialog = lazy(() => import("@/components/ConfirmActionDialog"));
 
-function ScreenLoadingFallback({ label }: { label: string }) {
+function ScreenLoadingFallback({ label, labelTh }: { label: string; labelTh: string }) {
+  const { tr } = useI18n();
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center px-6 text-center">
       <div className="rounded-2xl border border-border/60 bg-card/92 px-5 py-4 text-sm font-bold text-foreground shadow-lg">
-        {label}
+        {tr(label, labelTh)}
       </div>
     </div>
   );
@@ -82,8 +83,11 @@ export default function Index() {
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const [runResult, setRunResult] = useState<RunResultData | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [activeRun, setActiveRun] = useState(false);
+  const [documentHidden, setDocumentHidden] = useState(() => typeof document !== "undefined" && document.hidden);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
+  const gameSuspended = settingsOpen || Boolean(confirmAction) || Boolean(runResult) || documentHidden;
 
 
   // Self-healing: auto-save, health check, performance detection
@@ -149,6 +153,12 @@ export default function Index() {
     profileRepository.setActiveFaction(null);
     setScreen("hub");
     setGameState(createNewGameState(null));
+  }, []);
+
+  useEffect(() => {
+    const syncVisibility = () => setDocumentHidden(document.hidden);
+    document.addEventListener("visibilitychange", syncVisibility);
+    return () => document.removeEventListener("visibilitychange", syncVisibility);
   }, []);
 
   const handleResetProgress = useCallback(() => {
@@ -382,6 +392,9 @@ export default function Index() {
   };
 
   const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string; accuracy?: number; grade?: string; evolutions?: number; participated?: boolean }) => {
+    setActiveRun(false);
+    setSettingsOpen(false);
+    setConfirmAction(null);
     updateState((prev) => {
       const xp = prev.xp + result.xp;
       const previousContract = result.contractId ? prev.modeRecords.arcadeContracts[result.contractId] ?? { bestScore: 0, clears: 0 } : null;
@@ -408,6 +421,7 @@ export default function Index() {
     const isSwarm = result.variant === "swarm";
     setRunResult({
       mode: result.variant,
+      status: result.participated === false ? "no-reward" : result.won ? "cleared" : "partial",
       title: result.won
         ? isSwarm ? tr("Ahr defeated", "กำจัด Ahr สำเร็จ") : tr(`Contract cleared · Grade ${result.grade ?? "B"}`, `ผ่านภารกิจยิงเป้า · ระดับ ${result.grade ?? "B"}`)
         : result.participated === false ? tr("Assignment incomplete", "ภารกิจยังไม่สำเร็จ") : tr("Rewards secured", "รับรางวัลแล้ว"),
@@ -435,6 +449,7 @@ export default function Index() {
   };
 
   const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
+    setActiveRun(false);
     const previewReward = Math.ceil(finds * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
     updateState((prev) => {
       const xp = prev.xp + finds;
@@ -442,11 +457,12 @@ export default function Index() {
       const currentMastery = prev.modeRecords.discoveryMastery[biomeId] || 0;
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
-    setRunResult({ mode: "discovery", title: tr("Field journal complete", "บันทึกการสำรวจครบแล้ว"), outcome: tr("Six linked signals were recorded and this biome's research rank advanced.", "เก็บสัญญาณที่เชื่อมโยงกันครบแล้ว และระดับสำรวจพื้นที่นี้เพิ่มขึ้น"), crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery`, masteryTh: `ความชำนาญพื้นที่ +${mastery}`, improvements: ["Biome mastery increased", "Discovery total and PURI bond increased"], improvementsTh: ["ความชำนาญพื้นที่เพิ่มขึ้น", "จำนวนสิ่งที่พบและความสนิทกับ PURI เพิ่มขึ้น"] });
+    setRunResult({ mode: "discovery", status: "cleared", title: tr("Field journal complete", "บันทึกการสำรวจครบแล้ว"), outcome: tr("Six linked signals were recorded and this biome's research rank advanced.", "เก็บสัญญาณที่เชื่อมโยงกันครบแล้ว และระดับสำรวจพื้นที่นี้เพิ่มขึ้น"), crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery`, masteryTh: `ความชำนาญพื้นที่ +${mastery}`, improvements: ["Biome mastery increased", "Discovery total and PURI bond increased"], improvementsTh: ["ความชำนาญพื้นที่เพิ่มขึ้น", "จำนวนสิ่งที่พบและความสนิทกับ PURI เพิ่มขึ้น"] });
     toast(tr("Field journal saved. Discovery rewards added.", "บันทึกสมุดสำรวจและรับรางวัลแล้ว"));
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
+    setActiveRun(false);
     const previewXp = 6 + (objectiveComplete ? 4 : 0);
     const previewReward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
     updateState((prev) => {
@@ -455,7 +471,7 @@ export default function Index() {
       const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
-    setRunResult({ mode: "strategy", title: objectiveComplete ? tr("Command objective complete", "ทำเป้าหมายวางแผนสำเร็จ") : tr("Command cycle banked", "บันทึกรอบวางแผนแล้ว"), outcome: objectiveComplete ? tr("Your faction secured the objective bonus and advanced its frontier network.", "ฝ่ายของคุณได้รับโบนัสเป้าหมาย และเครือข่ายพื้นที่แข็งแกร่งขึ้น") : tr("Your influence was saved. Try the objective again next cycle.", "บันทึกคะแนนพื้นที่แล้ว ลองทำเป้าหมายอีกครั้งในรอบหน้าได้"), crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle", masteryTh: captures ? `ยึดพื้นที่ ${captures} แห่ง` : "รอบวางแผน +1", improvements: [objectiveComplete ? "Control objective progress increased" : "Faction influence was saved", captures ? `${captures} new sector captured` : "PURI bond and Captain XP increased"], improvementsTh: [objectiveComplete ? "ความคืบหน้าเป้าหมายวางแผนเพิ่มขึ้น" : "บันทึกคะแนนพื้นที่ของฝ่ายแล้ว", captures ? `ยึดพื้นที่ใหม่ ${captures} แห่ง` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"] });
+    setRunResult({ mode: "strategy", status: objectiveComplete ? "cleared" : "partial", title: objectiveComplete ? tr("Command objective complete", "ทำเป้าหมายวางแผนสำเร็จ") : tr("Command cycle banked", "บันทึกรอบวางแผนแล้ว"), outcome: objectiveComplete ? tr("Your faction secured the objective bonus and advanced its frontier network.", "ฝ่ายของคุณได้รับโบนัสเป้าหมาย และเครือข่ายพื้นที่แข็งแกร่งขึ้น") : tr("Your influence was saved. Try the objective again next cycle.", "บันทึกคะแนนพื้นที่แล้ว ลองทำเป้าหมายอีกครั้งในรอบหน้าได้"), crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle", masteryTh: captures ? `ยึดพื้นที่ ${captures} แห่ง` : "รอบวางแผน +1", improvements: [objectiveComplete ? "Control objective progress increased" : "Faction influence was saved", captures ? `${captures} new sector captured` : "PURI bond and Captain XP increased"], improvementsTh: [objectiveComplete ? "ความคืบหน้าเป้าหมายวางแผนเพิ่มขึ้น" : "บันทึกคะแนนพื้นที่ของฝ่ายแล้ว", captures ? `ยึดพื้นที่ใหม่ ${captures} แห่ง` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"] });
     toast(tr("Command cycle saved to the frontier.", "บันทึกรอบวางแผนแล้ว"));
   };
 
@@ -464,10 +480,50 @@ export default function Index() {
     setGuidedOpen(false);
   };
 
-  const navigateFromHud = (next: Screen) => {
+  const performNavigation = (next: Screen) => {
     playClickSound();
+    setActiveRun(false);
     setActivePlanet(null);
     setScreen(next);
+  };
+
+  const requestNavigation = (next: Screen) => {
+    if (next === screen) return;
+    if (!activeRun) {
+      performNavigation(next);
+      return;
+    }
+    setConfirmAction({
+      title: tr("Leave the active run?", "ออกจากรอบที่กำลังเล่นไหม?"),
+      description: tr(
+        "This run is paused. Leaving now discards its current progress and rewards.",
+        "เกมหยุดไว้แล้ว ถ้าออกตอนนี้ ความคืบหน้าและรางวัลของรอบนี้จะหายไป",
+      ),
+      confirmLabel: tr("Leave run", "ออกจากรอบ"),
+      tone: "danger",
+      onConfirm: () => performNavigation(next),
+    });
+  };
+
+  const requestFactionSwitch = () => {
+    if (!activeRun) {
+      handleReturnToFactionSelect();
+      return;
+    }
+    setSettingsOpen(false);
+    setConfirmAction({
+      title: tr("Leave this run and switch faction?", "ออกจากรอบแล้วเปลี่ยนฝ่ายไหม?"),
+      description: tr(
+        "This run is paused. Its current progress and rewards will not be saved.",
+        "เกมหยุดไว้แล้ว ความคืบหน้าและรางวัลของรอบนี้จะไม่ถูกบันทึก",
+      ),
+      confirmLabel: tr("Switch faction", "เปลี่ยนฝ่าย"),
+      tone: "danger",
+      onConfirm: () => {
+        setActiveRun(false);
+        handleReturnToFactionSelect();
+      },
+    });
   };
 
   const exitRunResults = () => {
@@ -481,7 +537,7 @@ export default function Index() {
     return (
       <div className="relative">
         <SpaceBackground />
-        <Suspense fallback={<ScreenLoadingFallback label="Loading faction command..." />}>
+        <Suspense fallback={<ScreenLoadingFallback label="Loading faction command..." labelTh="กำลังเปิดหน้าฝ่าย..." />}>
           <FactionSelect onSelect={handleFactionSelect} />
         </Suspense>
       </div>
@@ -494,9 +550,9 @@ export default function Index() {
       <HUD
         gameState={gameState}
         activeScreen={screen}
-        onNavigate={navigateFromHud}
+        onNavigate={requestNavigation}
         onClaimDaily={screen === "map" ? handleClaimDaily : undefined}
-        onLogoClick={handleReturnToFactionSelect}
+        onLogoClick={requestFactionSwitch}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
@@ -504,7 +560,7 @@ export default function Index() {
       {screen === "hub" && (
         <motion.div key="mode-hub" {...screenTransition}>
           <ScreenErrorBoundary screenName="mode-hub" onFallback={() => setScreen("map")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Opening activity network..." />}>
+            <Suspense fallback={<ScreenLoadingFallback label="Opening activity network..." labelTh="กำลังเปิดหน้าเลือกโหมด..." />}>
               <ModeHub gameState={gameState} onChoose={handleChooseMode} onOpenProgress={() => setScreen("progress")} onOpenCrew={() => setScreen("shop")} />
             </Suspense>
           </ScreenErrorBoundary>
@@ -514,7 +570,7 @@ export default function Index() {
       {screen === "map" && (
         <motion.div key="map-screen" {...screenTransition}>
         <ScreenErrorBoundary screenName="galaxy-map" onFallback={() => setScreen("map")}>
-          <Suspense fallback={<ScreenLoadingFallback label="Opening expedition console..." />}>
+          <Suspense fallback={<ScreenLoadingFallback label="Opening expedition console..." labelTh="กำลังเปิดแผนที่เนื้อเรื่อง..." />}>
             <StoryExpeditionConsole
               gameState={gameState}
               onHome={() => setScreen("hub")}
@@ -528,10 +584,12 @@ export default function Index() {
       {screen === "planet" && activePlanet && (
         <motion.div key={`planet-screen-${activePlanet.id}`} {...screenTransition}>
         <ScreenErrorBoundary screenName="planet-explore" onFallback={() => { setActivePlanet(null); setScreen("map"); }}>
-          <Suspense fallback={<ScreenLoadingFallback label="Preparing sector..." />}>
+          <Suspense fallback={<ScreenLoadingFallback label="Preparing sector..." labelTh="กำลังเตรียมพื้นที่ภารกิจ..." />}>
             <PlanetExplore planet={activePlanet} gameState={gameState} onCollect={handleCollect}
               onFailureCollect={handleStoryFailureCollect}
-              onBack={() => { setActivePlanet(null); setScreen("map"); }}
+              suspended={gameSuspended}
+              onActiveChange={setActiveRun}
+              onBack={() => requestNavigation("map")}
               onContinue={(nextPlanet) => { playTravelSound(); setActivePlanet(nextPlanet); setScreen("planet"); }} />
           </Suspense>
         </ScreenErrorBoundary>
@@ -541,7 +599,7 @@ export default function Index() {
       {screen === "shop" && (
         <motion.div key="shop-screen" {...screenTransition}>
         <ScreenErrorBoundary screenName="ship-shop" onFallback={() => setScreen("map")}>
-          <Suspense fallback={<ScreenLoadingFallback label="Opening hangar..." />}>
+          <Suspense fallback={<ScreenLoadingFallback label="Opening hangar..." labelTh="กำลังเปิดโรงเก็บยาน..." />}>
             <CrewHangar
               gameState={gameState}
               onSetPilot={handleSetPilot}
@@ -559,7 +617,7 @@ export default function Index() {
       {screen === "pets" && (
         <motion.div key="pets-screen" {...screenTransition}>
         <ScreenErrorBoundary screenName="pet-collection" onFallback={() => setScreen("map")}>
-          <Suspense fallback={<ScreenLoadingFallback label="Opening companion bay..." />}>
+          <Suspense fallback={<ScreenLoadingFallback label="Opening companion bay..." labelTh="กำลังเปิดห้องเพื่อนร่วมทาง..." />}>
             <PetCollection
               ownedPets={gameState.pets}
               activePet={gameState.activePet}
@@ -576,7 +634,7 @@ export default function Index() {
       {screen === "info" && (
         <motion.div key="info-screen" {...screenTransition}>
         <ScreenErrorBoundary screenName="info-screen" onFallback={() => setScreen("map")}>
-          <Suspense fallback={<ScreenLoadingFallback label="Opening system info..." />}>
+          <Suspense fallback={<ScreenLoadingFallback label="Opening system info..." labelTh="กำลังเปิดคู่มือเกม..." />}>
             <InfoScreen />
           </Suspense>
         </ScreenErrorBoundary>
@@ -586,7 +644,7 @@ export default function Index() {
       {screen === "arcade-select" && (
         <motion.div key="arcade-select" {...screenTransition}>
           <ScreenErrorBoundary screenName="arcade-contracts" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Loading Arcade assignments..." />}>
+            <Suspense fallback={<ScreenLoadingFallback label="Loading Arcade assignments..." labelTh="กำลังเปิดภารกิจยิงเป้า..." />}>
               <ArcadeContracts
                 gameState={gameState}
                 onBack={() => setScreen("hub")}
@@ -600,11 +658,13 @@ export default function Index() {
       {screen === "swarm" && (
         <motion.div key="swarm" {...screenTransition}>
           <ScreenErrorBoundary screenName="swarm" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Loading survival simulation..." />}>
+            <Suspense fallback={<ScreenLoadingFallback label="Loading survival simulation..." labelTh="กำลังเตรียมโหมดฝ่าฝูงศัตรู..." />}>
               <SwarmProtocol
                 gameState={gameState}
-                onBack={() => setScreen("hub")}
-                onOpenHangar={() => setScreen("shop")}
+                suspended={gameSuspended}
+                onActiveChange={setActiveRun}
+                onBack={() => requestNavigation("hub")}
+                onOpenHangar={() => requestNavigation("shop")}
                 onComplete={handleCombatComplete}
               />
             </Suspense>
@@ -615,11 +675,13 @@ export default function Index() {
       {screen === "arcade" && (
         <motion.div key="arcade" {...screenTransition}>
           <ScreenErrorBoundary screenName="arcade" onFallback={() => setScreen("arcade-select")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Loading shooting range..." />}>
+            <Suspense fallback={<ScreenLoadingFallback label="Loading shooting range..." labelTh="กำลังเตรียมสนามยิง..." />}>
               <ArcadeShooter
                 gameState={gameState}
                 contractId={activeArcadeContract}
-                onBack={() => setScreen("arcade-select")}
+                suspended={gameSuspended}
+                onActiveChange={setActiveRun}
+                onBack={() => requestNavigation("arcade-select")}
                 onComplete={handleCombatComplete}
               />
             </Suspense>
@@ -630,8 +692,8 @@ export default function Index() {
       {screen === "discovery" && (
         <motion.div key="discovery" {...screenTransition}>
           <ScreenErrorBoundary screenName="discovery" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Preparing discovery field..." />}>
-              <DiscoveryRun gameState={gameState} onBack={() => setScreen("hub")} onComplete={handleDiscoveryComplete} />
+            <Suspense fallback={<ScreenLoadingFallback label="Preparing discovery field..." labelTh="กำลังเตรียมพื้นที่สำรวจ..." />}>
+              <DiscoveryRun gameState={gameState} onActiveChange={setActiveRun} onBack={() => requestNavigation("hub")} onComplete={handleDiscoveryComplete} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>
@@ -640,8 +702,8 @@ export default function Index() {
       {screen === "strategy" && (
         <motion.div key="strategy" {...screenTransition}>
           <ScreenErrorBoundary screenName="strategy" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Opening tactical grid..." />}>
-              <FrontierControl gameState={gameState} onBack={() => setScreen("hub")} onComplete={handleStrategyComplete} />
+            <Suspense fallback={<ScreenLoadingFallback label="Opening tactical grid..." labelTh="กำลังเปิดเส้นทางวางแผน..." />}>
+              <FrontierControl gameState={gameState} onActiveChange={setActiveRun} onBack={() => requestNavigation("hub")} onComplete={handleStrategyComplete} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>
@@ -650,7 +712,7 @@ export default function Index() {
       {screen === "progress" && (
         <motion.div key="captain-progress" {...screenTransition}>
           <ScreenErrorBoundary screenName="captain-progress" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Opening Captain progress..." />}>
+            <Suspense fallback={<ScreenLoadingFallback label="Opening Captain progress..." labelTh="กำลังเปิดหน้าความคืบหน้า..." />}>
               <CaptainProgress gameState={gameState} onBack={() => setScreen("hub")} onOpenCrew={() => setScreen("shop")} onPlay={handleChooseMode} />
             </Suspense>
           </ScreenErrorBoundary>
@@ -665,7 +727,7 @@ export default function Index() {
           settings={gameState.accessibility}
           onOpenChange={setSettingsOpen}
           onChange={(accessibility) => updateState((prev) => ({ ...prev, accessibility }))}
-          onSwitchFaction={handleReturnToFactionSelect}
+          onSwitchFaction={requestFactionSwitch}
           onResetProgress={handleResetProgress}
           onReplayOnboarding={() => { setSettingsOpen(false); setGuidedOpen(true); }}
           onExportSave={handleExportSave}

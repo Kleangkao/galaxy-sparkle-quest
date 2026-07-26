@@ -9,11 +9,12 @@ import { useI18n } from "@/lib/i18n";
 
 interface Props {
   gameState: GameState;
+  onActiveChange?: (active: boolean) => void;
   onBack: () => void;
   onComplete: (result: { biomeId: string; finds: number; mastery: number }) => void;
 }
 
-export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
+export default function DiscoveryRun({ gameState, onActiveChange, onBack, onComplete }: Props) {
   const { tr, lang } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
@@ -42,6 +43,10 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const masteryGain = complete ? 20 : found.length;
 
   useEffect(() => () => { if (scanTimer.current !== null) window.clearTimeout(scanTimer.current); }, []);
+  useEffect(() => {
+    onActiveChange?.(Boolean(biome && !claimed));
+    return () => onActiveChange?.(false);
+  }, [biome, claimed, onActiveChange]);
 
   const chooseBiome = (next: DiscoveryBiome) => { setBiome(next); setFound([]); setSelected(null); setClaimed(false); setScanCharges(3); setWrongPick(null); };
   const find = (item: (typeof points)[number]) => {
@@ -70,6 +75,22 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
       onConfirm: performReset,
     });
   };
+  const leaveBiome = () => {
+    if (found.length === 0 || claimed) {
+      setBiome(null);
+      return;
+    }
+    setConfirmAction({
+      title: tr("Leave this unfinished journal?", "ออกจากสมุดบันทึกที่ยังไม่เสร็จไหม?"),
+      description: tr(
+        `${found.length}/${requiredFinds} required signals are logged. Leaving now will clear this run's unclaimed progress.`,
+        `บันทึกสัญญาณแล้ว ${found.length}/${requiredFinds} จุด หากออกตอนนี้ ความคืบหน้าที่ยังไม่ได้รับรางวัลจะหายไป`,
+      ),
+      confirmLabel: tr("Leave run", "ออกจากรอบ"),
+      tone: "danger",
+      onConfirm: () => setBiome(null),
+    });
+  };
   const scan = () => {
     if (scanCharges <= 0 || scanActive) return;
     setScanCharges((value) => value - 1);
@@ -85,8 +106,8 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
 
   if (!biome) return (
     <main className="discovery-mode discovery-select relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
-      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr("Discovery network · Relaxed hidden-object mode", "เครือข่ายสำรวจ · เล่นสบาย ๆ")}</div><h1>{tr("Explore, spot signals, fill your journal.", "ออกสำรวจ หาสัญญาณ และเติมสมุดบันทึก")}</h1><p>{tr("There is no timer and no failure. Pick a biome, click six glowing signal markers, then claim the journal rewards.", "ไม่มีเวลาและไม่มีแพ้ เลือกพื้นที่ กดหาสัญญาณเรืองแสงให้ครบ 6 จุด แล้วรับรางวัล")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} {tr("total finds", "สิ่งที่พบ")}</small></span></div></header>
-      <section className="discovery-how"><span><strong>1</strong><Compass className="h-4 w-4" /> {tr("Pick any biome", "เลือกพื้นที่")}</span><span><strong>2</strong><MousePointerClick className="h-4 w-4" /> {tr("Find all 6 glowing markers", "หาจุดเรืองแสงให้ครบ 6 จุด")}</span><span><strong>3</strong><Gift className="h-4 w-4" /> {tr("Claim journal rewards", "รับรางวัลจากสมุดบันทึก")}</span></section>
+      <header className="discovery-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><div className="command-kicker">{tr("Discovery network · Relaxed clue mode", "เครือข่ายสำรวจ · ตามคำใบ้แบบสบาย ๆ")}</div><h1>{tr("Follow clues and fill your journal.", "ตามคำใบ้และเติมสมุดสำรวจ")}</h1><p>{tr("There is no timer and no failure. Each clue reveals two possible signals; choose the matching one and record six journal entries.", "ไม่มีเวลาและไม่มีแพ้ แต่ละคำใบ้จะเปิดสัญญาณให้เลือก 2 จุด เลือกจุดที่ตรงกับคำใบ้และเก็บบันทึกให้ครบ 6 รายการ")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{pilot.name}<small>{gameState.modeRecords.discoveryFinds} {tr("total finds", "สิ่งที่พบ")}</small></span></div></header>
+      <section className="discovery-how"><span><strong>1</strong><Compass className="h-4 w-4" /> {tr("Pick any biome", "เลือกพื้นที่")}</span><span><strong>2</strong><MousePointerClick className="h-4 w-4" /> {tr("Read the clue · choose 1 of 2 signals", "อ่านคำใบ้ · เลือก 1 จาก 2 จุด")}</span><span><strong>3</strong><Gift className="h-4 w-4" /> {tr("Record 6 entries · claim rewards", "เก็บ 6 รายการ · รับรางวัล")}</span></section>
       <section className="discovery-run-guide"><div><BookOpen className="h-4 w-4" /><span>{tr("Why play Discovery?", "เล่นโหมดสำรวจแล้วได้อะไร?")}<strong>{tr("Learn Galia lore and earn crystals, XP, biome mastery, and PURI bond—with no timer or failure.", "เรียนรู้เรื่องราวของกาเลีย พร้อมรับคริสตัล XP ค่าความชำนาญ และเพิ่มความสนิทกับ PURI โดยไม่มีเวลาและไม่มีแพ้")}</strong></span></div><div><Gift className="h-4 w-4" /><span>{tr("Campaign benefit", "โบนัสสำหรับเนื้อเรื่อง")}<strong>{gameState.modeRecords.discoveryFinds >= 18 ? tr("Field Scanner unlocked: +10% Story companion chance", "ปลดล็อกเครื่องสแกน: โอกาสเจอเพื่อนในเนื้อเรื่อง +10%") : tr(`${gameState.modeRecords.discoveryFinds}/18 finds toward +10% Story companion chance`, `พบแล้ว ${gameState.modeRecords.discoveryFinds}/18 จุด เพื่อรับโอกาสเจอเพื่อนในเนื้อเรื่อง +10%`)}</strong></span></div></section>
       <section className="discovery-biome-grid">
         {DISCOVERY_BIOMES.map((item) => { const mastery = gameState.modeRecords.discoveryMastery[item.id] || 0; const name = lang === "th" ? item.nameTh : item.name; return <button key={item.id} className={`discovery-biome discovery-biome--${item.accent}`} onClick={() => chooseBiome(item)}><img src={item.backdrop} alt={tr(`${item.name} landscape`, `พื้นที่ ${item.nameTh}`)} /><i /><div><span>{lang === "th" ? item.subtitleTh : item.subtitle}</span><h2>{name}</h2><p>{lang === "th" ? item.descriptionTh : item.description}</p><strong><Compass className="h-4 w-4" /> {tr("Explore this area", "สำรวจพื้นที่นี้")}</strong><small>{getMasteryTier(mastery, lang)} · {mastery}/100 {tr("mastery", "ความชำนาญ")}</small></div></button>; })}
@@ -99,7 +120,7 @@ export default function DiscoveryRun({ gameState, onBack, onComplete }: Props) {
   const visibleJournalPoints = points.filter((item) => item.id < requiredFinds || rareSignalActive);
   return (
     <main className="discovery-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
-      <header className="discovery-header"><button onClick={() => setBiome(null)}><ArrowLeft className="h-4 w-4" /> {tr("Biomes", "พื้นที่สำรวจ")}</button><div><div className="command-kicker">{tr(`Discovery Run · ${biome.name}`, `ออกสำรวจ · ${biome.nameTh}`)}</div><h1>{tr(`Follow the signal trail${rareSignalActive ? " and find the rare anomaly" : ""}.`, `ตามรอยสัญญาณ${rareSignalActive ? " และค้นหาสัญญาณหายาก" : ""}`)}</h1><p>{tr("Clues now rotate between map position, direction, and distance. A wrong guess has no penalty.", "คำใบ้จะสลับระหว่างตำแหน่ง ทิศทาง และระยะ ตอบผิดไม่เสียอะไร")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery, lang)}<small>{tr(`Research ${researchChapter}/5`, `บันทึก ${researchChapter}/5`)}</small></span></div></header>
+      <header className="discovery-header"><button onClick={leaveBiome}><ArrowLeft className="h-4 w-4" /> {tr("Biomes", "พื้นที่สำรวจ")}</button><div><div className="command-kicker">{tr(`Discovery Run · ${biome.name}`, `ออกสำรวจ · ${biome.nameTh}`)}</div><h1>{tr(`Follow the signal trail${rareSignalActive ? " and find the rare anomaly" : ""}.`, `ตามรอยสัญญาณ${rareSignalActive ? " และค้นหาสัญญาณหายาก" : ""}`)}</h1><p>{tr("Clues now rotate between map position, direction, and distance. A wrong guess has no penalty.", "คำใบ้จะสลับระหว่างตำแหน่ง ทิศทาง และระยะ ตอบผิดไม่เสียอะไร")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery, lang)}<small>{tr(`Research ${researchChapter}/5`, `บันทึก ${researchChapter}/5`)}</small></span></div></header>
       <section className="discovery-run-guide"><div><MousePointerClick className="h-4 w-4" /><span>{tr("Current clue", "เบาะแสตอนนี้")}<strong>{complete ? tr("Trail complete · claim your rewards", "ตามรอยครบแล้ว · รับรางวัลได้เลย") : `${nextTargetId === requiredFinds ? tr("Rare signal", "สัญญาณหายาก") : tr(`Signal ${coreFoundCount + 1}/${requiredFinds}`, `สัญญาณ ${coreFoundCount + 1}/${requiredFinds}`)} · ${clueText}`}</strong></span></div><div><Gift className="h-4 w-4" /><span>{tr("Journal reward", "รางวัลสมุดบันทึก")}<strong>{tr(`+${Math.ceil(requiredFinds * puri.rewardMultiplier * modifiers.crystalMultiplier)} crystals${rareSignalActive ? ` · rare signal +${Math.ceil(puri.rewardMultiplier * modifiers.crystalMultiplier)}` : ""}`, `+${Math.ceil(requiredFinds * puri.rewardMultiplier * modifiers.crystalMultiplier)} คริสตัล${rareSignalActive ? ` · สัญญาณหายาก +${Math.ceil(puri.rewardMultiplier * modifiers.crystalMultiplier)}` : ""}`)}</strong></span></div><button onClick={scan} disabled={scanCharges <= 0 || scanActive}><ScanLine className="h-4 w-4" /> {tr(`Reveal answer · ${scanCharges} left`, `เฉลยจุด · เหลือ ${scanCharges} ครั้ง`)}</button></section>
       <section className="discovery-layout">
         <div className="discovery-scene"><img className="discovery-scene__backdrop" src={biome.backdrop} alt={tr(`${biome.name} landscape`, `พื้นที่ ${biome.nameTh}`)} /><div className="discovery-scene__wash" /><div className="discovery-scene__hint"><Leaf className="h-4 w-4" /> {wrongPick !== null ? tr("That signal does not match the clue. Try the other visible point.", "จุดนั้นไม่ตรงกับคำใบ้ ลองอีกจุดที่มองเห็นได้") : puri.discoveryHint ? tr("PURI is highlighting the correct signal.", "PURI กำลังช่วยไฮไลต์สัญญาณที่ถูกต้อง") : tr("Use the location clue above. Two signal points are visible.", "ดูคำใบ้ตำแหน่งด้านบน จะมีสัญญาณให้เลือก 2 จุด")}</div>

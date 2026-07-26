@@ -13,8 +13,8 @@ const playFacts = [
   ["Story", "Move one tile at a time, complete the mission objective, then return to your ship.", "เนื้อเรื่อง", "เดินครั้งละ 1 ช่อง ทำเป้าหมายให้ครบ แล้วกลับไปที่ยาน"],
   ["Swarm", "Move with WASD or arrows. Shooting is automatic. Collect energy and choose perks.", "ฝ่าฝูงศัตรู", "ขยับด้วย WASD หรือปุ่มลูกศร ปืนยิงอัตโนมัติ เก็บพลังแล้วเลือกความสามารถ"],
   ["Arcade", "Aim with the mouse, click to shoot, and press R to reload.", "ยิงเป้า", "เล็งด้วยเมาส์ คลิกเพื่อยิง และกด R เพื่อเติมกระสุน"],
-  ["Discovery", "Follow the pulsing clue until all six signals are recorded. There is no timer.", "สำรวจ", "ตามหาจุดที่กำลังกะพริบให้ครบ 6 จุด โหมดนี้ไม่มีเวลาจำกัด"],
-  ["Control", "Choose a sector and spend every move to complete the short objective.", "วางแผน", "เลือกพื้นที่ แล้วใช้คำสั่งให้ครบเพื่อทำเป้าหมายสั้น ๆ"],
+  ["Discovery", "Follow the active clue, choose the matching nearby signal, and record all six journal entries. There is no timer.", "สำรวจ", "ตามคำใบ้ที่กำลังทำงาน เลือกสัญญาณใกล้เคียงให้ตรงกัน และเก็บบันทึกให้ครบ 6 รายการ โหมดนี้ไม่มีเวลาจำกัด"],
+  ["Control", "Read the route forecast, choose a safe or risky jump four times, keep the hull above zero, and reach the final beacon.", "วางแผน", "อ่านข้อมูลเส้นทาง แล้วเลือกทางปลอดภัยหรือทางเสี่ยง 4 ครั้ง รักษาพลังยานไม่ให้หมด และไปถึงจุดส่งสัญญาณสุดท้าย"],
 ];
 
 export default function InfoScreen() {

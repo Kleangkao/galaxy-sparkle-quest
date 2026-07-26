@@ -22,6 +22,9 @@ import CrewHangar from "@/components/CrewHangar";
 import { MISSION_BRIEFS } from "@/lib/missionBriefs";
 import UnifiedRunResults from "@/components/UnifiedRunResults";
 import ArcadeShooter from "@/components/ArcadeShooter";
+import SwarmProtocol from "@/components/SwarmProtocol";
+import CelebrationScreen from "@/components/CelebrationScreen";
+import DiscoveryRun from "@/components/DiscoveryRun";
 import { I18nProvider } from "@/lib/i18n";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
@@ -190,7 +193,7 @@ describe("public test release hardening", () => {
     fireEvent.click(screen.getByRole("button", { name: "04 Verdant Vault Clear Chapter 3" }));
 
     expect(screen.getByRole("heading", { name: "Verdant Vault" })).toBeInTheDocument();
-    expect(screen.getByText("Threat detected: Guardian drones")).toBeInTheDocument();
+    expect(screen.getByText(/Story goal:.*Threat: Guardian drones/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Clear Chapter 3" })).toBeDisabled();
   });
 
@@ -238,6 +241,7 @@ describe("public test release hardening", () => {
         success: false,
         bonus: 0,
         reason: "timeout",
+        salvageRecovered: false,
       });
     } finally {
       vi.useRealTimers();
@@ -294,6 +298,28 @@ describe("public test release hardening", () => {
     fireEvent.click(screen.getByRole("button", { name: /Launch Balanced route/ }));
     expect(container.querySelectorAll('[data-story-item-type="crystal"]')).toHaveLength(7);
     expect(container.querySelectorAll(".is-trail-target")).toHaveLength(1);
+  });
+
+  it("localizes the live Story tracking marker instead of generating English from CSS", () => {
+    localStorage.setItem("galaxy-lang", "th");
+    const state = createNewGameState("mud");
+    state.visitedPlanets = [PLANETS[0].id];
+    render(
+      <I18nProvider>
+        <PlanetExplore
+          planet={PLANETS[1]}
+          gameState={state}
+          onCollect={() => undefined}
+          onFailureCollect={() => undefined}
+          onBack={() => undefined}
+          onContinue={() => undefined}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "เริ่ม เส้นทางปกติ" }));
+    expect(screen.getByText("ตามรอย")).toBeInTheDocument();
+    expect(screen.queryByText("TRACK")).not.toBeInTheDocument();
   });
 
   it("localizes Crew roles, descriptions, abilities, and locked requirements as one data system", () => {
@@ -380,6 +406,26 @@ describe("public test release hardening", () => {
     expect(onExit).toHaveBeenCalledOnce();
   });
 
+  it("labels a zero-action Arcade result honestly and lets Escape close only the result", () => {
+    const onDismiss = vi.fn();
+    const onExit = vi.fn();
+    render(
+      <UnifiedRunResults
+        result={{ mode: "arcade", status: "no-reward", title: "Assignment incomplete", outcome: "No target was hit.", crystals: 0, xp: 0 }}
+        gameState={createNewGameState("mud")}
+        onDismiss={onDismiss}
+        onExit={onExit}
+        onCrew={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Run ended · no reward earned")).toBeInTheDocument();
+    expect(screen.queryByText("Run complete · rewards banked")).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(onExit).not.toHaveBeenCalled();
+  });
+
   it("moves the Arcade reticle without rerendering React on every pointer event", () => {
     let commits = 0;
     const { container } = render(
@@ -403,5 +449,115 @@ describe("public test release hardening", () => {
     }
 
     expect(commits).toBe(commitsBeforeMovement);
+  });
+
+  it("suspends Story countdowns while a global modal or hidden tab is active", async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    try {
+      const view = render(
+        <PlanetExploration planetId="sparkle-moon" missionTimeBonus={-49} suspended onComplete={onComplete} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(5_000));
+      expect(onComplete).not.toHaveBeenCalled();
+
+      view.rerender(
+        <PlanetExploration planetId="sparkle-moon" missionTimeBonus={-49} suspended={false} onComplete={onComplete} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(5_000));
+      await act(async () => vi.advanceTimersByTimeAsync(3_000));
+      expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ success: false, reason: "timeout" }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("suspends both real-time combat simulations when the app is suspended", async () => {
+    vi.useFakeTimers();
+    try {
+      const state = createNewGameState("mud");
+      const swarm = render(
+        <SwarmProtocol gameState={state} suspended={false} onBack={() => undefined} onOpenHangar={() => undefined} onComplete={() => undefined} />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Begin run" }));
+      await act(async () => vi.advanceTimersByTimeAsync(1_100));
+      const swarmTime = swarm.container.querySelector(".combat-hud > div:last-child strong")?.textContent;
+      swarm.rerender(
+        <SwarmProtocol gameState={state} suspended onBack={() => undefined} onOpenHangar={() => undefined} onComplete={() => undefined} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(2_000));
+      expect(swarm.container.querySelector(".combat-hud > div:last-child strong")?.textContent).toBe(swarmTime);
+      swarm.unmount();
+
+      const arcade = render(
+        <ArcadeShooter gameState={state} suspended={false} onBack={() => undefined} onComplete={() => undefined} />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Start assignment" }));
+      await act(async () => vi.advanceTimersByTimeAsync(1_100));
+      const arcadeTime = arcade.container.querySelector(".arcade-shooter__hud > div:first-child strong")?.textContent;
+      arcade.rerender(
+        <ArcadeShooter gameState={state} suspended onBack={() => undefined} onComplete={() => undefined} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(2_000));
+      expect(arcade.container.querySelector(".arcade-shooter__hud > div:first-child strong")?.textContent).toBe(arcadeTime);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("offers Story continuation only when a next chapter actually exists", async () => {
+    vi.useFakeTimers();
+    try {
+      const onContinue = vi.fn();
+      const withNext = render(
+        <I18nProvider>
+          <CelebrationScreen
+            xp={10}
+            crystals={5}
+            petName={null}
+            petEmoji={null}
+            faction="mud"
+            onDone={() => undefined}
+            onContinue={onContinue}
+          />
+        </I18nProvider>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(2_100));
+      fireEvent.click(screen.getByRole("button", { name: "Continue to next chapter →" }));
+      expect(onContinue).toHaveBeenCalledOnce();
+      withNext.unmount();
+
+      render(
+        <I18nProvider>
+          <CelebrationScreen
+            xp={10}
+            crystals={5}
+            petName={null}
+            petEmoji={null}
+            faction="mud"
+            onDone={() => undefined}
+          />
+        </I18nProvider>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(2_100));
+      expect(screen.queryByRole("button", { name: "Continue to next chapter →" })).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("warns before discarding an unfinished Discovery journal", () => {
+    render(
+      <DiscoveryRun
+        gameState={createNewGameState("mud")}
+        onBack={() => undefined}
+        onComplete={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getAllByRole("button", { name: /Explore this area/ })[0]);
+    fireEvent.click(document.querySelector(".discovery-point:not([disabled])") as HTMLButtonElement);
+    fireEvent.click(screen.getByRole("button", { name: "Biomes" }));
+
+    expect(screen.getByRole("alertdialog", { name: "Leave this unfinished journal?" })).toBeInTheDocument();
   });
 });

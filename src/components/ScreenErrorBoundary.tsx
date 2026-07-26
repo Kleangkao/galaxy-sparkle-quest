@@ -38,16 +38,17 @@ export default class ScreenErrorBoundary extends Component<Props, State> {
 
   render() {
     if (!this.state.hasError) return this.props.children;
+    const thai = typeof document !== "undefined" && document.documentElement.lang === "th";
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
         <div className="space-y-4 p-6 text-center" role="alert">
           <div className="text-5xl" aria-hidden="true">⚠</div>
           <p className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            Returning to a safe screen
+            {thai ? "กำลังกลับไปหน้าที่ปลอดภัย" : "Returning to a safe screen"}
           </p>
           <p className="text-sm text-muted-foreground">
-            กำลังกลับไปหน้าที่ปลอดภัย ข้อมูลที่บันทึกไว้จะไม่หาย
+            {thai ? "ข้อมูลที่บันทึกไว้จะไม่หาย" : "Your saved progress remains safe."}
           </p>
         </div>
       </div>

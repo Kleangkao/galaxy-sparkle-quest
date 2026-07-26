@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, getUpgradeTier, PLANETS, getPlanetDisplayName, getSectorLore, SHIP_UPGRADES } from "@/lib/gameState";
 import { ArrowLeft, Clock3, Gem, RotateCcw, Route, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,9 +56,11 @@ interface Props {
   onFailureCollect: (crystals: number) => void;
   onBack: () => void;
   onContinue: (planet: Planet) => void;
+  suspended?: boolean;
+  onActiveChange?: (active: boolean) => void;
 }
 
-export default function PlanetExplore({ planet, gameState, onCollect, onFailureCollect, onBack, onContinue }: Props) {
+export default function PlanetExplore({ planet, gameState, onCollect, onFailureCollect, onBack, onContinue, suspended = false, onActiveChange }: Props) {
   const { t, tr } = useI18n();
   const planetIndex = PLANETS.findIndex(p => p.id === planet.id);
   const displayName = getPlanetDisplayName(planetIndex, gameState.faction);
@@ -67,6 +69,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   const [bonusCrystals, setBonusCrystals] = useState(0);
   const [failureReason, setFailureReason] = useState<ExplorationResult["reason"]>("timeout");
   const [failureReward, setFailureReward] = useState(0);
+  const [salvageRecovered, setSalvageRecovered] = useState(false);
   const rewardsClaimed = useRef(false);
   const alreadyVisited = gameState.visitedPlanets.includes(planet.id);
   const hasPet = planet.pet ? gameState.pets.includes(planet.pet.name) : false;
@@ -109,11 +112,12 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   const approaches = {
     scout: { id: "scout" as const, name: tr("Scout route", "เส้นทางสำรวจ"), detail: tr("Reveal hidden items · fewer hazards · start with dash · -10% reward", "เห็นของซ่อน · อันตรายน้อยลง · เริ่มพร้อมพุ่ง · รางวัล -10%"), timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
     steady: { id: "steady" as const, name: tr("Balanced route", "เส้นทางปกติ"), detail: tr("Standard map, objective, pressure, and reward", "แผนที่ เป้าหมาย ความยาก และรางวัลแบบปกติ"), timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
-    salvage: { id: "salvage" as const, name: tr("Salvage route", "เส้นทางเก็บกู้"), detail: tr("One extra resource · more patrols · +25% reward", "เก็บของเพิ่ม 1 ชิ้น · ศัตรูเพิ่ม · รางวัล +25%"), timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
+    salvage: { id: "salvage" as const, name: tr("Salvage route", "เส้นทางเก็บกู้"), detail: tr("Optional cargo · more patrols · up to +25% reward", "มีกล่องเสริมให้เก็บ · ศัตรูเพิ่ม · รับโบนัสสูงสุด +25%"), timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
   };
   const approach = approaches[approachId];
 
   const handleExplorationComplete = useCallback((result: ExplorationResult) => {
+    setSalvageRecovered(Boolean(result.salvageRecovered));
     if (!result.success) {
       setFailureReason(result.reason);
       setFailureReward(result.bonus);
@@ -125,9 +129,17 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
     setPhase("celebration");
   }, [onFailureCollect]);
 
+  useEffect(() => {
+    onActiveChange?.(phase === "exploring");
+    return () => onActiveChange?.(false);
+  }, [onActiveChange, phase]);
+
   const baseCrystals = Math.floor(planet.crystals * getStoryReplayMultiplier(alreadyVisited));
+  const routeRewardMultiplier = approachId === "salvage" && phase === "celebration"
+    ? (salvageRecovered ? approach.crystalMultiplier : 1)
+    : approach.crystalMultiplier;
   const totalCrystals = Math.floor(
-    getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * approach.crystalMultiplier
+    getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * routeRewardMultiplier
   );
   const totalXP = alreadyVisited ? Math.floor(planet.xp / 2) : planet.xp;
   const factionBonusLabel = gameState.faction === "mud" ? tr("MUD salvage +20%", "โบนัสเก็บกู้ MUD +20%") : tr("No faction crystal bonus", "ไม่มีโบนัสคริสตัลจากฝ่าย");
@@ -305,6 +317,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
             pilotImage={pilot.image}
             shipSkinId={gameState.activeSkin}
             routeMode={approachId}
+            suspended={suspended}
           />
         </div>
       )}

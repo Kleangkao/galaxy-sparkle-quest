@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CheckCircle2, Flag, Gauge, Heart, Radio, Rocket, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { GameState, INFLUENCE_TO_CAPTURE, PLANETS, getPlanetController, getPlanetDisplayName } from "@/lib/gameState";
 import { useI18n } from "@/lib/i18n";
@@ -7,6 +7,7 @@ import { getRelayMission, RelayRouteChoice } from "@/lib/strategyMissions";
 
 interface Props {
   gameState: GameState;
+  onActiveChange?: (active: boolean) => void;
   onBack: () => void;
   onComplete: (result: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => void;
 }
@@ -14,7 +15,7 @@ interface Props {
 const cloneInfluence = (influence: GameState["influence"]): GameState["influence"] =>
   Object.fromEntries(Object.entries(influence).map(([id, values]) => [id, { ...values }]));
 
-export default function FrontierControl({ gameState, onBack, onComplete }: Props) {
+export default function FrontierControl({ gameState, onActiveChange, onBack, onComplete }: Props) {
   const { lang, tr } = useI18n();
   const faction = gameState.faction ?? "mud";
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
@@ -39,6 +40,12 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
   const controlledNow = Object.values(workingInfluence).filter((value) => getPlanetController(value) === faction).length;
   const captures = Math.max(0, controlledNow - startControlled);
   const objectiveComplete = signal >= mission.targetSignal && hull > 0 && step === mission.routes.length;
+  const showTrainingHint = gameState.modeRecords.strategyCycles < 2;
+
+  useEffect(() => {
+    onActiveChange?.(started && !claimed);
+    return () => onActiveChange?.(false);
+  }, [claimed, onActiveChange, started]);
 
   const choose = (choice: RelayRouteChoice) => {
     if (resolved || claimed || step >= mission.routes.length) return;
@@ -69,7 +76,7 @@ export default function FrontierControl({ gameState, onBack, onComplete }: Props
       <p>{lang === "th" ? mission.descriptionTh : mission.description}</p>
       <section className="strategy-how">
         <div><strong>1</strong><Rocket className="h-5 w-5" /><span>{tr("Choose four jumps", "เลือกเส้นทาง 4 ครั้ง")}<small>{tr("Only one route can be taken each turn.", "แต่ละครั้งเลือกได้เพียง 1 ทาง")}</small></span></div>
-        <div><strong>2</strong><Gauge className="h-5 w-5" /><span>{tr(`Plan for ${mission.recommendedRisks} risky jump${mission.recommendedRisks === 1 ? "" : "s"}`, `วางแผนใช้ทางเสี่ยง ${mission.recommendedRisks} ครั้ง`)}<small>{tr(`Reach ${mission.targetSignal} signal before the route ends.`, `ส่งสัญญาณให้ถึง ${mission.targetSignal} ก่อนจบเส้นทาง`)}</small></span></div>
+        <div><strong>2</strong><Gauge className="h-5 w-5" /><span>{showTrainingHint ? tr(`Training hint: about ${mission.recommendedRisks} risky jump${mission.recommendedRisks === 1 ? "" : "s"}`, `คำแนะนำรอบฝึก: ลองใช้ทางเสี่ยงประมาณ ${mission.recommendedRisks} ครั้ง`) : tr("Balance signal against hull damage", "ชั่งใจระหว่างสัญญาณกับความเสียหาย")}<small>{tr(`Reach ${mission.targetSignal} signal before the route ends.`, `ส่งสัญญาณให้ถึง ${mission.targetSignal} ก่อนจบเส้นทาง`)}</small></span></div>
         <div><strong>3</strong><Heart className="h-5 w-5" /><span>{tr("Bring the relay ship home", "พายานส่งสัญญาณกลับบ้าน")}<small>{tr(`The ship starts with ${mission.startingHull} hull. PURI may block one storm.`, `ยานเริ่มด้วยพลัง ${mission.startingHull} แต้ม และ PURI อาจกันพายุได้ 1 ครั้ง`)}</small></span></div>
       </section>
       <button className="strategy-intro__start" onClick={() => setStarted(true)}><Sparkles className="h-4 w-4" /> {tr("Launch relay ship", "ปล่อยยานส่งสัญญาณ")}</button>

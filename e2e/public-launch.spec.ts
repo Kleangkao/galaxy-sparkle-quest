@@ -110,8 +110,8 @@ test("Arcade pointer tracking stays responsive without runtime failures", async 
   expect(runtimeErrors).toEqual([]);
 });
 
-test("all ten Story chapter boards can launch without runtime failures", async ({ page }) => {
-  test.setTimeout(60_000);
+test("all 30 Story chapter-route combinations launch with solvable route content", async ({ page }) => {
+  test.setTimeout(120_000);
   const runtimeErrors: string[] = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
   await enterMudGame(page);
@@ -130,16 +130,55 @@ test("all ten Story chapter boards can launch without runtime failures", async (
   await page.getByRole("button", { name: /Story Expeditions/ }).click();
 
   for (let chapter = 1; chapter <= 10; chapter += 1) {
-    const chapterLabel = chapter.toString().padStart(2, "0");
-    await page.getByRole("button", { name: new RegExp(`^${chapterLabel}\\s`) }).click();
-    await page.getByRole("button", { name: /Choose route and deploy|Replay survey/ }).click();
-    await page.getByRole("button", { name: /Launch (Scout|Balanced|Salvage) route/ }).click();
-    await expect(page.getByText(/Live mission/)).toBeVisible();
-    await expect(page.locator(".story-grid-cell")).toHaveCount(64);
-    await page.getByRole("button", { name: /Galaxy Map|Chapter map/ }).click();
+    for (const route of ["Scout", "Balanced", "Salvage"]) {
+      const chapterLabel = chapter.toString().padStart(2, "0");
+      await page.getByRole("button", { name: new RegExp(`^${chapterLabel}\\s`) }).click();
+      await page.getByRole("button", { name: /Choose route and deploy|Replay survey/ }).click();
+      await page.getByRole("button", { name: new RegExp(`^${route} route`) }).click();
+      await page.getByRole("button", { name: new RegExp(`Launch ${route} route`) }).click();
+      await expect(page.getByText(/Live mission/)).toBeVisible();
+      await expect(page.locator(".story-grid-cell")).toHaveCount(64);
+      if (route === "Salvage") {
+        await expect(page.getByText("CARGO", { exact: true })).toHaveCount(1);
+        await expect(page.getByText(/Optional: recover the cargo crate/)).toBeVisible();
+      }
+      await page.getByRole("button", { name: /Galaxy Map|Chapter map/ }).click();
+      await expect(page.getByRole("alertdialog", { name: /Leave the active run/ })).toBeVisible();
+      await page.getByRole("button", { name: "Leave run" }).click();
+      await expect(page.getByRole("heading", { name: /Story Expeditions/ })).toBeVisible();
+    }
   }
 
   expect(runtimeErrors).toEqual([]);
+});
+
+test("Settings pause Swarm and leaving a live run requires confirmation", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await enterMudGame(page);
+  await page.getByRole("button", { name: /Swarm Protocol/ }).click();
+  await page.getByRole("button", { name: /Begin run/ }).click();
+  const arenaBounds = await page.locator(".combat-arena").boundingBox();
+  const controlsBounds = await page.locator(".combat-controls").boundingBox();
+  expect(arenaBounds && arenaBounds.y + arenaBounds.height).toBeLessThanOrEqual(690);
+  expect(controlsBounds && controlsBounds.y + controlsBounds.height).toBeLessThanOrEqual(720);
+  const timeValue = page.locator(".combat-hud > div").last().locator("strong");
+  const beforeSettings = await timeValue.textContent();
+  await page.getByRole("button", { name: /Game settings/ }).click();
+  await page.waitForTimeout(1_500);
+  await expect(timeValue).toHaveText(beforeSettings ?? "");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(1_100);
+  await expect(timeValue).not.toHaveText(beforeSettings ?? "");
+
+  await page.getByRole("button", { name: "Discover" }).click();
+  await expect(page.getByRole("alertdialog", { name: /Leave the active run/ })).toBeVisible();
+  await page.getByRole("button", { name: "Not now" }).click();
+  await expect(page.getByText(/Swarm Protocol · Survival/)).toBeVisible();
+  await page.getByRole("button", { name: "Crew" }).click();
+  await page.getByRole("button", { name: "Leave run" }).click();
+  const navBounds = await page.locator(".command-dock").boundingBox();
+  const backBounds = await page.locator(".hangar-back").boundingBox();
+  expect(navBounds && backBounds && backBounds.y).toBeGreaterThanOrEqual((navBounds?.y ?? 0) + (navBounds?.height ?? 0));
 });
 
 test("Discovery uses a clue trail and awards only after all six signals", async ({ page }) => {

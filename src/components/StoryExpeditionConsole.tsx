@@ -28,6 +28,7 @@ import {
 } from "@/lib/gameState";
 import { getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 import { useI18n } from "@/lib/i18n";
+import { MISSION_PROFILES, STORY_MISSION_TH } from "@/components/PlanetExploration";
 
 interface Props {
   gameState: GameState;
@@ -91,6 +92,10 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
   const totalInfluence = Math.max(1, influence.mud + influence.oni + influence.ustur);
   const nextUnlock = PLANETS.find((planet) => !isStoryChapterUnlocked(planet, gameState));
   const modifiers = getGameplayModifiers(gameState);
+  const missionProfile = MISSION_PROFILES[selected.id];
+  const missionObjective = lang === "th"
+    ? STORY_MISSION_TH[selected.id]?.objective ?? missionProfile?.objective ?? lore.mission
+    : missionProfile?.objective ?? lore.mission;
   const estimatedCrystals = Math.floor(
     getCrystalBonus(
       Math.floor(selected.crystals * getStoryReplayMultiplier(selectedVisited)),
@@ -176,7 +181,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
 
           <div className="story-dossier__objective">
             <Target className="h-5 w-5" />
-            <div><span>{tr("Mission objective", "เป้าหมายภารกิจ")}</span><strong>{lore.mission}</strong><small>{tr("Threat detected", "สิ่งที่ต้องระวัง")}: {lore.threat}</small></div>
+            <div><span>{tr("How to clear this chapter", "วิธีผ่านบทนี้")}</span><strong>{missionObjective}</strong><small>{tr("Story goal", "เป้าหมายในเรื่อง")}: {lore.mission} · {tr("Threat", "ระวัง")}: {lore.threat}</small></div>
           </div>
 
           <div className="story-dossier__rewards" aria-label={tr("Mission rewards", "รางวัลภารกิจ")}>

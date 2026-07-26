@@ -35,10 +35,10 @@ const MODES: Array<{
   },
   {
     id: "swarm", name: "Swarm Protocol", label: "Survival", icon: Swords,
-    description: "A gentler 60-second survival run. Dodge, auto-fire, collect energy, and choose perks before the Ahr boss.",
+    description: "A gentler survival run of about a minute, adjusted by your loadout. Dodge, auto-fire, collect energy, and choose perks before the Ahr boss.",
     image: "/assets/galia-current/ahr-boss-master-v3.webp", color: "pink", status: "Run perks",
     play: "Move · auto-fire · build perks", progress: "Crystals · XP · PURI bond every run",
-    th: { name: "ฝ่าฝูงศัตรู", label: "เอาตัวรอด", description: "ขยับหลบ ยิงอัตโนมัติ เก็บพลัง และเลือกความสามารถใหม่ ก่อนสู้กับ Ahr", status: "เลือกพลังระหว่างเล่น", play: "ขยับ · ยิงอัตโนมัติ · เลือกพลัง", progress: "คริสตัล · XP · ความสนิทกับ PURI" },
+    th: { name: "ฝ่าฝูงศัตรู", label: "เอาตัวรอด", description: "เอาตัวรอดประมาณ 1 นาที เวลาจะเปลี่ยนตามอุปกรณ์ ขยับหลบ ยิงอัตโนมัติ เก็บพลัง และเลือกความสามารถ ก่อนสู้กับ Ahr", status: "เลือกพลังระหว่างเล่น", play: "ขยับ · ยิงอัตโนมัติ · เลือกพลัง", progress: "คริสตัล · XP · ความสนิทกับ PURI" },
   },
   {
     id: "arcade", name: "Arcade Ops", label: "Action", icon: Crosshair,
@@ -49,17 +49,17 @@ const MODES: Array<{
   },
   {
     id: "discovery", name: "Discovery Runs", label: "Relax", icon: Binoculars,
-    description: "A relaxed hidden-object hunt. Click six pulsing signals, reveal their stories, and complete a field journal.",
+    description: "A relaxed clue hunt. Follow the active signal, choose between nearby leads, and complete a six-entry field journal.",
     image: "/assets/galia-current/discovery-scout-v1.webp", color: "green", status: "Hidden objects",
-    play: "Pick biome · find signals · claim journal", progress: "Biome mastery · lore · crystals",
-    th: { name: "ออกสำรวจ", label: "เล่นสบาย ๆ", description: "เลือกพื้นที่ มองหาสัญญาณที่ซ่อนอยู่ เปิดเรื่องราว และเติมสมุดสำรวจให้ครบ", status: "ค้นหาของ", play: "เลือกพื้นที่ · หาสัญญาณ · รับรางวัล", progress: "ความชำนาญ · เรื่องราว · คริสตัล" },
+    play: "Pick biome · follow clues · complete journal", progress: "Biome mastery · lore · crystals",
+    th: { name: "ออกสำรวจ", label: "เล่นสบาย ๆ", description: "ตามสัญญาณที่กำลังทำงาน เลือกร่องรอยใกล้เคียงให้ถูก และเติมสมุดสำรวจให้ครบ 6 รายการ", status: "ตามรอยสัญญาณ", play: "เลือกพื้นที่ · ตามคำใบ้ · เติมสมุด", progress: "ความชำนาญ · เรื่องราว · คริสตัล" },
   },
   {
     id: "strategy", name: "Frontier Control", label: "Strategy-lite", icon: Sparkles,
-    description: "A four-turn map puzzle. Pick sectors, spend simple actions, and complete one clear objective for a bonus.",
+    description: "A four-jump relay puzzle. Choose safer or riskier routes, protect the hull, and reach the final beacon.",
     image: "/assets/galia-current/mud-leader-charon-master-v2.webp", color: "yellow", status: "4-turn puzzle",
-    play: "Pick sector · spend four moves", progress: "Influence · captures · command rewards",
-    th: { name: "วางแผนยึดพื้นที่", label: "วางแผน", description: "เกมวางแผนสั้น ๆ เลือกพื้นที่ ใช้คำสั่งให้ครบ และทำเป้าหมายประจำรอบ", status: "4 คำสั่ง", play: "เลือกพื้นที่ · ใช้ 4 คำสั่ง", progress: "คะแนนพื้นที่ · การยึดครอง · รางวัล" },
+    play: "Read forecast · choose route · make 4 jumps", progress: "Influence · captures · command rewards",
+    th: { name: "วางแผนเส้นทาง", label: "วางแผน", description: "อ่านสภาพเส้นทาง เลือกทางปลอดภัยหรือทางเสี่ยง รักษาพลังยาน และไปให้ถึงจุดส่งสัญญาณสุดท้าย", status: "4 ช่วงทาง", play: "อ่านข้อมูล · เลือกทาง · เดินทาง 4 ครั้ง", progress: "คะแนนพื้นที่ · การยึดครอง · รางวัล" },
   },
 ];
 

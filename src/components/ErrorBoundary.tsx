@@ -54,30 +54,31 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (!this.state.hasError) return this.props.children;
+    const thai = typeof document !== "undefined" && document.documentElement.lang === "th";
 
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
         <div className="mx-auto max-w-sm space-y-5 p-8 text-center" role="alert">
           <div className="text-5xl" aria-hidden="true">⚠</div>
           <h2 className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            Game paused safely
+            {thai ? "หยุดเกมไว้อย่างปลอดภัย" : "Game paused safely"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            เกมหยุดชั่วคราวเพื่อป้องกันข้อมูลเสียหาย
+            {thai ? "เกมหยุดชั่วคราวเพื่อป้องกันข้อมูลเสียหาย" : "The game paused to protect your saved progress."}
           </p>
           <p className="text-xs text-muted-foreground/70">
-            Progress saved in this browser remains safe. Reloading in{" "}
-            <span className="font-bold text-accent">{this.state.countdown}s</span>
+            {thai ? "ข้อมูลในเบราว์เซอร์ยังปลอดภัย โหลดใหม่ใน " : "Progress saved in this browser remains safe. Reloading in "}
+            <span className="font-bold text-accent">{this.state.countdown}{thai ? " วิ" : "s"}</span>
           </p>
           <button
             onClick={this.handleReload}
             className="rounded-2xl bg-primary px-6 py-3 text-lg font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Reload game · โหลดเกมใหม่
+            {thai ? "โหลดเกมใหม่" : "Reload game"}
           </button>
           <p className="text-xs text-muted-foreground/50">
-            If this repeats, tell the person who shared the game and include the page address.
+            {thai ? "ถ้าเกิดซ้ำ ให้บอกคนที่ส่งเกมนี้มา พร้อมส่งที่อยู่หน้าเว็บ" : "If this repeats, tell the person who shared the game and include the page address."}
           </p>
         </div>
       </div>

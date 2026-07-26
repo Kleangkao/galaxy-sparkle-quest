@@ -17,6 +17,8 @@ type Drop = Point & { id: number; value: number };
 
 interface Props {
   gameState: GameState;
+  suspended?: boolean;
+  onActiveChange?: (active: boolean) => void;
   onBack: () => void;
   onOpenHangar: () => void;
   onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm"; evolutions: number }) => void;
@@ -26,6 +28,7 @@ interface ArenaState {
   player: Point; hp: number; maxHp: number; enemies: Enemy[]; shots: Shot[]; hazards: Hazard[]; drops: Drop[];
   score: number; energy: number; level: number; elapsed: number; nextId: number; fireTimer: number; spawnTimer: number;
   invulnerable: number; pulseCooldown: number; bossSpawned: boolean; bossDefeated: boolean; bossWarning: number; bossIntro: number;
+  bossAttackTimer: number; bossAttackPhaseTwo: boolean; bossAttackPending: boolean;
 }
 
 const WIDTH = 920;
@@ -37,9 +40,10 @@ const makeArena = (bonusHull = 0): ArenaState => ({
   player: { x: WIDTH / 2, y: HEIGHT / 2 }, hp: 100 + bonusHull, maxHp: 100 + bonusHull, enemies: [], shots: [], hazards: [], drops: [], score: 0,
   energy: 0, level: 1, elapsed: 0, nextId: 1, fireTimer: 0, spawnTimer: 0, invulnerable: 0, pulseCooldown: 0,
   bossSpawned: false, bossDefeated: false, bossWarning: 0, bossIntro: 0,
+  bossAttackTimer: 0, bossAttackPhaseTwo: false, bossAttackPending: false,
 });
 
-export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onComplete }: Props) {
+export default function SwarmProtocol({ gameState, suspended = false, onActiveChange, onBack, onOpenHangar, onComplete }: Props) {
   const { lang, tr } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
@@ -59,7 +63,14 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
   const arena = useRef<ArenaState>(makeArena(startingHullBonus));
   const completedRef = useRef(false);
   const [frame, setFrame] = useState(() => ({ ...arena.current }));
+  const lastTickRef = useRef(0);
   const upgrades = useRef({ damage: 1, speed: 1, fireRate: 1, magnet: 1, pulseCooldown: 1, repairCount: 0, overdrive: false, phaseDrive: false, guardianCore: false });
+  const effectivePaused = paused || suspended;
+
+  useEffect(() => {
+    onActiveChange?.(running);
+    return () => onActiveChange?.(false);
+  }, [onActiveChange, running]);
 
   const reset = useCallback(() => {
     arena.current = makeArena(startingHullBonus);
@@ -82,23 +93,27 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
 
   const activatePulse = useCallback(() => {
     const state = arena.current;
-    if (!running || paused || state.pulseCooldown > 0) return;
+    if (!running || effectivePaused || state.pulseCooldown > 0) return;
     const radius = 150 + (gameState.accessibility.aimHelp === "wide" ? 25 : 0);
     state.enemies = state.enemies.map((enemy) => distance(enemy, state.player) < radius ? { ...enemy, hp: enemy.hp - 45 } : enemy);
     state.hazards = state.hazards.filter((hazard) => distance(hazard, state.player) >= radius);
     state.pulseCooldown = 9 * upgrades.current.pulseCooldown;
     playImpactSound();
-  }, [gameState.accessibility.aimHelp, paused, running]);
+  }, [gameState.accessibility.aimHelp, effectivePaused, running]);
   const combatInput = useCombatInput(activatePulse);
   const inputVector = combatInput.vector;
 
   useEffect(() => {
-    if (!running || paused || upgradeLevel !== null) return;
+    if (!running || effectivePaused || upgradeLevel !== null) return;
     const tickMs = 33;
+    lastTickRef.current = performance.now();
     const timer = window.setInterval(() => {
-      const dt = tickMs / 1000 * gameState.accessibility.combatSpeed;
+      const now = performance.now();
+      const wallDelta = Math.min(0.1, Math.max(0, (now - lastTickRef.current) / 1000));
+      lastTickRef.current = now;
+      const dt = wallDelta * gameState.accessibility.combatSpeed;
       const state = arena.current;
-      state.elapsed += dt; state.fireTimer -= dt; state.spawnTimer -= dt; state.invulnerable -= dt; state.pulseCooldown -= dt; state.bossWarning -= dt; state.bossIntro -= dt;
+      state.elapsed += dt; state.fireTimer -= dt; state.spawnTimer -= dt; state.invulnerable -= dt; state.pulseCooldown -= dt; state.bossWarning -= dt; state.bossIntro -= dt; state.bossAttackTimer -= dt;
 
       const { x: dx, y: dy } = inputVector.current;
       if (dx || dy) { const magnitude = Math.hypot(dx, dy); const speed = 185 * upgrades.current.speed; state.player.x = clamp(state.player.x + dx / magnitude * speed * dt, 20, WIDTH - 20); state.player.y = clamp(state.player.y + dy / magnitude * speed * dt, 20, HEIGHT - 20); }
@@ -134,27 +149,36 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
         enemy.timer -= dt; const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
         if (enemy.kind === "orbiter") { enemy.phase += dt * 1.7; enemy.x += (Math.cos(angle) * 0.45 + Math.cos(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; enemy.y += (Math.sin(angle) * 0.45 + Math.sin(angle + Math.PI / 2) * Math.sin(enemy.phase)) * enemy.speed * dt; }
         else { const dash = enemy.kind === "dasher" && enemy.timer < 0 ? 3.5 : 1; enemy.x += Math.cos(angle) * enemy.speed * dash * dt; enemy.y += Math.sin(angle) * enemy.speed * dash * dt; if (enemy.kind === "dasher" && enemy.timer < -0.35) enemy.timer = 2.3; }
-        if (enemy.kind === "boss" && enemy.timer <= 0) {
+        if (enemy.kind === "boss" && enemy.timer <= 0 && state.bossAttackTimer <= 0) {
           const phaseTwo = enemy.hp <= enemy.maxHp * 0.5;
           state.bossWarning = SWARM_BALANCE.bossTelegraphSeconds;
+          state.bossAttackTimer = SWARM_BALANCE.bossTelegraphSeconds;
+          state.bossAttackPhaseTwo = phaseTwo;
+          state.bossAttackPending = true;
           enemy.timer = SWARM_BALANCE.bossAttackCooldown * (phaseTwo ? 0.78 : 1);
           playBossWarningSound();
-          window.setTimeout(() => {
-            if (!arena.current.bossSpawned || arena.current.bossDefeated) return;
-            const projectileCount = runVariant.bossPattern === "aimed-fan" ? (phaseTwo ? 11 : 7) : SWARM_BALANCE.bossProjectileCount + (phaseTwo ? 4 : 0);
-            const aimedAngle = Math.atan2(arena.current.player.y - enemy.y, arena.current.player.x - enemy.x);
-            for (let i = 0; i < projectileCount; i++) {
-              const alternatingSpiral = phaseTwo && Math.floor(enemy.phase) % 2 ? Math.PI / projectileCount : 0;
-              const fanOffset = projectileCount <= 1 ? 0 : (i / (projectileCount - 1) - 0.5) * Math.PI * 0.9;
-              const a = runVariant.bossPattern === "aimed-fan"
-                ? aimedAngle + fanOffset
-                : i / projectileCount * Math.PI * 2 + alternatingSpiral;
-              arena.current.hazards.push({ id: arena.current.nextId++, x: enemy.x, y: enemy.y, vx: Math.cos(a) * SWARM_BALANCE.bossProjectileSpeed, vy: Math.sin(a) * SWARM_BALANCE.bossProjectileSpeed, size: phaseTwo ? 8 : 7, life: 4 });
-            }
-            enemy.phase += 1;
-          }, SWARM_BALANCE.bossTelegraphSeconds * 1000 / gameState.accessibility.combatSpeed);
         }
       });
+
+      if (state.bossAttackTimer <= 0 && state.bossAttackPending) {
+        const bossEnemy = state.enemies.find((enemy) => enemy.kind === "boss");
+        state.bossAttackPending = false;
+        state.bossWarning = 0;
+        if (bossEnemy && !state.bossDefeated) {
+          const phaseTwo = state.bossAttackPhaseTwo;
+          const projectileCount = runVariant.bossPattern === "aimed-fan" ? (phaseTwo ? 11 : 7) : SWARM_BALANCE.bossProjectileCount + (phaseTwo ? 4 : 0);
+          const aimedAngle = Math.atan2(state.player.y - bossEnemy.y, state.player.x - bossEnemy.x);
+          for (let i = 0; i < projectileCount; i++) {
+            const alternatingSpiral = phaseTwo && Math.floor(bossEnemy.phase) % 2 ? Math.PI / projectileCount : 0;
+            const fanOffset = projectileCount <= 1 ? 0 : (i / (projectileCount - 1) - 0.5) * Math.PI * 0.9;
+            const angle = runVariant.bossPattern === "aimed-fan"
+              ? aimedAngle + fanOffset
+              : i / projectileCount * Math.PI * 2 + alternatingSpiral;
+            state.hazards.push({ id: state.nextId++, x: bossEnemy.x, y: bossEnemy.y, vx: Math.cos(angle) * SWARM_BALANCE.bossProjectileSpeed, vy: Math.sin(angle) * SWARM_BALANCE.bossProjectileSpeed, size: phaseTwo ? 8 : 7, life: 4 });
+          }
+          bossEnemy.phase += 1;
+        }
+      }
 
       state.hazards.forEach((hazard) => { hazard.x += hazard.vx * dt; hazard.y += hazard.vy * dt; hazard.life -= dt; });
       state.hazards = state.hazards.filter((hazard) => hazard.life > 0 && hazard.x > -40 && hazard.x < WIDTH + 40 && hazard.y > -40 && hazard.y < HEIGHT + 40);
@@ -182,7 +206,7 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
       if (state.hp <= 0) finish(false); else if (success) finish(true); else if (state.elapsed >= duration) finish(false);
     }, tickMs);
     return () => window.clearInterval(timer);
-  }, [aimBonus, bossTime, duration, finish, gameState.accessibility.combatSpeed, gameState.modeRecords.swarmRuns, inputVector, modifiers.combatDamage, modifiers.combatFireRate, paused, puri.combatMagnet, runVariant.bossPattern, runVariant.dropMultiplier, runVariant.enemyHpMultiplier, runVariant.scoreMultiplier, runVariant.spawnDelayMultiplier, running, upgradeLevel]);
+  }, [aimBonus, bossTime, duration, effectivePaused, finish, gameState.accessibility.combatSpeed, gameState.modeRecords.swarmRuns, inputVector, modifiers.combatDamage, modifiers.combatFireRate, puri.combatMagnet, runVariant.bossPattern, runVariant.dropMultiplier, runVariant.enemyHpMultiplier, runVariant.scoreMultiplier, runVariant.spawnDelayMultiplier, running, upgradeLevel]);
 
   const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "pulse" | "repair") => {
     if (kind === "repair") { arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32); upgrades.current.repairCount += 1; }
@@ -217,23 +241,25 @@ export default function SwarmProtocol({ gameState, onBack, onOpenHangar, onCompl
           ? tr("Reach a 5,000 score record.", "ทำสถิติให้ถึง 5,000 คะแนน")
           : tr("All mastery goals cleared. Improve your record or test a new build.", "ผ่านเป้าหมายความชำนาญครบแล้ว ลองทำสถิติใหม่หรือเปลี่ยนชุดพลัง");
 
-  return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
+  return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
     <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><span>{tr("Swarm Protocol · Survival", "ฝ่าฝูงศัตรู · เอาตัวรอด")}</span><strong>AHR INCURSION</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
     <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>{tr("Mission objective", "เป้าหมายภารกิจ")}</span><strong>{objectiveText}</strong><small>{tool.name}: {getToolModeSummary(tool, "swarm", lang)}</small>{startingHullBonus > 20 && <small>{tr(`Total loadout hull +${startingHullBonus}`, `พลังยานจากชุด +${startingHullBonus}`)}</small>}{aimBonus > 0 && <small>{tr("Wide aim active", "เปิดช่วยเล็งแบบกว้าง")}</small>}</div>
     <section className="swarm-purpose"><span><Sparkles className="h-4 w-4" /> {tr(`${runVariant.name}: ${runVariant.detail}`, `${runVariant.nameTh}: ${runVariant.detailTh}`)}</span><span><Zap className="h-4 w-4" /> {nextMasteryGoal}</span><button onClick={onOpenHangar}>{tr("Permanent upgrades · Crew Hangar", "อัปเกรดถาวร · จัดทีม")}</button></section>
-    <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>{tr("Hull", "พลังยาน")}</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>{tr("Perk level", "ระดับพลัง")}</span><strong>{frame.level}</strong><small>{nextPerkAt ? tr(`${frame.energy}/${nextPerkAt} to next perk`, `${frame.energy}/${nextPerkAt} ถึงพลังถัดไป`) : tr("All perks reached", "ได้พลังครบแล้ว")}</small></div><div><Crosshair className="h-4 w-4" /><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong><small>{tr(`${frame.enemies.length} contacts`, `ศัตรู ${frame.enemies.length} ตัว`)}</small></div><div><Zap className="h-4 w-4" /><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong><small>{bossStatus}</small></div></section>
+    <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>{tr("Hull", "พลังยาน")}</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>{tr("Perk level", "ระดับพลัง")}</span><strong>{frame.level}</strong><small>{nextPerkAt ? tr(`${frame.energy}/${nextPerkAt} to next perk`, `${frame.energy}/${nextPerkAt} ถึงพลังถัดไป`) : tr("All perks reached", "ได้พลังครบแล้ว")}</small></div><div><Crosshair className="h-4 w-4" /><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong><small>{tr(`${frame.enemies.length} contacts`, `ศัตรู ${frame.enemies.length} ตัว`)}</small></div><div><Zap className="h-4 w-4" /><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong><small>{bossStatus}</small></div></section>
     <div className="combat-arena-wrap"><div className={`combat-arena ${frame.invulnerable > 0 ? "is-hit" : ""} ${frame.bossWarning > 0 ? "boss-warning" : ""} ${frame.bossIntro > 0 ? "boss-arrival" : ""}`} style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}><div className="combat-grid" />
+      {frame.bossWarning > 0 && <div className="boss-message is-warning">{tr("AHR WAVE INCOMING", "คลื่นโจมตี AHR กำลังมา")}</div>}
+      {frame.bossIntro > 0 && <div className="boss-message is-arrival">{tr("AHR CORE ENTERING · FOCUS FIRE", "แกน AHR เข้าสนาม · ยิงที่บอส")}</div>}
       {frame.drops.map((drop) => <span key={drop.id} className="combat-drop" style={{ left: `${drop.x / WIDTH * 100}%`, top: `${drop.y / HEIGHT * 100}%` }}>◆</span>)}
       {frame.shots.map((shot) => <span key={shot.id} className="combat-shot" style={{ left: `${shot.x / WIDTH * 100}%`, top: `${shot.y / HEIGHT * 100}%` }} />)}
       {frame.hazards.map((hazard) => <span key={hazard.id} className="combat-hazard" style={{ left: `${hazard.x / WIDTH * 100}%`, top: `${hazard.y / HEIGHT * 100}%` }} />)}
       {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : enemy.kind === "elite" ? "◆" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
-      {!running && !ended && <div className="combat-overlay"><div className="command-kicker">{tr(`60-second survival · ${runVariant.name}`, `เอาตัวรอด 60 วินาที · ${runVariant.nameTh}`)}</div><h1>{tr("Swarm Protocol", "ฝ่าฝูงศัตรู")}</h1><p>{tr("Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.", "ปืนจะยิงให้อัตโนมัติ ขยับด้วย WASD หรือปุ่มลูกศร เก็บพลังจากศัตรู แล้วเลือกความสามารถใหม่เมื่อเกมหยุด กด Space เพื่อปล่อยคลื่นป้องกัน")}</p><div className="swarm-start-summary"><span><strong>1</strong>{tr("Dodge & collect", "หลบและเก็บพลัง")}</span><span><strong>2</strong>{tr("Choose perks", "เลือกความสามารถ")}</span><span><strong>3</strong>{tr("Defeat Ahr", "กำจัด Ahr")}</span></div><small>{tr(runVariant.detail, runVariant.detailTh)}</small><button onClick={reset}><Play className="h-4 w-4" /> {tr("Begin run", "เริ่มเล่น")}</button></div>}
+      {!running && !ended && <div className="combat-overlay"><div className="command-kicker">{tr(`${duration}-second survival · ${runVariant.name}`, `เอาตัวรอด ${duration} วินาที · ${runVariant.nameTh}`)}</div><h1>{tr("Swarm Protocol", "ฝ่าฝูงศัตรู")}</h1><p>{tr("Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.", "ปืนจะยิงให้อัตโนมัติ ขยับด้วย WASD หรือปุ่มลูกศร เก็บพลังจากศัตรู แล้วเลือกความสามารถใหม่เมื่อเกมหยุด กด Space เพื่อปล่อยคลื่นป้องกัน")}</p><div className="swarm-start-summary"><span><strong>1</strong>{tr("Dodge & collect", "หลบและเก็บพลัง")}</span><span><strong>2</strong>{tr("Choose perks", "เลือกความสามารถ")}</span><span><strong>3</strong>{tr("Defeat Ahr", "กำจัด Ahr")}</span></div><small>{tr(runVariant.detail, runVariant.detailTh)}</small><button onClick={reset}><Play className="h-4 w-4" /> {tr("Begin run", "เริ่มเล่น")}</button></div>}
       {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `ความสามารถระดับ ${upgradeLevel}`)}</div><h2>{tr("Choose your build", "เลือกแนวทางของคุณ")}</h2><p>{tr("The run is paused. Pair Power + Rapid, Boost + Magnet, or Pulse + Repair to unlock an evolution.", "เกมหยุดอยู่ จับคู่ พลังโจมตี + ยิงเร็ว, ความเร็ว + แม่เหล็ก หรือ คลื่นป้องกัน + ซ่อมยาน เพื่อปลดพลังผสม")}</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>{tr("Power", "พลังโจมตี")}<strong>{tr("+30% damage", "พลังโจมตี +30%")}</strong></button><button onClick={() => chooseUpgrade("fireRate")}>{tr("Rapid", "ยิงเร็ว")}<strong>{tr("+20% fire rate", "ยิงเร็วขึ้น 20%")}</strong></button><button onClick={() => chooseUpgrade("speed")}>{tr("Boost", "เร่งความเร็ว")}<strong>{tr("+22% speed", "เคลื่อนที่เร็วขึ้น 22%")}</strong></button><button onClick={() => chooseUpgrade("magnet")}>{tr("Magnet", "แม่เหล็ก")}<strong>{tr("+22% pickup range", "ระยะเก็บพลัง +22%")}</strong></button><button onClick={() => chooseUpgrade("pulse")}>{tr("Pulse Core", "แกนคลื่นป้องกัน")}<strong>{tr("-18% pulse cooldown", "รอใช้คลื่นสั้นลง 18%")}</strong></button><button onClick={() => chooseUpgrade("repair")}>{tr("Repair", "ซ่อมยาน")}<strong>{tr("Restore 32 hull", "ซ่อมยาน 32 หน่วย")}</strong></button></div></div>}
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("AHR CORE CLEARED", "ทำลายแกน AHR แล้ว") : tr("RUN COMPLETE", "จบรอบแล้ว")}</div>}
     </div></div>
     <div className="combat-touch" aria-label={tr("Movement controls", "ปุ่มเคลื่อนที่")}><button {...combatInput.directionHandlers("up")} aria-label={tr("Move up", "ขึ้น")}>▲</button><button {...combatInput.directionHandlers("left")} aria-label={tr("Move left", "ซ้าย")}>◀</button><button {...combatInput.directionHandlers("down")} aria-label={tr("Move down", "ลง")}>▼</button><button {...combatInput.directionHandlers("right")} aria-label={tr("Move right", "ขวา")}>▶</button></div>
-    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว · ใช้อนาล็อกซ้าย") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มสัมผัสอยู่") : tr("WASD / arrows · Move", "WASD / ปุ่มลูกศร · เคลื่อนที่")}</span><button onClick={activatePulse} disabled={!running || paused || frame.pulseCooldown > 0}>Space / A · {tr("Pulse", "คลื่นป้องกัน")} {frame.pulseCooldown > 0 ? `${Math.ceil(frame.pulseCooldown)}s` : tr("Ready", "พร้อม")}</button><button onClick={() => setPaused((value) => !value)} disabled={!running}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
+    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว · ใช้อนาล็อกซ้าย") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มสัมผัสอยู่") : tr("WASD / arrows · Move", "WASD / ปุ่มลูกศร · เคลื่อนที่")}</span><button onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0}>Space / A · {tr("Pulse", "คลื่นป้องกัน")} {frame.pulseCooldown > 0 ? `${Math.ceil(frame.pulseCooldown)}${lang === "th" ? " วิ" : "s"}` : tr("Ready", "พร้อม")}</button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
     {boss && <div className="boss-banner">AHR · {tr(runVariant.bossPattern === "aimed-fan" ? "FAN BURST" : "NOVA RING", runVariant.bossPattern === "aimed-fan" ? "ยิงพัดกว้าง" : "คลื่นวงแหวน")} · {tr(`${Math.ceil(boss.hp)} integrity`, `พลัง ${Math.ceil(boss.hp)}`)}{boss.hp <= boss.maxHp * 0.5 ? tr(" · PHASE 2", " · ช่วงที่ 2") : ""}{frame.bossWarning > 0 ? tr(" · ATTACK INCOMING", " · กำลังโจมตี") : ""}</div>}
   </main>;
 }

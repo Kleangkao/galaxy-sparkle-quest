@@ -25,7 +25,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
   return (
     <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center overflow-visible px-3 pb-24 pt-28 sm:px-6 sm:pb-28 sm:pt-32 md:px-8">
       <button onClick={onBack}
-        className="fixed left-4 top-20 z-[60] flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-colors hover:bg-card sm:top-20">
+        className="ship-hangar-back flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-colors hover:bg-card">
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         <span className="text-xs sm:text-sm font-bold">{t("galaxyMap")}</span>
       </button>
