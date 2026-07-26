@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, PLANETS, getPlanetDisplayName, getSectorLore } from "@/lib/gameState";
+import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, getUpgradeTier, PLANETS, getPlanetDisplayName, getSectorLore, SHIP_UPGRADES } from "@/lib/gameState";
 import { ArrowLeft, Clock3, Gem, Route, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PlanetExploration from "@/components/PlanetExploration";
@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { getMissionBrief } from "@/lib/missionBriefs";
 import { getPilot } from "@/lib/loadouts";
 import { getStoryReplayMultiplier } from "@/lib/progressionGuidance";
+import GaliaHangarSprite from "@/components/GaliaHangarSprite";
 
 const STORY_LANDING_TH: Record<string, { description: string; story: string; title: string; transmission: string; encounters: string; tip: string; completion: string }> = {
   "sparkle-moon": { description: "สำรวจถ้ำคริสตัลและเก็บแสงพลังงาน", story: "สัญญาณขอความช่วยเหลือกำลังเรียกรหัสของนักบินซ้ำไปมา", title: "การติดต่อครั้งแรก", transmission: "PURI: สัญญาณนี้ตรงกับของเรา มาหาคำตอบกัน", encounters: "เส้นทางเปิด ไม่มีศัตรู เหมาะสำหรับฝึกเดินและเก็บของ", tip: "เดินตามทาง เก็บของให้ครบ แล้วดูจุดกลับยาน", completion: "เก็บคริสตัล 5 ชิ้น แล้วเดินกลับมาที่ช่องยาน" },
@@ -20,6 +21,32 @@ const STORY_LANDING_TH: Record<string, { description: string; story: string; tit
   "starlight-shore": { description: "ช่วยสัญญาณเพื่อนและเปิดทางออก", story: "เสียงเรียกเบา ๆ ซ่อนอยู่ใต้แสงดาวริมฝั่ง", title: "สัญญาณขอความช่วยเหลือ", transmission: "PURI: มีเพื่อนกำลังรอเราอยู่", encounters: "ต้องเก็บดาว พบเพื่อน และเปิดโหนดแสง", tip: "โหนดแสงอยู่มุมล่างซ้ายของแผนที่", completion: "พบเพื่อน เก็บดาว 7 ดวง และเหยียบโหนดแสง 1 จุด" },
   "crystal-cave": { description: "ชาร์จประตูแนวหน้าและเก็บแกนคริสตัล", story: "เส้นทางนี้จะกำหนดว่าใครควบคุมชายแดน", title: "การตัดสินใจแนวหน้า", transmission: "PURI: ส่งพลังให้ประตูทั้งสองก่อนออกไป", encounters: "มีจุด DROP สองแห่งและศัตรูลาดตระเวน", tip: "เก็บพลังแล้วส่งทีละประตู จากนั้นเก็บแกนให้ครบ", completion: "ส่งพลัง 2 จุด เปิดโหนด 2 จุด และเก็บแกน 6 ชิ้น" },
   "golden-galaxy": { description: "ฝ่าด่านสุดท้ายและนำข้อมูลกลับมา", story: "แกนออโรรากำลังตื่นขึ้น และทุกสัญญาณมาบรรจบที่นี่", title: "แกนออโรรา", transmission: "PURI: นี่คือบทสุดท้าย เราจะกลับไปด้วยกัน", encounters: "มีประตู วาร์ป ศัตรู และพื้นที่อันตรายหลายจุด", tip: "เปิดโหนด เก็บของ และเผื่อเวลาสำหรับกลับยาน", completion: "เปิดโหนด 2 จุด พบเพื่อน เก็บแกน 8 ชิ้น แล้วกลับยาน" },
+};
+
+const STORY_CHAPTER_TH: Record<string, string> = {
+  "sparkle-moon": "01 · แสงแรก",
+  "candy-planet": "02 · สัญญาณที่มีชีวิต",
+  "frosty-star": "03 · รอยทางเยือกแข็ง",
+  "jungle-world": "04 · ผู้เฝ้ามอง",
+  "rainbow-nebula": "05 · ฟ้าที่แตกสลาย",
+  "bubbly-bay": "06 · ใต้หมู่ดาว",
+  "cookie-crater": "07 · ฝนเพลิง",
+  "starlight-shore": "08 · เส้นทางเมล็ดดาว",
+  "crystal-cave": "09 · สามคู่แข่ง",
+  "golden-galaxy": "10 · พ้นขอบแผนที่",
+};
+
+const STORY_THREAT_TH: Record<string, string> = {
+  "sparkle-moon": "คลื่นพลังคริสตัล",
+  "candy-planet": "สปอร์จำแลง",
+  "frosty-star": "น้ำแข็งความเร็วสูง",
+  "jungle-world": "โดรนผู้พิทักษ์",
+  "rainbow-nebula": "พายุไอออน",
+  "bubbly-bay": "คลื่นแรงดัน",
+  "cookie-crater": "ฝูงอุกกาบาต",
+  "starlight-shore": "กระแสแสง",
+  "crystal-cave": "ผู้พิทักษ์แห่งความว่าง",
+  "golden-galaxy": "ผู้เฝ้ามงกุฎ",
 };
 
 interface Props {
@@ -43,6 +70,34 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
   const modifiers = getGameplayModifiers(gameState);
   const pilot = getPilot(gameState.activePilot);
   const shipEmoji = getActiveShipEmoji(gameState);
+  const activeShipSystems = SHIP_UPGRADES
+    .filter((system) => gameState.upgrades.includes(system.id))
+    .map((system) => {
+      const tier = getUpgradeTier(gameState, system.id);
+      const name = system.id === "shield"
+        ? tr(system.name, "โล่คอสมิก")
+        : system.id === "booster"
+          ? tr(system.name, "เทอร์โบบูสเตอร์")
+          : system.id === "scanner"
+            ? tr(system.name, "เครื่องสแกนคริสตัล")
+            : system.id === "garden"
+              ? tr(system.name, "ศูนย์เพาะเลี้ยงเอเลี่ยน")
+              : system.id === "wings"
+                ? tr(system.name, "ปีกดวงดาว")
+                : tr(system.name, "มงกุฎกาแล็กซี่");
+      const summary = system.id === "shield"
+        ? tr(`Keep ${50 + tier * 10}% of failed Story rewards`, `เก็บรางวัลไว้ ${50 + tier * 10}% เมื่อภารกิจพลาด`)
+        : system.id === "booster"
+          ? tr(`Story time +${tier * 5}s`, `เวลาเนื้อเรื่อง +${tier * 5} วินาที`)
+          : system.id === "scanner"
+            ? tr(`Crystals +${tier * 15}%`, `คริสตัล +${tier * 15}%`)
+            : system.id === "garden"
+              ? tr(`Companion chance +${tier * 15}%`, `โอกาสพบเพื่อน +${tier * 15}%`)
+              : system.id === "wings"
+                ? tr(`Story time +${tier * 8}s`, `เวลาเนื้อเรื่อง +${tier * 8} วินาที`)
+                : tr(`Crystals +${tier * 20}%`, `คริสตัล +${tier * 20}%`);
+      return { ...system, name, tier, summary };
+    });
   const basePetChance = gameState.faction === "oni" ? 0.9 : (alreadyVisited ? (hasPet ? 0.18 : 0.42) : 0.8);
   const petChance = Math.min(0.98, basePetChance + modifiers.petDiscoveryBonus);
   const [willFindPet] = useState(() => Boolean(!hasPet && planet.pet && Math.random() < petChance));
@@ -113,7 +168,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
             {displayName}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">{tr(planet.description, STORY_LANDING_TH[planet.id]?.description ?? planet.description)}</p>
-          <div className="command-kicker">{lore.chapter} · {tr("Threat", "ภัยที่พบ")}: {lore.threat}</div>
+          <div className="command-kicker">
+            {tr(lore.chapter, STORY_CHAPTER_TH[planet.id] ?? lore.chapter)} · {tr("Threat", "ภัยที่พบ")}: {tr(lore.threat, STORY_THREAT_TH[planet.id] ?? lore.threat)}
+          </div>
           <p className="max-w-md text-sm leading-relaxed text-cyan-50/80">{tr(lore.story, STORY_LANDING_TH[planet.id]?.story ?? lore.story)}</p>
           </div>
           <div className="story-landing__mission">
@@ -157,6 +214,21 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
               <p className="mt-2 rounded-lg border border-cosmic-yellow/20 bg-cosmic-yellow/5 px-3 py-2 text-[11px] font-bold leading-relaxed text-cosmic-yellow sm:text-xs">
                 {tr("How to finish", "เงื่อนไขผ่าน")}: {tr(missionBrief.completion, STORY_LANDING_TH[planet.id]?.completion ?? missionBrief.completion)}
               </p>
+            </div>
+          )}
+          {activeShipSystems.length > 0 && (
+            <div className="story-active-systems" aria-label={tr("Active ship systems", "ระบบยานที่ทำงานอยู่")}>
+              <div className="story-active-systems__title">
+                <span>{tr("Ship systems active", "ระบบยานกำลังทำงาน")}</span>
+                <small>{tr("Applied automatically in this mission", "ใช้กับภารกิจนี้ให้อัตโนมัติ")}</small>
+              </div>
+              {activeShipSystems.map((system) => (
+                <div key={system.id} className="story-active-system">
+                  <GaliaHangarSprite id={system.id} className="h-8 w-8 shrink-0" />
+                  <span><strong>{system.name}</strong><small>{system.summary}</small></span>
+                  <b>T{system.tier}</b>
+                </div>
+              ))}
             </div>
           )}
           <div className="story-approach" aria-label="Choose mission approach">
@@ -204,6 +276,13 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
               {alreadyVisited ? tr("Replay active. Focus on missing companions and bonus rewards.", "กำลังเล่นซ้ำ มองหาเพื่อนที่ยังไม่พบและรางวัลพิเศษ") : tr("Story mission active. Complete the objective for full first-clear rewards.", "กำลังเล่นเนื้อเรื่อง ทำเป้าหมายให้ครบเพื่อรับรางวัลผ่านครั้งแรก")}
             </p>
+            {activeShipSystems.length > 0 && (
+              <div className="story-live-systems">
+                {activeShipSystems.map((system) => (
+                  <span key={system.id}><GaliaHangarSprite id={system.id} className="h-5 w-5" />{system.summary}</span>
+                ))}
+              </div>
+            )}
           </div>
           <PlanetExploration
             planetId={planet.id}

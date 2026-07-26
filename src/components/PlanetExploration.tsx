@@ -5,6 +5,7 @@ import { playCrystalSound, playChestSound, playRobotSound, playPetDiscoverySound
 import { useI18n } from "@/lib/i18n";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import GaliaSprite from "@/components/GaliaSprite";
+import { getReachableStoryCellKeys } from "@/lib/storyMap";
 
 // ─── Types ───────────────────────────────────────────────────────
 interface ExplorationItem {
@@ -36,6 +37,7 @@ interface MissionProfile {
   objective: string;
   duration: number;
   crystalGoal?: number;
+  goalItemType?: ExplorationItem["type"];
   petGoal?: number;
   deliveryGoal?: number;
   requireReturn: boolean;
@@ -98,6 +100,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Follow the highlighted signal trail in order through the coral maze.",
     duration: 60,
     crystalGoal: 6,
+    goalItemType: "crystal",
     requireReturn: false,
     trailSequence: true,
     walls: [
@@ -230,7 +233,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["🍬", "🍫", "🧁"],
     decorEmojis: ["🍭", "🎀"],
     items: [
-      { type: "crystal", emoji: "💎", value: 2, count: 5 },
+      { type: "crystal", emoji: "💎", value: 2, count: 7 },
       { type: "pet", emoji: "👽", value: 4, count: 2 },
       { type: "chest", emoji: "🎁", value: 5, count: 3 },
       { type: "star", emoji: "⭐", value: 1, count: 4 },
@@ -425,6 +428,7 @@ function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: Expl
   const occupied = new Set<string>();
   const items: ExplorationItem[] = [];
   const wallKeys = new Set((mission.walls ?? []).map(([r, c]) => coordKey(r, c)));
+  const reachableKeys = getReachableStoryCellKeys(mission.walls, GRID_ROWS, GRID_COLS);
   const blockedKeys = new Set<string>(wallKeys);
   (mission.hazards ?? []).forEach(([r, c]) => blockedKeys.add(coordKey(r, c)));
   (mission.dropZones ?? []).forEach(([r, c]) => blockedKeys.add(coordKey(r, c)));
@@ -468,7 +472,7 @@ function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: Expl
         const row = Math.floor(Math.random() * GRID_ROWS);
         const col = Math.floor(Math.random() * GRID_COLS);
         const key = `${row},${col}`;
-        if (!occupied.has(key) && !blockedKeys.has(key)) {
+        if (reachableKeys.has(key) && !occupied.has(key) && !blockedKeys.has(key)) {
           const dist = distFromStart(row, col);
           if (dist > bestDist) {
             bestRow = row;
@@ -478,6 +482,13 @@ function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: Expl
           if (dist >= 3 || attempts > 50) break;
         }
         attempts++;
+      }
+      if (bestRow < 0) {
+        const fallback = Array.from(reachableKeys)
+          .filter((key) => !occupied.has(key) && !blockedKeys.has(key))
+          .map((key) => key.split(",").map(Number) as Coord)
+          .sort((a, b) => distFromStart(b[0], b[1]) - distFromStart(a[0], a[1]))[0];
+        if (fallback) [bestRow, bestCol] = fallback;
       }
       if (bestRow >= 0) {
         occupied.add(`${bestRow},${bestCol}`);
@@ -698,12 +709,13 @@ export default function PlanetExploration({
   }, [t]);
 
   const collectItem = useCallback((item: ExplorationItem, row: number, col: number) => {
-    if (mission.trailSequence && item.type !== "robot" && item.type !== "pet") {
-      const nextTrailItem = items.find((candidate) => !candidate.collected && candidate.type !== "robot" && candidate.type !== "pet");
+    const isTrailItem = mission.trailSequence && item.type === (mission.goalItemType ?? "crystal");
+    if (isTrailItem) {
+      const nextTrailItem = items.find((candidate) => !candidate.collected && candidate.type === (mission.goalItemType ?? "crystal"));
       if (nextTrailItem && nextTrailItem.id !== item.id) {
-        setRobotMessage("Signal out of sequence. Follow the highlighted TRACK marker.");
+        setRobotMessage(tr("Wrong signal. Collect the glowing TRACK marker first.", "ยังไม่ใช่จุดนี้ ให้เก็บจุด TRACK ที่กำลังเรืองแสงก่อน"));
         setTimeout(() => setRobotMessage(null), 1600);
-        return;
+        return false;
       }
     }
     if (item.type === "robot") {
@@ -712,12 +724,12 @@ export default function PlanetExploration({
       addCollectEffect("🤖", 0, row, col, "robot");
       spawnSparkles(row, col);
       playRobotSound();
-      return;
+      return true;
     }
 
     if (item.type === "hidden" && !item.revealed) {
       addCollectEffect("❓", 0, row, col, "collect");
-      return;
+      return false;
     }
 
     if (item.type === "chest") {
@@ -732,7 +744,7 @@ export default function PlanetExploration({
         spawnSparkles(row, col);
         setOpeningChest(null);
       }, 700);
-      return;
+      return true;
     }
 
     // Normal collection
@@ -747,9 +759,13 @@ export default function PlanetExploration({
     }
     addCollectEffect(item.emoji, item.value, row, col, item.type === "pet" ? "pet" : "sparkle");
     spawnSparkles(row, col);
-  }, [activateRobot, addCollectEffect, spawnSparkles, items, mission.trailSequence]);
+    return true;
+  }, [activateRobot, addCollectEffect, spawnSparkles, items, mission.goalItemType, mission.trailSequence, tr]);
 
-  const crystalCollected = items.filter((i) => i.collected && i.type !== "robot" && i.type !== "pet").length;
+  const crystalCollected = items.filter((item) =>
+    item.collected &&
+    (mission.goalItemType ? item.type === mission.goalItemType : item.type !== "robot" && item.type !== "pet")
+  ).length;
   const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
   const deliveryDone = deliveredZones.length;
   const nodesDone = activatedNodes.length;
@@ -758,7 +774,9 @@ export default function PlanetExploration({
     petCollected >= (mission.petGoal ?? 0) &&
     deliveryDone >= (mission.deliveryGoal ?? 0) &&
     nodesDone >= (mission.nodeGoal ?? 0);
-  const trailTargetId = mission.trailSequence ? items.find((item) => !item.collected && item.type !== "robot" && item.type !== "pet")?.id : undefined;
+  const trailTargetId = mission.trailSequence
+    ? items.find((item) => !item.collected && item.type === (mission.goalItemType ?? "crystal"))?.id
+    : undefined;
 
   const checkShipReturn = useCallback((row: number, col: number) => {
     if (row === shipPos.current.row && col === shipPos.current.col && goalsMet && mission.requireReturn) {
@@ -824,8 +842,8 @@ export default function PlanetExploration({
 
       const itemAtPos = items.find(i => i.row === nextRow && i.col === nextCol && !i.collected);
       if (itemAtPos) {
-        collectItem(itemAtPos, nextRow, nextCol);
-        if (itemAtPos.type !== "robot") {
+        const collected = collectItem(itemAtPos, nextRow, nextCol);
+        if (collected && itemAtPos.type !== "robot") {
           payloadBuffer += 1;
         }
       }
@@ -959,7 +977,10 @@ export default function PlanetExploration({
   const canReturn = goalsMet;
   const atShip = playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col;
   const goalBits = [
-    mission.crystalGoal ? tr(`Crystals ${crystalCollected}/${mission.crystalGoal}`, `คริสตัล ${crystalCollected}/${mission.crystalGoal}`) : null,
+    mission.crystalGoal ? mission.trailSequence
+      ? tr(`Signal crystals ${crystalCollected}/${effectiveCrystalGoal}`, `คริสตัลสัญญาณ ${crystalCollected}/${effectiveCrystalGoal}`)
+      : tr(`Mission items ${crystalCollected}/${effectiveCrystalGoal}`, `ของภารกิจ ${crystalCollected}/${effectiveCrystalGoal}`)
+      : null,
     mission.petGoal ? tr(`Companion ${petCollected}/${mission.petGoal}`, `เพื่อน ${petCollected}/${mission.petGoal}`) : null,
     mission.deliveryGoal ? tr(`Deliveries ${deliveryDone}/${mission.deliveryGoal}`, `จุดส่งของ ${deliveryDone}/${mission.deliveryGoal}`) : null,
     mission.nodeGoal ? tr(`Glow nodes ${nodesDone}/${mission.nodeGoal}`, `โหนดแสง ${nodesDone}/${mission.nodeGoal}`) : null,
@@ -1238,6 +1259,8 @@ export default function PlanetExploration({
                               : { duration: 1.5 + Math.random(), repeat: Infinity }
                           }
                           className={`${item.type === "robot" ? "animate-pulse" : ""} ${item.id === trailTargetId ? "is-trail-target" : ""}`}
+                          data-story-item-type={item.type}
+                          aria-label={item.type === "crystal" ? tr("Signal crystal", "คริสตัลสัญญาณ") : undefined}
                         >
                           <StoryItemMarker item={item} />
                         </motion.span>

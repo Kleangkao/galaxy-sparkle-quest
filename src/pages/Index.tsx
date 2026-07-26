@@ -280,17 +280,8 @@ export default function Index() {
           level: newLevel, shipLevel: newShipLevel, influence: newInfluence, eggs: newEggs,
         };
       });
-      setRunResult({
-        mode: "story",
-        title: activePlanet ? tr(`${activePlanet.name} secured`, `ยึดพื้นที่ ${activePlanet.name} สำเร็จ`) : tr("Story expedition complete", "ผ่านภารกิจเนื้อเรื่องแล้ว"),
-        outcome: petName ? tr(`${petName} joined your archive and the signal trail advanced.`, `${petName} เข้าร่วมทีม และเส้นทางสัญญาณคืบหน้าแล้ว`) : tr("The signal trail advanced and your faction influence increased.", "ตามรอยสัญญาณต่อได้แล้ว และฝ่ายของคุณมีอิทธิพลเพิ่มขึ้น"),
-        crystals,
-        xp,
-        improvements: ["Next Story chapter progress advanced", "Faction influence increased", petName ? `${petName} joined your collection` : "PURI bond and Captain XP increased"],
-        improvementsTh: ["เนื้อเรื่องคืบหน้าไปยังบทถัดไป", "คะแนนพื้นที่ของฝ่ายเพิ่มขึ้น", petName ? `${petName} เข้าร่วมคอลเลกชัน` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"],
-      });
     },
-    [activePlanet, t, tr, updateState]
+    [activePlanet, t, updateState]
   );
 
   const handleBuyUpgrade = (id: string, cost: number) => {
@@ -673,7 +664,7 @@ export default function Index() {
         </Suspense>
       )}
 
-      {captureEvent && (
+      {captureEvent && screen === "map" && (
         <Suspense fallback={null}>
           <PlanetCaptureAnimation
             factionId={captureEvent.factionId}

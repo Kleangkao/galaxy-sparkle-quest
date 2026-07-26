@@ -1,7 +1,19 @@
 import { useState } from "react";
 import { ArrowLeft, Check, Crosshair, Gauge, Radar, Shield, UserRound, Zap } from "lucide-react";
 import { GameState } from "@/lib/gameState";
-import { PILOTS, TOOLS, getLoadoutPath, getPilotUnlock, getToolUnlock } from "@/lib/loadouts";
+import {
+  PILOTS,
+  TOOLS,
+  getLoadoutPathLabel,
+  getPilotCallsign,
+  getPilotEffect,
+  getPilotRole,
+  getPilotTagline,
+  getPilotUnlock,
+  getToolEffect,
+  getToolFamily,
+  getToolUnlock,
+} from "@/lib/loadouts";
 import ShipUpgradeShop from "@/components/ShipUpgradeShop";
 import { useI18n } from "@/lib/i18n";
 
@@ -16,7 +28,7 @@ interface Props {
 }
 
 export default function CrewHangar(props: Props) {
-  const { tr } = useI18n();
+  const { lang, tr } = useI18n();
   const [view, setView] = useState<"crew" | "ship">("crew");
 
   if (view === "ship") {
@@ -49,10 +61,10 @@ export default function CrewHangar(props: Props) {
         <button className="hangar-ship-link" onClick={() => setView("ship")}>{tr("Ship systems", "ระบบยาน")} →</button>
       </header>
 
-      <section className="loadout-summary" aria-label="Active expedition loadout">
-        <div><UserRound /><span>{tr("Active pilot", "นักบินที่ใช้")}</span><strong>{activePilot.name}</strong><small>{activePilot.effect}</small></div>
-        <div><Radar /><span>{tr("Equipped tool", "อาวุธที่ใช้")}</span><strong>{activeTool.name}</strong><small>{activeTool.effect}</small></div>
-        <div><Gauge /><span>{tr("Play style", "สไตล์การเล่น")}</span><strong>{getLoadoutPath(activePilot.id, activeTool.id)}</strong><small>{tr(`${activePilot.callsign} build · change between missions`, `ชุด ${activePilot.callsign} · เปลี่ยนได้ระหว่างภารกิจ`)}</small></div>
+      <section className="loadout-summary" aria-label={tr("Active expedition loadout", "ชุดที่ใช้อยู่")}>
+        <div><UserRound /><span>{tr("Active pilot", "นักบินที่ใช้")}</span><strong>{activePilot.name}</strong><small>{getPilotEffect(activePilot, lang)}</small></div>
+        <div><Radar /><span>{tr("Equipped tool", "อาวุธที่ใช้")}</span><strong>{activeTool.name}</strong><small>{getToolEffect(activeTool, lang)}</small></div>
+        <div><Gauge /><span>{tr("Play style", "สไตล์การเล่น")}</span><strong>{getLoadoutPathLabel(activePilot.id, activeTool.id, lang)}</strong><small>{tr(`${activePilot.callsign} build · change between missions`, `ชุด ${activePilot.callsignTh} · เปลี่ยนได้ระหว่างภารกิจ`)}</small></div>
       </section>
 
       <section className="hangar-section" aria-labelledby="pilot-roster-title">
@@ -67,13 +79,13 @@ export default function CrewHangar(props: Props) {
             return (
               <button key={pilot.id} disabled={!unlock.unlocked} className={`pilot-card ${active ? "is-active" : ""} ${!unlock.unlocked ? "opacity-55" : ""}`} onClick={() => unlock.unlocked && props.onSetPilot(pilot.id)}>
                 <img src={pilot.image} alt={pilot.name} />
-                <span className="pilot-card__role">{pilot.role}</span>
+                <span className="pilot-card__role">{getPilotRole(pilot, lang)}</span>
                 <div className="pilot-card__content">
-                  <div><small>{pilot.callsign}</small><h3>{pilot.name}</h3></div>
+                  <div><small>{getPilotCallsign(pilot, lang)}</small><h3>{pilot.name}</h3></div>
                   {active && <span className="pilot-card__check"><Check className="h-4 w-4" /> {tr("Active", "กำลังใช้")}</span>}
-                  <p>{pilot.tagline}</p>
-                  <strong>{pilot.effect}</strong>
-                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirement}`)}</small>}
+                  <p>{getPilotTagline(pilot, lang)}</p>
+                  <strong>{getPilotEffect(pilot, lang)}</strong>
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirementTh}`)}</small>}
                 </div>
               </button>
             );
@@ -95,8 +107,8 @@ export default function CrewHangar(props: Props) {
               <button key={tool.id} disabled={!unlock.unlocked} className={`tool-card ${active ? "is-active" : ""} ${!unlock.unlocked ? "opacity-55" : ""}`} onClick={() => unlock.unlocked && props.onSetTool(tool.id)}>
                 <div className="tool-card__image"><img src={tool.image} alt={tool.name} /></div>
                 <div className="tool-card__copy">
-                  <span>{tool.family}</span><h3>{tool.name}</h3><p><Icon className="h-4 w-4" />{tool.effect}</p>
-                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirement}`)}</small>}
+                  <span>{getToolFamily(tool, lang)}</span><h3>{tool.name}</h3><p><Icon className="h-4 w-4" />{getToolEffect(tool, lang)}</p>
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirementTh}`)}</small>}
                 </div>
                 {active && <Check className="tool-card__check h-5 w-5" />}
               </button>

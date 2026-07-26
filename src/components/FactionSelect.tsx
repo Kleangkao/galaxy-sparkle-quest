@@ -67,7 +67,7 @@ export default function FactionSelect({ onSelect }: Props) {
                 : "border-border bg-card/40 hover:bg-card/60 hover:scale-[1.01] sm:hover:scale-102"}
             `}
             style={{ animationDelay: `${i * 0.15}s` }}>
-            <div className="faction-card__portrait flex w-20 sm:w-full shrink-0 justify-center">
+            <div className={`faction-card__portrait faction-card__portrait--${faction.id} flex w-20 sm:w-full shrink-0 justify-center`}>
               <img
                 src={FACTION_IMAGES[faction.id]}
                 alt={faction.name}

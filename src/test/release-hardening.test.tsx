@@ -16,6 +16,8 @@ import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 import PlanetExplore from "@/components/PlanetExplore";
+import { getReachableStoryCellKeys } from "@/lib/storyMap";
+import CrewHangar from "@/components/CrewHangar";
 import { MISSION_BRIEFS } from "@/lib/missionBriefs";
 import UnifiedRunResults from "@/components/UnifiedRunResults";
 import ArcadeShooter from "@/components/ArcadeShooter";
@@ -225,6 +227,59 @@ describe("public test release hardening", () => {
     expect(screen.getByText("ข้อมูลเพื่อนร่วมทาง")).toBeInTheDocument();
     expect(screen.getByText(/เงื่อนไขผ่าน: เก็บคริสตัล 5 ชิ้น/)).toBeInTheDocument();
     expect(screen.queryByText("Choose how to play this chapter")).not.toBeInTheDocument();
+  });
+
+  it("keeps every Chapter 2 signal crystal on a cell reachable from the ship", () => {
+    const reachable = getReachableStoryCellKeys([
+      [1, 2], [1, 3], [1, 4], [1, 5],
+      [3, 1], [3, 2], [3, 4], [3, 5],
+      [5, 2], [5, 3], [5, 4],
+    ]);
+
+    expect(reachable.has("7,4")).toBe(true);
+    expect(reachable.size).toBeGreaterThan(20);
+    expect(reachable.has("1,3")).toBe(false);
+  });
+
+  it("spawns enough real signal crystals to complete Chapter 2 on every route", () => {
+    const state = createNewGameState("mud");
+    state.visitedPlanets = [PLANETS[0].id];
+    const { container } = render(
+      <PlanetExplore
+        planet={PLANETS[1]}
+        gameState={state}
+        onCollect={() => undefined}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Launch Balanced route/ }));
+    expect(container.querySelectorAll('[data-story-item-type="crystal"]')).toHaveLength(7);
+    expect(container.querySelectorAll(".is-trail-target")).toHaveLength(1);
+  });
+
+  it("localizes Crew roles, descriptions, abilities, and locked requirements as one data system", () => {
+    localStorage.setItem("galaxy-lang", "th");
+    render(
+      <I18nProvider>
+        <CrewHangar
+          gameState={createNewGameState("mud")}
+          onSetPilot={() => undefined}
+          onSetTool={() => undefined}
+          onBuyUpgrade={() => undefined}
+          onBuySkin={() => undefined}
+          onEquipSkin={() => undefined}
+          onBack={() => undefined}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByText("นักสำรวจ")).toBeInTheDocument();
+    expect(screen.getAllByText("รับคริสตัลเพิ่ม 10% จากทุกโหมด").length).toBeGreaterThan(0);
+    expect(screen.getByText("ความแรงอาวุธ +20% ในฝ่าฝูงศัตรูและยิงเป้า")).toBeInTheDocument();
+    expect(screen.getByText(/ผ่านเนื้อเรื่องบท 2 หรือภารกิจยิงเป้า 1 ภารกิจ/)).toBeInTheDocument();
+    expect(screen.queryByText("+6 seconds in Story, Swarm, and Arcade")).not.toBeInTheDocument();
   });
 
   it("places the required glow node in Story chapter 8", () => {

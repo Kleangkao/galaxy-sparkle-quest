@@ -114,6 +114,20 @@ describe("multi-mode progression", () => {
     expect(modifiers.combatHullBonus).toBe(40);
   });
 
+  it("applies every installed ship system automatically to its real gameplay modifier", () => {
+    const state = createNewGameState("mud");
+    state.activePet = null;
+    state.upgrades = ["shield", "booster", "scanner", "garden", "wings", "crown"];
+    state.upgradeTiers = Object.fromEntries(state.upgrades.map((id) => [id, 2]));
+    const modifiers = getGameplayModifiers(state);
+
+    expect(modifiers.failRewardMultiplier).toBeCloseTo(0.7);
+    expect(modifiers.combatHullBonus).toBe(20);
+    expect(modifiers.missionTimeBonus).toBe(26);
+    expect(modifiers.petDiscoveryBonus).toBeCloseTo(0.3);
+    expect(modifiers.crystalMultiplier).toBeCloseTo(1.1 * 1.3 * 1.4);
+  });
+
   it("makes the sidearm a quick-reload choice instead of an unrelated scanner", () => {
     const modifiers = getGameplayModifiers({
       activePilot: "nova-reyes",

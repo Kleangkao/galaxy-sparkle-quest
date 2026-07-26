@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Binoculars, CheckCircle2, Gem, Map, Medal, PawPrint, Shield, Sparkles, Swords, Target, Trophy, Users, Zap } from "lucide-react";
 import { GameState, PLANETS, SHIP_UPGRADES, getRank, getXPProgress, countControlled } from "@/lib/gameState";
-import { getPilot, getTool } from "@/lib/loadouts";
+import { getPilot, getPilotCallsign, getTool } from "@/lib/loadouts";
 import { getPuriProgress } from "@/lib/puriBond";
 import type { PlayMode } from "@/components/ModeHub";
 import { useI18n } from "@/lib/i18n";
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay }: Props) {
-  const { tr } = useI18n();
+  const { lang, tr } = useI18n();
   const rank = getRank(gameState.level);
   const xp = getXPProgress(gameState.xp, gameState.level);
   const pilot = getPilot(gameState.activePilot);
@@ -49,7 +49,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("All modes", "ทุกโหมด")}</button>
         <div className="captain-progress__identity">
           <img src={pilot.image} alt={pilot.name} />
-          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้านักบิน")}</div><h1>{pilot.name}</h1><p>{rank.name} · {pilot.callsign} · {tool.name}</p></div>
+          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้านักบิน")}</div><h1>{pilot.name}</h1><p>{rank.name} · {getPilotCallsign(pilot, lang)} · {tool.name}</p></div>
         </div>
         <div className="captain-progress__rank">
           <span>{tr(`Rank ${gameState.level}`, `แรงก์ ${gameState.level}`)}</span><strong>{rank.name}</strong><small>{gameState.xp}/{xp.next} XP</small>

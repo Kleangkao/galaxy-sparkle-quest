@@ -1,6 +1,6 @@
 import { ArrowRight, Binoculars, Crosshair, Gamepad2, Map, Sparkles, Swords, Trophy, Users } from "lucide-react";
 import { GameState } from "@/lib/gameState";
-import { getPilot } from "@/lib/loadouts";
+import { getPilot, getPilotCallsign } from "@/lib/loadouts";
 import PuriBondPanel from "@/components/PuriBondPanel";
 import { useI18n } from "@/lib/i18n";
 
@@ -79,7 +79,7 @@ export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCre
         <div className="mode-hub__aside">
           <div className="mode-hub__captain">
             <img src={pilot.image} alt="" />
-            <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${pilot.callsign}`)}</small></div>
+            <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${getPilotCallsign(pilot, lang)}`)}</small></div>
           </div>
           <div className="mode-hub__utility">
             <button onClick={onOpenProgress}><Trophy className="h-4 w-4" /> {tr("Progress", "ความคืบหน้า")}</button>
