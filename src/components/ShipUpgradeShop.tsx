@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, onEquipSkin, onBack }: Props) {
-  const { t } = useI18n();
+  const { t, tr, lang } = useI18n();
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const ownedSkins = gameState.ownedSkins || ["red-rocket"];
   const upgrades = gameState.upgrades || [];
@@ -37,15 +37,15 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
       </div>
       <div className="mb-4 grid w-full max-w-xs grid-cols-1 gap-2 sm:mb-5 sm:max-w-md sm:grid-cols-3">
         <div className="rounded-2xl border border-cosmic-cyan/15 bg-cosmic-cyan/5 px-4 py-3">
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-cyan">Installed</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-cyan">{tr("Installed", "ติดตั้งแล้ว")}</div>
           <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{installedUpgrades.length}</div>
         </div>
         <div className="rounded-2xl border border-cosmic-purple/15 bg-cosmic-purple/5 px-4 py-3">
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-purple">Owned Skins</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cosmic-purple">{tr("Owned skins", "สียานที่มี")}</div>
           <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{ownedSkins.length}</div>
         </div>
         <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">Current Ship</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">{tr("Current ship", "ยานที่ใช้อยู่")}</div>
           <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{activeShipEmoji}</div>
         </div>
       </div>
@@ -69,9 +69,9 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                   }
 
                   if (canAfford && levelOk) setConfirmAction({
-                    title: `Add ${skin.name} to the hangar?`,
-                    description: `Cost: ${skin.cost} crystals\nCosmetic only · no gameplay-stat change.`,
-                    confirmLabel: `Buy for ${skin.cost}`,
+                    title: tr(`Add ${skin.name} to the hangar?`, `เพิ่ม ${skin.nameTh} เข้าโรงจอดไหม?`),
+                    description: tr(`Cost: ${skin.cost} crystals\nCosmetic only · no gameplay-stat change.`, `ใช้ ${skin.cost} คริสตัล\nเปลี่ยนรูปลักษณ์เท่านั้น ไม่เพิ่มค่าสถานะ`),
+                    confirmLabel: tr(`Buy for ${skin.cost}`, `ซื้อ ${skin.cost}`),
                     onConfirm: () => onBuySkin(skin.id, skin.cost),
                   });
                 }}
@@ -83,10 +83,10 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                   <GaliaHangarSprite id={skin.id} className="h-10 w-14" />
                   {!["red-rocket", "candy-ship", "ice-ship", "jungle-cruiser"].includes(skin.id) && <span className="text-xl sm:text-2xl">{skin.emoji}</span>}
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-foreground mt-1">{skin.name}</div>
+                <div className="text-[11px] sm:text-xs font-bold text-foreground mt-1">{lang === "th" ? skin.nameTh : skin.name}</div>
                 {active && <span className="text-[10px] sm:text-[11px] text-cosmic-green font-bold">{t("equipped")}</span>}
                 {!owned && <span className="text-[10px] sm:text-[11px] text-cosmic-cyan font-bold">💎 {skin.cost}</span>}
-                {!owned && !levelOk && <span className="text-[10px] sm:text-[11px] text-cosmic-yellow block">🔒 Lvl {skin.requiredLevel}</span>}
+                {!owned && !levelOk && <span className="text-[10px] sm:text-[11px] text-cosmic-yellow block">🔒 {tr("Level", "เลเวล")} {skin.requiredLevel}</span>}
               </button>
             );
           })}
@@ -97,7 +97,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
       <div className="w-full max-w-xs animate-slide-up rounded-[1.5rem] border border-border/50 bg-card/30 p-4 pb-6 shadow-[0_12px_30px_rgba(0,0,0,0.18)] sm:max-w-sm sm:pb-8 md:max-w-md">
         <h3 className="text-xs sm:text-sm font-bold text-cosmic-cyan mb-2" style={{ fontFamily: "var(--font-display)" }}>{t("upgrades")}</h3>
         <p className="mb-3 rounded-xl border border-cosmic-cyan/20 bg-cosmic-cyan/5 px-3 py-2 text-[11px] leading-relaxed text-cyan-50/85 sm:text-xs">
-          Permanent ship systems apply automatically. Reward systems help every mode; timer systems help Story, Swarm, and Arcade; discovery systems help Story; shields also add Swarm hull.
+          {tr("Permanent ship systems apply automatically. Reward systems help every mode; timer systems help Story, Swarm, and Arcade; discovery systems help Story; shields also add Swarm hull.", "ระบบยานติดตัวและทำงานอัตโนมัติ ระบบรางวัลช่วยทุกโหมด ระบบเวลาใช้กับเนื้อเรื่อง ฝ่าฝูง และยิงเป้า ส่วนระบบสำรวจช่วยเนื้อเรื่อง และเกราะเพิ่มพลังยานในโหมดฝ่าฝูง")}
         </p>
 
         {installedUpgrades.length > 0 && (
@@ -110,20 +110,20 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 <div key={upgrade.id} className="rounded-lg border border-cosmic-green/15 bg-background/20 px-3 py-2">
                   <div className="flex items-center gap-2">
                     <GaliaHangarSprite id={upgrade.id} className="h-8 w-8 shrink-0" />
-                    <span className="text-xs font-bold text-foreground sm:text-sm">{upgrade.name}</span>
-                    <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">Tier {getUpgradeTier(gameState, upgrade.id)}/{MAX_UPGRADE_TIER}</span>
+                    <span className="text-xs font-bold text-foreground sm:text-sm">{lang === "th" ? upgrade.nameTh : upgrade.name}</span>
+                    <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">{tr("Tier", "ขั้น")} {getUpgradeTier(gameState, upgrade.id)}/{MAX_UPGRADE_TIER}</span>
                   </div>
-                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs"><strong>Current:</strong> {getUpgradeEffectAtTier(upgrade.id, getUpgradeTier(gameState, upgrade.id))}</p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground sm:text-xs"><strong>{tr("Current", "ผลตอนนี้")}:</strong> {getUpgradeEffectAtTier(upgrade.id, getUpgradeTier(gameState, upgrade.id), lang)}</p>
                   {getUpgradeTier(gameState, upgrade.id) < MAX_UPGRADE_TIER && (() => {
                     const tier = getUpgradeTier(gameState, upgrade.id);
                     const cost = getUpgradeCost(upgrade, tier);
                     const available = gameState.crystals >= cost;
                     return <button className="mt-2 w-full rounded-lg border border-cosmic-cyan/30 bg-cosmic-cyan/10 px-3 py-2 text-xs font-bold text-cosmic-cyan disabled:opacity-40" disabled={!available} onClick={() => available && setConfirmAction({
-                      title: `Upgrade ${upgrade.name} to Tier ${tier + 1}?`,
-                      description: `Cost: ${cost} crystals\nNew effect: ${getUpgradeEffectAtTier(upgrade.id, tier + 1)}`,
-                      confirmLabel: `Upgrade for ${cost}`,
+                      title: tr(`Upgrade ${upgrade.name} to Tier ${tier + 1}?`, `อัปเกรด ${upgrade.nameTh} เป็นขั้น ${tier + 1} ไหม?`),
+                      description: tr(`Cost: ${cost} crystals\nNew effect: ${getUpgradeEffectAtTier(upgrade.id, tier + 1)}`, `ใช้ ${cost} คริสตัล\nผลใหม่: ${getUpgradeEffectAtTier(upgrade.id, tier + 1, "th")}`),
+                      confirmLabel: tr(`Upgrade for ${cost}`, `อัปเกรด ${cost}`),
                       onConfirm: () => onBuyUpgrade(upgrade.id, cost),
-                    })}>Tier {tier + 1}: {getUpgradeEffectAtTier(upgrade.id, tier + 1)} · 💎 {cost}</button>;
+                    })}>{tr("Tier", "ขั้น")} {tier + 1}: {getUpgradeEffectAtTier(upgrade.id, tier + 1, lang)} · 💎 {cost}</button>;
                   })()}
                 </div>
               ))}
@@ -141,9 +141,9 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
             return (
               <button key={up.id} onClick={() => {
                 if (available) setConfirmAction({
-                  title: `Install ${up.name}?`,
-                  description: `Cost: ${cost} crystals\n${getUpgradeEffectAtTier(up.id, 1)}`,
-                  confirmLabel: `Install for ${cost}`,
+                  title: tr(`Install ${up.name}?`, `ติดตั้ง ${up.nameTh} ไหม?`),
+                  description: tr(`Cost: ${cost} crystals\n${getUpgradeEffectAtTier(up.id, 1)}`, `ใช้ ${cost} คริสตัล\n${getUpgradeEffectAtTier(up.id, 1, "th")}`),
+                  confirmLabel: tr(`Install for ${cost}`, `ติดตั้ง ${cost}`),
                   onConfirm: () => onBuyUpgrade(up.id, cost),
                 });
               }}
@@ -153,9 +153,9 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 `}>
                 <GaliaHangarSprite id={up.id} className="h-12 w-12 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs sm:text-sm font-bold text-foreground block">{up.name}</span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground block line-clamp-2">{getUpgradeEffectAtTier(up.id, 1)}</span>
-                  <span className="text-[10px] sm:text-xs text-foreground/80 block mt-0.5 leading-relaxed">{up.effect}</span>
+                  <span className="text-xs sm:text-sm font-bold text-foreground block">{lang === "th" ? up.nameTh : up.name}</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground block line-clamp-2">{getUpgradeEffectAtTier(up.id, 1, lang)}</span>
+                  <span className="text-[10px] sm:text-xs text-foreground/80 block mt-0.5 leading-relaxed">{lang === "th" ? up.effectTh : up.effect}</span>
                   {!isOwned && <span className={`text-[10px] sm:text-xs font-bold block mt-0.5 ${canAfford ? "text-cosmic-cyan" : "text-cosmic-red"}`}>💎 {up.cost}</span>}
                   {isOwned && (
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -170,7 +170,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
         </div>
         {availableUpgrades.length === 0 && (
           <div className="mt-3 rounded-xl border border-cosmic-green/20 bg-cosmic-green/5 px-4 py-3 text-center text-xs text-cosmic-green sm:text-sm">
-            Every ship system is installed. Raise each one to Tier 3 to complete the hangar.
+            {tr("Every ship system is installed. Raise each one to Tier 3 to complete the hangar.", "ติดตั้งระบบยานครบแล้ว อัปเกรดทุกระบบให้ถึงขั้น 3 เพื่อทำโรงจอดให้สมบูรณ์")}
           </div>
         )}
       </div>

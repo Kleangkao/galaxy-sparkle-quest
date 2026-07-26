@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Boxes, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Clock3, Gem, Landmark, Map as MapIcon, Navigation, Orbit, Package, PawPrint, Rocket, Skull, Sparkles as SparklesIcon, Star, Zap } from "lucide-react";
@@ -6,9 +7,10 @@ import { useI18n } from "@/lib/i18n";
 import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import GaliaSprite from "@/components/GaliaSprite";
 import { getReachableStoryCellKeys } from "@/lib/storyMap";
+import { countStoryObjectiveItems, evaluateStoryObjective } from "@/lib/storyObjectives";
 
 // ─── Types ───────────────────────────────────────────────────────
-interface ExplorationItem {
+export interface ExplorationItem {
   id: string;
   type: "crystal" | "chest" | "pet" | "robot" | "star" | "relic" | "hidden";
   emoji: string;
@@ -19,7 +21,7 @@ interface ExplorationItem {
   value: number;
 }
 
-interface PlanetTheme {
+export interface PlanetTheme {
   name: string;
   bgGradient: string;
   groundEmojis: string[];
@@ -32,7 +34,7 @@ interface PlanetTheme {
 
 type Coord = [number, number];
 
-interface MissionProfile {
+export interface MissionProfile {
   name: string;
   objective: string;
   duration: number;
@@ -87,12 +89,13 @@ function getMoveDirectionFromKeyboard(event: KeyboardEvent): "up" | "down" | "le
   return null;
 }
 
-const MISSION_PROFILES: Record<string, MissionProfile> = {
+export const MISSION_PROFILES: Record<string, MissionProfile> = {
   "sparkle-moon": {
     name: "Crystal Flight School",
     objective: "Learn movement, collect 5 crystals, then return to your ship.",
     duration: 50,
     crystalGoal: 5,
+    goalItemType: "crystal",
     requireReturn: true,
   },
   "candy-planet": {
@@ -114,6 +117,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Navigate the ice lanes one tile at a time and collect 8 navigation shards.",
     duration: 45,
     crystalGoal: 8,
+    goalItemType: "crystal",
     requireReturn: false,
     walls: [[1, 3], [2, 3], [4, 4], [5, 4]],
   },
@@ -122,6 +126,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Collect 8 vault keys while evading two guardian patrols.",
     duration: 65,
     crystalGoal: 8,
+    goalItemType: "relic",
     requireReturn: false,
     hazards: [[1, 1], [1, 6], [2, 3], [3, 4], [4, 2], [5, 5]],
     enemyCount: 2,
@@ -142,6 +147,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Collect 6 pressure blooms and deliver charges to both habitat valves.",
     duration: 70,
     crystalGoal: 6,
+    goalItemType: "crystal",
     deliveryGoal: 2,
     dropZones: [[0, 1], [0, 6]],
     requireReturn: false,
@@ -152,6 +158,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Collect 6 stabilizers and survive the collapsing hazard field.",
     duration: 65,
     crystalGoal: 6,
+    goalItemType: "crystal",
     requireReturn: true,
     hazards: [[1, 1], [1, 6], [2, 3], [3, 4], [4, 2], [5, 5]],
     enemyCount: 1,
@@ -161,6 +168,7 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Recover a companion signal, collect 7 relay stars, and activate the exit node.",
     duration: 70,
     crystalGoal: 7,
+    goalItemType: "star",
     petGoal: 1,
     nodeGoal: 1,
     speedTiles: [[6, 2]],
@@ -172,17 +180,20 @@ const MISSION_PROFILES: Record<string, MissionProfile> = {
     objective: "Commit to your chosen route, charge two gates, and secure 6 core fragments.",
     duration: 80,
     crystalGoal: 6,
+    goalItemType: "crystal",
     deliveryGoal: 2,
     nodeGoal: 2,
     requireReturn: false,
     enemyCount: 2,
     dropZones: [[0, 1], [0, 6]],
+    speedTiles: [[6, 1], [6, 6]],
   },
   "golden-galaxy": {
     name: "Aurora Core Finale",
     objective: "Charge both gate nodes, recover pet intel, collect 8 cores, and escape.",
     duration: 90,
     crystalGoal: 8,
+    goalItemType: "crystal",
     petGoal: 1,
     requireReturn: true,
     enemyCount: 2,
@@ -209,8 +220,21 @@ const STORY_MISSION_TH: Record<string, { name: string; objective: string }> = {
   "golden-galaxy": { name: "ศึกสุดท้ายแกนออโรรา", objective: "เปิดประตูทั้งสอง พบเพื่อน เก็บแกน 8 ชิ้น แล้วกลับยาน" },
 };
 
+const STORY_THEME_TH: Record<string, string> = {
+  "sparkle-moon": "ถ้ำคริสตัล",
+  "candy-planet": "เทือกเขาปะการัง",
+  "frosty-star": "โลกน้ำแข็ง",
+  "jungle-world": "ป่าต่างดาว",
+  "rainbow-nebula": "หมู่เกาะลอยฟ้า",
+  "bubbly-bay": "มหาสมุทรฟองแสง",
+  "cookie-crater": "ปล่องดาวสีอำพัน",
+  "starlight-shore": "ชายฝั่งแสงดาว",
+  "crystal-cave": "ถ้ำคริสตัลชั้นลึก",
+  "golden-galaxy": "เขตแกนออโรรา",
+};
+
 // ─── Planet Themes ───────────────────────────────────────────────
-const PLANET_THEMES: Record<string, PlanetTheme> = {
+export const PLANET_THEMES: Record<string, PlanetTheme> = {
   "sparkle-moon": {
     name: "Crystal Caves",
     bgGradient: "from-indigo-950 via-purple-950 to-slate-950",
@@ -250,7 +274,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["🧊", "❄️", "🌨️"],
     decorEmojis: ["⛄", "🏔️"],
     items: [
-      { type: "crystal", emoji: "💠", value: 3, count: 5 },
+      { type: "crystal", emoji: "💠", value: 3, count: 8 },
       { type: "chest", emoji: "📦", value: 6, count: 3 },
       { type: "robot", emoji: "🤖", value: 0, count: 2 },
       { type: "star", emoji: "🌟", value: 2, count: 4 },
@@ -266,7 +290,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["🌿", "🍃", "🌴"],
     decorEmojis: ["🦜", "🌺"],
     items: [
-      { type: "relic", emoji: "🏺", value: 5, count: 3 },
+      { type: "relic", emoji: "🏺", value: 5, count: 8 },
       { type: "crystal", emoji: "💎", value: 2, count: 5 },
       { type: "pet", emoji: "🦎", value: 4, count: 2 },
       { type: "chest", emoji: "🗝️", value: 3, count: 3 },
@@ -314,7 +338,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["🍪", "🥮", "🧇"],
     decorEmojis: ["🍩", "🧁"],
     items: [
-      { type: "crystal", emoji: "💎", value: 2, count: 5 },
+      { type: "crystal", emoji: "💎", value: 2, count: 6 },
       { type: "chest", emoji: "🎁", value: 6, count: 3 },
       { type: "pet", emoji: "🐻", value: 4, count: 1 },
       { type: "robot", emoji: "🤖", value: 0, count: 2 },
@@ -331,7 +355,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["🏖️", "🐚", "⭐"],
     decorEmojis: ["🌅", "🌴"],
     items: [
-      { type: "star", emoji: "🌟", value: 3, count: 6 },
+      { type: "star", emoji: "🌟", value: 3, count: 7 },
       { type: "crystal", emoji: "💎", value: 2, count: 4 },
       { type: "chest", emoji: "🧳", value: 5, count: 3 },
       { type: "pet", emoji: "🐚", value: 3, count: 1 },
@@ -362,7 +386,7 @@ const PLANET_THEMES: Record<string, PlanetTheme> = {
     groundEmojis: ["✨", "🌟", "⭐"],
     decorEmojis: ["👑", "🏆"],
     items: [
-      { type: "crystal", emoji: "💎", value: 5, count: 6 },
+      { type: "crystal", emoji: "💎", value: 5, count: 8 },
       { type: "chest", emoji: "🎁", value: 8, count: 4 },
       { type: "pet", emoji: "🐉", value: 6, count: 1 },
       { type: "star", emoji: "🌟", value: 3, count: 4 },
@@ -381,7 +405,7 @@ const GRID_COLS = 8;
 // ─── Props ───────────────────────────────────────────────────────
 interface Props {
   planetId: string;
-  onComplete: (bonus: number) => void;
+  onComplete: (result: ExplorationResult) => void;
   missionTimeBonus?: number;
   failRewardMultiplier?: number;
   shipEmoji?: string;
@@ -392,7 +416,14 @@ interface Props {
   routeMode?: "scout" | "steady" | "salvage";
 }
 
+export interface ExplorationResult {
+  success: boolean;
+  bonus: number;
+  reason: "completed" | "timeout" | "hull";
+}
+
 function StoryItemMarker({ item }: { item: ExplorationItem }) {
+  const { tr } = useI18n();
   const Icon = item.type === "crystal" ? Gem
     : item.type === "chest" ? Boxes
       : item.type === "pet" ? PawPrint
@@ -408,7 +439,7 @@ function StoryItemMarker({ item }: { item: ExplorationItem }) {
           : item.type === "star" ? [0, 1]
             : item.type === "relic" ? [3, 3]
               : null;
-  return <span className={`story-item-marker story-item-marker--${item.type}`}>{sprite ? <GaliaSprite sheet="story" column={sprite[0]} row={sprite[1]} /> : <Icon aria-hidden="true" />}<small>{item.type === "robot" ? "HELP" : item.type === "pet" ? "ALLY" : item.type === "hidden" ? "SCAN" : `+${item.value}`}</small></span>;
+  return <span className={`story-item-marker story-item-marker--${item.type}`}>{sprite ? <GaliaSprite sheet="story" column={sprite[0]} row={sprite[1]} /> : <Icon aria-hidden="true" />}<small>{item.type === "robot" ? tr("HELP", "ผู้ช่วย") : item.type === "pet" ? tr("ALLY", "เพื่อน") : item.type === "hidden" ? tr("SCAN", "สแกน") : `+${item.value}`}</small></span>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -602,10 +633,10 @@ export default function PlanetExploration({
     return map;
   }, [mission.teleportPairs]);
 
-  const completeOnce = useCallback((reward: number) => {
+  const completeOnce = useCallback((result: ExplorationResult) => {
     if (!mountedRef.current || completedRef.current) return;
     completedRef.current = true;
-    onComplete(reward);
+    onComplete(result);
   }, [onComplete]);
 
   useEffect(() => {
@@ -640,19 +671,32 @@ export default function PlanetExploration({
     if (landing || gameOver) return;
     if (timeLeft <= 0) {
       setGameOver(true);
-      const crystalCollected = items.filter((i) => i.collected && i.type !== "robot" && i.type !== "pet").length;
-      const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
-      const hasEnough =
-        crystalCollected >= effectiveCrystalGoal &&
-        petCollected >= (mission.petGoal ?? 0) &&
-        deliveredZones.length >= (mission.deliveryGoal ?? 0) &&
-        activatedNodes.length >= (mission.nodeGoal ?? 0) &&
-        (!mission.requireReturn || (playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col));
+      const result = evaluateStoryObjective(
+        {
+          itemGoal: effectiveCrystalGoal,
+          itemType: mission.goalItemType,
+          petGoal: mission.petGoal,
+          deliveryGoal: mission.deliveryGoal,
+          nodeGoal: mission.nodeGoal,
+          requireReturn: mission.requireReturn,
+        },
+        {
+          items,
+          delivered: deliveredZones.length,
+          nodes: activatedNodes.length,
+          atShip: playerPos.row === shipPos.current.row && playerPos.col === shipPos.current.col,
+        },
+      );
+      const hasEnough = result.complete;
       setMissionResult(hasEnough ? "success" : "fail");
       if (hasEnough) playVictorySound(); else playFailSound();
       setTimeout(() => {
         setShipReached(true);
-        completeOnce(hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier));
+        completeOnce({
+          success: hasEnough,
+          bonus: hasEnough ? totalCollected.current : Math.floor(totalCollected.current * failRewardMultiplier),
+          reason: hasEnough ? "completed" : "timeout",
+        });
       }, 2500);
     }
   }, [timeLeft, gameOver, landing, completeOnce, effectiveCrystalGoal, items, mission, deliveredZones.length, activatedNodes.length, playerPos.row, playerPos.col, failRewardMultiplier]);
@@ -762,10 +806,7 @@ export default function PlanetExploration({
     return true;
   }, [activateRobot, addCollectEffect, spawnSparkles, items, mission.goalItemType, mission.trailSequence, tr]);
 
-  const crystalCollected = items.filter((item) =>
-    item.collected &&
-    (mission.goalItemType ? item.type === mission.goalItemType : item.type !== "robot" && item.type !== "pet")
-  ).length;
+  const crystalCollected = countStoryObjectiveItems(items, mission.goalItemType);
   const petCollected = items.filter((i) => i.collected && i.type === "pet").length;
   const deliveryDone = deliveredZones.length;
   const nodesDone = activatedNodes.length;
@@ -783,7 +824,7 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("success");
       setShipReached(true);
-      setTimeout(() => completeOnce(totalCollected.current), 800);
+      setTimeout(() => completeOnce({ success: true, bonus: totalCollected.current, reason: "completed" }), 800);
     }
   }, [completeOnce, goalsMet, mission.requireReturn]);
 
@@ -865,7 +906,7 @@ export default function PlanetExploration({
       setGameOver(true);
       setMissionResult("fail");
       playFailSound();
-      setTimeout(() => completeOnce(Math.floor(totalCollected.current * failRewardMultiplier)), 1200);
+      setTimeout(() => completeOnce({ success: false, bonus: Math.floor(totalCollected.current * failRewardMultiplier), reason: "hull" }), 1200);
     }
   }, [hp, landing, gameOver, completeOnce, failRewardMultiplier]);
 
@@ -906,7 +947,7 @@ export default function PlanetExploration({
       setMissionResult("success");
       setShipReached(true);
       playVictorySound();
-      setTimeout(() => completeOnce(totalCollected.current), 700);
+      setTimeout(() => completeOnce({ success: true, bonus: totalCollected.current, reason: "completed" }), 700);
     }
   }, [completeOnce, goalsMet, landing, gameOver, mission.requireReturn]);
 
@@ -950,7 +991,11 @@ export default function PlanetExploration({
     setMissionResult("success");
     setShipReached(true);
     playVictorySound();
-    setTimeout(() => completeOnce(totalCollected.current), 800);
+    setTimeout(() => completeOnce({
+      success: true,
+      bonus: totalCollected.current,
+      reason: "completed",
+    }), 800);
   }, [completeOnce, gameOver, landing, playerPos, goalsMet, mission.requireReturn]);
 
   const handleDpad = useCallback((dir: "up" | "down" | "left" | "right") => {
@@ -1035,7 +1080,7 @@ export default function PlanetExploration({
                 transition={{ delay: 0.5 }}
               >
                 <p className="text-lg sm:text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-                  {t("landingOn")} {theme.name}...
+                  {t("landingOn")} {tr(theme.name, STORY_THEME_TH[planetId] ?? theme.name)}...
                 </p>
               </motion.div>
               <motion.div
@@ -1121,8 +1166,8 @@ export default function PlanetExploration({
         {canReturn && !robotMessage && (
           <p className="text-[10px] sm:text-xs text-cosmic-green text-center font-semibold">
             {mission.requireReturn
-              ? "Mission targets complete. Head back to your ship to lock the run."
-              : "Mission targets complete. Auto extraction in progress."}
+              ? tr("Mission targets complete. Head back to your ship to lock the run.", "ทำเป้าหมายครบแล้ว กลับไปที่ยานเพื่อจบภารกิจ")
+              : tr("Mission targets complete. Auto extraction in progress.", "ทำเป้าหมายครบแล้ว กำลังพากลับอัตโนมัติ")}
           </p>
         )}
       </div>
@@ -1130,7 +1175,7 @@ export default function PlanetExploration({
       {/* Theme label */}
       <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-semibold" style={{ fontFamily: "var(--font-display)" }}>
         <span className="flex items-center gap-1.5">
-          <MapIcon className="h-3.5 w-3.5" /> {theme.name}
+          <MapIcon className="h-3.5 w-3.5" /> {tr(theme.name, STORY_THEME_TH[planetId] ?? theme.name)}
           <span className="text-[8px] sm:text-[10px] opacity-60">({GRID_COLS}×{GRID_ROWS})</span>
         </span>
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">
@@ -1199,7 +1244,13 @@ export default function PlanetExploration({
                 <button
                   key={`${row}-${col}`}
                   onClick={() => handleCellTap(row, col)}
-                  aria-label={isPlayer ? "Your explorer" : isShip ? "Extraction ship" : item ? `${item.type} ${item.value ? `worth ${item.value}` : ""}` : `Grid cell ${row + 1}, ${col + 1}`}
+                  aria-label={isPlayer
+                    ? tr("Your explorer", "ตำแหน่งของคุณ")
+                    : isShip
+                      ? tr("Extraction ship", "ยานสำหรับกลับ")
+                      : item
+                        ? tr(`${item.type}${item.value ? ` worth ${item.value}` : ""}`, `${item.type === "crystal" ? "คริสตัล" : item.type === "star" ? "ดาว" : item.type === "pet" ? "เพื่อน" : item.type === "robot" ? "ผู้ช่วย" : item.type === "chest" ? "กล่อง" : item.type === "relic" ? "วัตถุโบราณ" : "ของซ่อน"}${item.value ? ` มูลค่า ${item.value}` : ""}`)
+                        : tr(`Grid cell ${row + 1}, ${col + 1}`, `ช่อง ${row + 1}, ${col + 1}`)}
                   className={`story-grid-cell relative rounded-md sm:rounded-lg flex items-center justify-center transition-all duration-150 select-none
                     ${canMove && !isPlayer ? "is-reachable cursor-pointer active:scale-95" : ""}
                     ${isPlayer ? "is-player z-10" : ""}
@@ -1217,10 +1268,10 @@ export default function PlanetExploration({
                   {!item && !isPlayer && !isShip && !isWall && (
                     <span className={`story-ground-detail ${decoration ? "has-decoration" : ""}`} aria-hidden="true" />
                   )}
-                  {isHazard && !isPlayer && !isWall && <span className="story-objective-marker is-danger"><Zap aria-hidden="true" /><small>HAZARD</small></span>}
-                  {isSpeedTile && !isPlayer && !isWall && <span className={`story-objective-marker is-node ${isActivatedNode ? "is-complete" : ""}`}>{isActivatedNode ? <Zap aria-hidden="true" /> : <Orbit aria-hidden="true" />}<small>{isActivatedNode ? "ONLINE" : "NODE"}</small></span>}
-                  {isDropZone && !isPlayer && !isWall && <span className="story-objective-marker is-delivery"><Package aria-hidden="true" /><small>DROP</small></span>}
-                  {isTeleport && !isPlayer && !isWall && <span className="story-objective-marker is-portal"><Orbit aria-hidden="true" /><small>GATE</small></span>}
+                  {isHazard && !isPlayer && !isWall && <span className="story-objective-marker is-danger"><Zap aria-hidden="true" /><small>{tr("HAZARD", "อันตราย")}</small></span>}
+                  {isSpeedTile && !isPlayer && !isWall && <span className={`story-objective-marker is-node ${isActivatedNode ? "is-complete" : ""}`}>{isActivatedNode ? <Zap aria-hidden="true" /> : <Orbit aria-hidden="true" />}<small>{isActivatedNode ? tr("ONLINE", "พร้อม") : tr("NODE", "โหนด")}</small></span>}
+                  {isDropZone && !isPlayer && !isWall && <span className="story-objective-marker is-delivery"><Package aria-hidden="true" /><small>{tr("DROP", "ส่ง")}</small></span>}
+                  {isTeleport && !isPlayer && !isWall && <span className="story-objective-marker is-portal"><Orbit aria-hidden="true" /><small>{tr("GATE", "ประตู")}</small></span>}
 
                   {/* Ship marker (when player is not on it) */}
                   {isShip && !isPlayer && (
@@ -1229,7 +1280,7 @@ export default function PlanetExploration({
                       transition={{ duration: 2, repeat: Infinity }}
                       className="story-extraction-marker"
                     >
-                      <Rocket aria-hidden="true" /><small>{canReturn ? "EXIT" : "SHIP"}</small>
+                      <Rocket aria-hidden="true" /><small>{canReturn ? tr("EXIT", "กลับ") : tr("SHIP", "ยาน")}</small>
                     </motion.span>
                   )}
 
@@ -1243,7 +1294,7 @@ export default function PlanetExploration({
                           transition={{ duration: 2, repeat: Infinity }}
                           className="story-item-marker story-item-marker--hidden is-concealed"
                         >
-                          <CircleHelp aria-hidden="true" /><small>SCAN</small>
+                          <CircleHelp aria-hidden="true" /><small>{tr("SCAN", "สแกน")}</small>
                         </motion.span>
                       ) : (
                         <motion.span
@@ -1271,14 +1322,14 @@ export default function PlanetExploration({
                   {/* Enemies */}
                   {enemies.some((enemy) => enemy.row === row && enemy.col === col) && !isPlayer && (
                     <span className="story-enemy-marker">
-                      <Skull aria-hidden="true" /><small>THREAT</small>
+                      <Skull aria-hidden="true" /><small>{tr("THREAT", "ศัตรู")}</small>
                     </span>
                   )}
 
                   {/* Player */}
                   {isPlayer && (
                     <div className="story-player-marker z-10">
-                      <span>{pilotImage ? <img src={pilotImage} alt="" /> : <Navigation aria-hidden="true" />}</span><small>YOU</small>
+                      <span>{pilotImage ? <img src={pilotImage} alt="" /> : <Navigation aria-hidden="true" />}</span><small>{tr("YOU", "คุณ")}</small>
                     </div>
                   )}
                 </button>

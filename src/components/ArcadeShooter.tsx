@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Target, Trophy, Zap } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
-import { getArcadeContract, getArcadeGrade } from "@/lib/arcadeContracts";
+import { getArcadeContract, getArcadeRunOutcome } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
@@ -16,7 +16,7 @@ interface Props {
   gameState: GameState;
   contractId?: string;
   onBack: () => void;
-  onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "arcade"; contractId: string; accuracy: number; grade: string }) => void;
+  onComplete: (result: { score: number; crystals: number; xp: number; won: boolean; variant: "arcade"; contractId: string; accuracy: number; grade: string; participated: boolean }) => void;
 }
 
 const WIDTH = 920;
@@ -77,10 +77,26 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
     setWon(success);
     if (success) playVictorySound(); else playFailSound();
     const current = stateRef.current;
-    const crystals = Math.ceil((4 + Math.floor(current.score / 450) + (success ? 8 : 0)) * puri.rewardMultiplier * modifiers.crystalMultiplier);
-    const xp = 4 + Math.floor(current.score / 500) + (success ? 8 : 0);
-    const accuracy = current.shotsFired ? current.hits / current.shotsFired : 0;
-    onComplete({ score: current.score, crystals, xp, won: success, variant: "arcade", contractId: contract.id, accuracy, grade: getArcadeGrade(accuracy, success, current.bestCombo) });
+    const outcome = getArcadeRunOutcome({
+      score: current.score,
+      shotsFired: current.shotsFired,
+      hits: current.hits,
+      bestCombo: current.bestCombo,
+      cleared: success,
+      rewardMultiplier: puri.rewardMultiplier,
+      crystalMultiplier: modifiers.crystalMultiplier,
+    });
+    onComplete({
+      score: current.score,
+      crystals: outcome.crystals,
+      xp: outcome.xp,
+      won: success,
+      variant: "arcade",
+      contractId: contract.id,
+      accuracy: outcome.accuracy,
+      grade: outcome.grade,
+      participated: outcome.participated,
+    });
   }, [contract.id, modifiers.crystalMultiplier, onComplete, puri.rewardMultiplier]);
 
   const reset = useCallback(() => {
@@ -262,7 +278,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
       : Math.min(1, frame.score / contract.target);
 
   return (
-    <main className="arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8">
+    <main className={`arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
       <header className="arcade-shooter__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Assignments", "เลือกภารกิจ")}</button>
         <div><div className="command-kicker">{tr("Arcade Ops · Mouse aim challenge", "ยิงเป้า · เล็งด้วยเมาส์")}</div><h1>{contract.name}</h1><p>{objectiveText}. {tr("Move the reticle, click to fire, and press R to reload.", "ขยับเป้า คลิกเพื่อยิง และกด R เพื่อเติมกระสุน")}</p></div>
@@ -271,14 +287,14 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
 
       <section className="arcade-mission-strip">
         <div><Target className="h-4 w-4" /><span>{tr("Objective", "เป้าหมาย")}<strong>{objectiveText}</strong></span></div>
-        <div><Trophy className="h-4 w-4" /><span>{tr("Rewards", "รางวัล")}<strong>{tr("4+ crystals · 4+ XP · clear bonus", "คริสตัล 4+ · XP 4+ · โบนัสเมื่อผ่าน")}</strong></span></div>
+        <div><Trophy className="h-4 w-4" /><span>{tr("Rewards", "รางวัล")}<strong>{tr("Hit at least one target with 3+ shots · clear bonus", "ยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง · มีโบนัสเมื่อผ่าน")}</strong></span></div>
         <div><Zap className="h-4 w-4" /><span>{tr("Skill", "ทักษะ")}<strong>{tr("Aim · timing · reload", "เล็ง · จังหวะ · เติมกระสุน")}</strong></span></div>
       </section>
 
       <section className="arcade-shooter__hud">
         <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}s</strong></div>
         <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
-        <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? Math.round(frame.hits / frame.shotsFired * 100) : 100}%</strong></div>
+        <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "—"}</strong></div>
         <div><span>{contract.objective === "energy" ? tr("Signals", "สัญญาณ") : tr("Ammo", "กระสุน")}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
@@ -316,7 +332,7 @@ export default function ArcadeShooter({ gameState, contractId, onBack, onComplet
             </div>
           )}
           {paused && <div className="arcade-overlay"><h2>{tr("Paused", "หยุดชั่วคราว")}</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> {tr("Resume", "เล่นต่อ")}</button></div>}
-          {ended && <div className="combat-run-finished" aria-hidden="true">{won ? "CONTRACT CLEARED" : "RUN BANKED"}</div>}
+          {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("CONTRACT CLEARED", "ผ่านภารกิจแล้ว") : tr("ASSIGNMENT COMPLETE", "จบภารกิจแล้ว")}</div>}
         </div>
       </div>
 

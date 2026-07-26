@@ -155,9 +155,12 @@ export default function Index() {
     if (!gameState.faction) return;
     const faction = gameState.faction;
     setConfirmAction({
-      title: `Reset ${faction.toUpperCase()} progress?`,
-      description: "This clears the current faction’s Captain rank, rewards, chapters, crew systems, and records. Other faction saves stay safe.",
-      confirmLabel: "Reset this faction",
+      title: tr(`Reset ${faction.toUpperCase()} progress?`, `ล้างความคืบหน้าฝ่าย ${faction.toUpperCase()} ไหม?`),
+      description: tr(
+        "This clears this faction's Captain rank, rewards, chapters, crew systems, and records. Other faction saves stay safe.",
+        "แรงก์ รางวัล เนื้อเรื่อง ทีม และสถิติของฝ่ายนี้จะถูกล้าง แต่เซฟของฝ่ายอื่นยังอยู่",
+      ),
+      confirmLabel: tr("Reset this faction", "ล้างเซฟฝ่ายนี้"),
       tone: "danger",
       onConfirm: () => {
         playClickSound();
@@ -167,10 +170,10 @@ export default function Index() {
         setSettingsOpen(false);
         setScreen("map");
         setGameState(validateAndRepairState(profileRepository.reset(faction)));
-        toast("Progress reset. You can start fresh now.", { duration: 2500 });
+        toast(tr("Progress reset. You can start fresh now.", "ล้างความคืบหน้าแล้ว เริ่มเล่นใหม่ได้เลย"), { duration: 2500 });
       },
     });
-  }, [gameState.faction]);
+  }, [gameState.faction, tr]);
 
   const handleExportSave = useCallback(() => {
     if (!gameState.faction) return;
@@ -188,14 +191,14 @@ export default function Index() {
     if (!gameState.faction) return;
     try {
       const parsed = JSON.parse(await file.text()) as Partial<GameState>;
-      const repaired = validateAndRepairState({ ...parsed, faction: gameState.faction });
+      const repaired = validateAndRepairState({ ...gameState, ...parsed, faction: gameState.faction });
       profileRepository.save(repaired);
       setGameState(repaired);
       toast(tr("Save imported.", "นำเข้าเซฟแล้ว"));
     } catch {
       toast.error(tr("This save file could not be opened.", "เปิดไฟล์เซฟนี้ไม่ได้"));
     }
-  }, [gameState.faction, tr]);
+  }, [gameState, tr]);
 
   const handleCollect = useCallback(
     (crystals: number, xp: number, petName: string | null) => {
@@ -229,12 +232,18 @@ export default function Index() {
             setTimeout(() => toast(t("foundEggToast"), { duration: 3000 }), 1500);
           } else {
             const overflowCrystalBonus = 4;
-            setTimeout(() => toast(`Egg queue full. Converted to +${overflowCrystalBonus} crystals.`, { duration: 2600 }), 1200);
+            setTimeout(() => toast(tr(
+              `Egg queue full. Converted to +${overflowCrystalBonus} crystals.`,
+              `ช่องเก็บไข่เต็ม เปลี่ยนเป็นคริสตัล +${overflowCrystalBonus}`,
+            ), { duration: 2600 }), 1200);
             eggCompensationCrystals += overflowCrystalBonus;
           }
         } else if (petCollectionComplete) {
           const completeCollectionBonus = 3;
-          setTimeout(() => toast(`Pet archive complete. +${completeCollectionBonus} crystals awarded.`, { duration: 2400 }), 1000);
+          setTimeout(() => toast(tr(
+            `Companion archive complete. +${completeCollectionBonus} crystals awarded.`,
+            `เก็บเพื่อนร่วมทางครบแล้ว รับคริสตัล +${completeCollectionBonus}`,
+          ), { duration: 2400 }), 1000);
           eggCompensationCrystals += completeCollectionBonus;
         }
 
@@ -281,15 +290,23 @@ export default function Index() {
         };
       });
     },
-    [activePlanet, t, updateState]
+    [activePlanet, t, tr, updateState]
   );
+
+  const handleStoryFailureCollect = useCallback((crystals: number) => {
+    if (crystals <= 0) return;
+    updateState((prev) => ({ ...prev, crystals: prev.crystals + crystals }));
+    toast(tr(`Recovery reward: +${crystals} crystals. Chapter progress was not saved.`, `รางวัลเก็บกลับมาได้ +${crystals} คริสตัล แต่ยังไม่ผ่านบทนี้`));
+  }, [tr, updateState]);
 
   const handleBuyUpgrade = (id: string, cost: number) => {
     updateState((prev) => {
       const currentTier = prev.upgradeTiers[id] ?? (prev.upgrades.includes(id) ? 1 : 0);
       if (prev.crystals < cost || currentTier >= 3) return prev;
       playClickSound();
-      toast(currentTier ? `System upgraded to Tier ${currentTier + 1}.` : t("upgradeInstalled"));
+      toast(currentTier
+        ? tr(`System upgraded to Tier ${currentTier + 1}.`, `อัปเกรดระบบเป็นขั้น ${currentTier + 1} แล้ว`)
+        : t("upgradeInstalled"));
       return { ...prev, crystals: prev.crystals - cost, upgrades: prev.upgrades.includes(id) ? prev.upgrades : [...prev.upgrades, id], upgradeTiers: { ...prev.upgradeTiers, [id]: currentTier + 1 }, shipLevel: Math.max(prev.shipLevel, prev.upgrades.length + (currentTier ? 1 : 2)) };
     });
   };
@@ -311,13 +328,13 @@ export default function Index() {
   const handleSetPilot = (id: string) => {
     playClickSound();
     updateState((prev) => ({ ...prev, activePilot: id }));
-    toast("Pilot assigned to your next expedition.");
+    toast(tr("Pilot assigned to your next expedition.", "เลือกนักบินสำหรับภารกิจถัดไปแล้ว"));
   };
 
   const handleSetTool = (id: string) => {
     playClickSound();
     updateState((prev) => ({ ...prev, activeTool: id }));
-    toast("Expedition tool equipped.");
+    toast(tr("Expedition tool equipped.", "ติดตั้งอุปกรณ์ภารกิจแล้ว"));
   };
 
   const handleSetActivePet = (petId: string) => {
@@ -364,7 +381,7 @@ export default function Index() {
     else setScreen(mode);
   };
 
-  const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string; accuracy?: number; grade?: string }) => {
+  const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string; accuracy?: number; grade?: string; evolutions?: number; participated?: boolean }) => {
     updateState((prev) => {
       const xp = prev.xp + result.xp;
       const previousContract = result.contractId ? prev.modeRecords.arcadeContracts[result.contractId] ?? { bestScore: 0, clears: 0 } : null;
@@ -376,8 +393,11 @@ export default function Index() {
         modeRecords: {
           ...prev.modeRecords,
           swarmHighScore: result.variant === "swarm" ? Math.max(prev.modeRecords.swarmHighScore, result.score) : prev.modeRecords.swarmHighScore,
+          swarmRuns: result.variant === "swarm" ? prev.modeRecords.swarmRuns + 1 : prev.modeRecords.swarmRuns,
+          swarmClears: result.variant === "swarm" && result.won ? prev.modeRecords.swarmClears + 1 : prev.modeRecords.swarmClears,
+          swarmEvolutions: result.variant === "swarm" ? prev.modeRecords.swarmEvolutions + (result.evolutions ?? 0) : prev.modeRecords.swarmEvolutions,
           arcadeHighScore: result.variant === "arcade" ? Math.max(prev.modeRecords.arcadeHighScore, result.score) : prev.modeRecords.arcadeHighScore,
-          puriBond: Math.min(100, prev.modeRecords.puriBond + (result.won ? 3 : 1)),
+          puriBond: Math.min(100, prev.modeRecords.puriBond + (result.participated === false ? 0 : result.won ? 3 : 1)),
           arcadeContracts: result.contractId && previousContract ? {
             ...prev.modeRecords.arcadeContracts,
             [result.contractId]: { bestScore: Math.max(previousContract.bestScore, result.score), clears: previousContract.clears + (result.won ? 1 : 0) },
@@ -390,9 +410,11 @@ export default function Index() {
       mode: result.variant,
       title: result.won
         ? isSwarm ? tr("Ahr defeated", "กำจัด Ahr สำเร็จ") : tr(`Contract cleared · Grade ${result.grade ?? "B"}`, `ผ่านภารกิจยิงเป้า · ระดับ ${result.grade ?? "B"}`)
-        : tr("Rewards secured", "รับรางวัลแล้ว"),
+        : result.participated === false ? tr("Assignment incomplete", "ภารกิจยังไม่สำเร็จ") : tr("Rewards secured", "รับรางวัลแล้ว"),
       outcome: result.variant === "arcade" && result.accuracy !== undefined
-        ? tr(`${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; try again when ready."}`, `ยิงแม่น ${Math.round(result.accuracy * 100)}% · ${result.won ? "บันทึกสถิติภารกิจแล้ว" : "ได้รับรางวัลบางส่วน พร้อมแล้วค่อยลองใหม่"}`)
+        ? result.participated === false
+          ? tr("No reward was issued because no target was hit with meaningful participation.", "ยังไม่ได้รางวัล เพราะต้องยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง")
+          : tr(`${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; try again when ready."}`, `ยิงแม่น ${Math.round(result.accuracy * 100)}% · ${result.won ? "บันทึกสถิติภารกิจแล้ว" : "ได้รับรางวัลบางส่วน พร้อมแล้วค่อยลองใหม่"}`)
         : result.won ? tr("Full clear rewards and mastery were banked.", "ได้รับรางวัลชนะและความชำนาญครบแล้ว") : tr("Partial rewards were banked. Upgrade or try a different build.", "ได้รับรางวัลบางส่วน ลองอัปเกรดหรือเลือกพลังแบบใหม่ได้"),
       crystals: result.crystals,
       xp: result.xp,
@@ -401,10 +423,14 @@ export default function Index() {
       masteryTh: result.grade ? `ระดับ ${result.grade}` : undefined,
       improvements: isSwarm
         ? ["Swarm record and PURI bond increased", result.won ? "Ahr clear counts toward combat mastery" : "Crystals for permanent upgrades increased"]
-        : ["Arcade record and PURI bond increased", result.won ? "This contract clear was saved" : "Accuracy practice and upgrade fund increased"],
+        : result.participated === false
+          ? ["No currency or PURI bond was awarded", "Fire 3+ shots and hit at least one target next time"]
+          : ["Arcade record and PURI bond increased", result.won ? "This contract clear was saved" : "Accuracy practice and upgrade fund increased"],
       improvementsTh: isSwarm
         ? ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "การกำจัด Ahr เพิ่มความชำนาญการต่อสู้" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
-        : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],
+        : result.participated === false
+          ? ["ไม่ได้รับคริสตัลหรือความสนิทกับ PURI", "ครั้งหน้าลองยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง"]
+          : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],
     });
   };
 
@@ -417,7 +443,7 @@ export default function Index() {
       return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
     });
     setRunResult({ mode: "discovery", title: tr("Field journal complete", "บันทึกการสำรวจครบแล้ว"), outcome: tr("Six linked signals were recorded and this biome's research rank advanced.", "เก็บสัญญาณที่เชื่อมโยงกันครบแล้ว และระดับสำรวจพื้นที่นี้เพิ่มขึ้น"), crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery`, masteryTh: `ความชำนาญพื้นที่ +${mastery}`, improvements: ["Biome mastery increased", "Discovery total and PURI bond increased"], improvementsTh: ["ความชำนาญพื้นที่เพิ่มขึ้น", "จำนวนสิ่งที่พบและความสนิทกับ PURI เพิ่มขึ้น"] });
-    toast("Field journal saved. Discovery rewards added.");
+    toast(tr("Field journal saved. Discovery rewards added.", "บันทึกสมุดสำรวจและรับรางวัลแล้ว"));
   };
 
   const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
@@ -430,7 +456,7 @@ export default function Index() {
       return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
     });
     setRunResult({ mode: "strategy", title: objectiveComplete ? tr("Command objective complete", "ทำเป้าหมายวางแผนสำเร็จ") : tr("Command cycle banked", "บันทึกรอบวางแผนแล้ว"), outcome: objectiveComplete ? tr("Your faction secured the objective bonus and advanced its frontier network.", "ฝ่ายของคุณได้รับโบนัสเป้าหมาย และเครือข่ายพื้นที่แข็งแกร่งขึ้น") : tr("Your influence was saved. Try the objective again next cycle.", "บันทึกคะแนนพื้นที่แล้ว ลองทำเป้าหมายอีกครั้งในรอบหน้าได้"), crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle", masteryTh: captures ? `ยึดพื้นที่ ${captures} แห่ง` : "รอบวางแผน +1", improvements: [objectiveComplete ? "Control objective progress increased" : "Faction influence was saved", captures ? `${captures} new sector captured` : "PURI bond and Captain XP increased"], improvementsTh: [objectiveComplete ? "ความคืบหน้าเป้าหมายวางแผนเพิ่มขึ้น" : "บันทึกคะแนนพื้นที่ของฝ่ายแล้ว", captures ? `ยึดพื้นที่ใหม่ ${captures} แห่ง` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"] });
-    toast("Command cycle saved to the frontier.");
+    toast(tr("Command cycle saved to the frontier.", "บันทึกรอบวางแผนแล้ว"));
   };
 
   const dismissGuidedFlight = () => {
@@ -504,6 +530,7 @@ export default function Index() {
         <ScreenErrorBoundary screenName="planet-explore" onFallback={() => { setActivePlanet(null); setScreen("map"); }}>
           <Suspense fallback={<ScreenLoadingFallback label="Preparing sector..." />}>
             <PlanetExplore planet={activePlanet} gameState={gameState} onCollect={handleCollect}
+              onFailureCollect={handleStoryFailureCollect}
               onBack={() => { setActivePlanet(null); setScreen("map"); }}
               onContinue={(nextPlanet) => { playTravelSound(); setActivePlanet(nextPlanet); setScreen("planet"); }} />
           </Suspense>

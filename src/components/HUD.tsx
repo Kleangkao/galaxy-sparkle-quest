@@ -48,21 +48,8 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
 
-const RANK_THAI: Record<string, string> = {
-  Cadet: "นักเรียนฝึกหัด",
-  Explorer: "นักสำรวจ",
-  Navigator: "นักนำทาง",
-  Pilot: "นักบิน",
-  Captain: "กัปตัน",
-  Commander: "ผู้บัญชาการ",
-  Admiral: "จอมพลอวกาศ",
-  "Star Master": "เจ้าแห่งดวงดาว",
-  "Galaxy Hero": "วีรบุรุษแห่งกาเลีย",
-  "Cosmic Legend": "ตำนานจักรวาล",
-};
-
 export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily, onLogoClick, onOpenSettings }: Props) {
-  const { t, tr } = useI18n();
+  const { t, tr, lang } = useI18n();
   const rank = getRank(gameState.level);
   const xpInfo = getXPProgress(gameState.xp, gameState.level);
   const faction = getFaction(gameState.faction);
@@ -75,10 +62,10 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
         <div className="app-status-bar__captain">
           <Sparkles className="h-4 w-4 text-cosmic-yellow" />
           <div>
-            <strong>{tr(rank.name, RANK_THAI[rank.name] ?? rank.name)}</strong>
+            <strong>{lang === "th" ? rank.nameTh : rank.name}</strong>
             <span>{gameState.xp}/{xpInfo.next} {t("xp")}</span>
           </div>
-          <i role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(xpInfo.progress)} aria-label={`${Math.round(xpInfo.progress)}% to next rank`}><b style={{ width: `${xpInfo.progress}%` }} /></i>
+          <i role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(xpInfo.progress)} aria-label={tr(`${Math.round(xpInfo.progress)}% to next rank`, `ความคืบหน้า ${Math.round(xpInfo.progress)}% ถึงแรงก์ถัดไป`)}><b style={{ width: `${xpInfo.progress}%` }} /></i>
         </div>
 
         <div className="app-status-bar__actions">

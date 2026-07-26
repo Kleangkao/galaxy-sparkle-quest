@@ -23,7 +23,7 @@ export default function UnifiedRunResults({ result, gameState, onDismiss, onExit
   const improvements = result.improvements?.length
     ? result.improvements.map((item, index) => tr(item, result.improvementsTh?.[index] ?? item))
     : unlocks;
-  return <div className="unified-results-backdrop" role="dialog" aria-modal="true" aria-label={`${result.title} results`}>
+  return <div className="unified-results-backdrop" role="dialog" aria-modal="true" aria-label={tr(`${result.title} results`, `สรุปผล ${result.title}`)}>
     <section className="unified-results">
       <button className="unified-results__close" onClick={onDismiss ?? onExit} aria-label={tr("Close results", "ปิดหน้าสรุป")}><X /></button>
       <div className="unified-results__badge"><CheckCircle2 /></div>

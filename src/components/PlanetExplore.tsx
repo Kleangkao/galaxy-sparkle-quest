@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from "react";
 import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, getUpgradeTier, PLANETS, getPlanetDisplayName, getSectorLore, SHIP_UPGRADES } from "@/lib/gameState";
-import { ArrowLeft, Clock3, Gem, Route, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock3, Gem, RotateCcw, Route, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PlanetExploration from "@/components/PlanetExploration";
+import PlanetExploration, { ExplorationResult } from "@/components/PlanetExploration";
 import CelebrationScreen from "@/components/CelebrationScreen";
 import { useI18n } from "@/lib/i18n";
 import { getMissionBrief } from "@/lib/missionBriefs";
@@ -53,17 +53,20 @@ interface Props {
   planet: Planet;
   gameState: GameState;
   onCollect: (crystals: number, xp: number, petName: string | null) => void;
+  onFailureCollect: (crystals: number) => void;
   onBack: () => void;
   onContinue: (planet: Planet) => void;
 }
 
-export default function PlanetExplore({ planet, gameState, onCollect, onBack, onContinue }: Props) {
+export default function PlanetExplore({ planet, gameState, onCollect, onFailureCollect, onBack, onContinue }: Props) {
   const { t, tr } = useI18n();
   const planetIndex = PLANETS.findIndex(p => p.id === planet.id);
   const displayName = getPlanetDisplayName(planetIndex, gameState.faction);
-  const [phase, setPhase] = useState<"landing" | "exploring" | "celebration">("landing");
+  const [phase, setPhase] = useState<"landing" | "exploring" | "failed" | "celebration">("landing");
   const [approachId, setApproachId] = useState<"scout" | "steady" | "salvage">("steady");
   const [bonusCrystals, setBonusCrystals] = useState(0);
+  const [failureReason, setFailureReason] = useState<ExplorationResult["reason"]>("timeout");
+  const [failureReward, setFailureReward] = useState(0);
   const rewardsClaimed = useRef(false);
   const alreadyVisited = gameState.visitedPlanets.includes(planet.id);
   const hasPet = planet.pet ? gameState.pets.includes(planet.pet.name) : false;
@@ -110,10 +113,17 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
   };
   const approach = approaches[approachId];
 
-  const handleExplorationComplete = useCallback((bonus: number) => {
-    setBonusCrystals(bonus);
+  const handleExplorationComplete = useCallback((result: ExplorationResult) => {
+    if (!result.success) {
+      setFailureReason(result.reason);
+      setFailureReward(result.bonus);
+      if (result.bonus > 0) onFailureCollect(result.bonus);
+      setPhase("failed");
+      return;
+    }
+    setBonusCrystals(result.bonus);
     setPhase("celebration");
-  }, []);
+  }, [onFailureCollect]);
 
   const baseCrystals = Math.floor(planet.crystals * getStoryReplayMultiplier(alreadyVisited));
   const totalCrystals = Math.floor(
@@ -231,7 +241,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
               ))}
             </div>
           )}
-          <div className="story-approach" aria-label="Choose mission approach">
+          <div className="story-approach" aria-label={tr("Choose mission approach", "เลือกเส้นทางภารกิจ")}>
             <div className="story-approach__title"><Route className="h-4 w-4" /><span>{tr("Choose how to play this chapter", "เลือกเส้นทางของบทนี้")}</span></div>
             <div className="story-approach__grid">
               {Object.values(approaches).map((option) => {
@@ -297,6 +307,21 @@ export default function PlanetExplore({ planet, gameState, onCollect, onBack, on
             routeMode={approachId}
           />
         </div>
+      )}
+
+      {phase === "failed" && (
+        <section className="story-failure-panel" role="dialog" aria-labelledby="story-failure-title">
+          <div className="story-failure-panel__icon"><TriangleAlert /></div>
+          <div className="command-kicker">{tr("Mission incomplete", "ภารกิจยังไม่สำเร็จ")}</div>
+          <h2 id="story-failure-title">{failureReason === "hull" ? tr("Your ship needs another approach.", "ยานเสียหายเกินไป ลองวางทางใหม่") : tr("The signal window closed.", "เวลารับสัญญาณหมดแล้ว")}</h2>
+          <p>{tr("This chapter was not cleared and the next chapter remains locked. Retry the same route or return to choose another one.", "บทนี้ยังไม่ผ่าน และบทถัดไปยังไม่เปิด ลองเส้นทางเดิมอีกครั้ง หรือกลับไปเลือกเส้นทางใหม่")}</p>
+          {failureReward > 0 && <div className="story-failure-panel__reward"><Gem /> {tr(`Recovery reward: ${failureReward} crystals`, `รางวัลเก็บกลับมาได้: ${failureReward} คริสตัล`)}</div>}
+          <div className="story-failure-panel__actions">
+            <Button onClick={() => setPhase("exploring")}><RotateCcw className="mr-2 h-4 w-4" />{tr("Retry mission", "ลองใหม่")}</Button>
+            <Button variant="outline" onClick={() => setPhase("landing")}><Route className="mr-2 h-4 w-4" />{tr("Change route", "เปลี่ยนเส้นทาง")}</Button>
+            <Button variant="ghost" onClick={onBack}><ArrowLeft className="mr-2 h-4 w-4" />{tr("Chapter map", "หน้าเลือกบท")}</Button>
+          </div>
+        </section>
       )}
 
       {phase === "celebration" && (

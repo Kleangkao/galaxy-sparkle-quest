@@ -7,12 +7,30 @@ import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMis
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 import { getBossFightWindow, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
-import { getArcadeGrade } from "@/lib/arcadeContracts";
+import { getArcadeGrade, getArcadeRunOutcome } from "@/lib/arcadeContracts";
 
 describe("multi-mode progression", () => {
   it("keeps first clears valuable while making Story replays worth doing", () => {
     expect(getStoryReplayMultiplier(false)).toBe(1);
     expect(getStoryReplayMultiplier(true)).toBe(0.55);
+  });
+
+  it("does not issue Arcade rewards for an idle or accidental run", () => {
+    expect(getArcadeRunOutcome({
+      score: 0,
+      shotsFired: 0,
+      hits: 0,
+      bestCombo: 0,
+      cleared: false,
+    })).toMatchObject({ participated: false, crystals: 0, xp: 0, accuracy: 0 });
+
+    expect(getArcadeRunOutcome({
+      score: 600,
+      shotsFired: 2,
+      hits: 1,
+      bestCombo: 1,
+      cleared: false,
+    })).toMatchObject({ participated: false, crystals: 0, xp: 0 });
   });
 
   it("recommends the next unlocked campaign chapter before optional grinding", () => {
@@ -36,6 +54,9 @@ describe("multi-mode progression", () => {
       discoveryRuns: 0,
       strategyCycles: 0,
       strategyObjectives: 0,
+      swarmRuns: 0,
+      swarmClears: 0,
+      swarmEvolutions: 0,
     });
     expect(state.accessibility).toEqual({ combatSpeed: 1, effects: "full", aimHelp: "standard", contrast: "standard", sound: "full", music: "quiet", screenShake: "full" });
     expect(state.upgradeTiers).toMatchObject({ shield: 0, booster: 0, scanner: 0 });
@@ -92,6 +113,7 @@ describe("multi-mode progression", () => {
 
   it("keeps pilot timing and weapon power as separate, truthful effects", () => {
     const modifiers = getGameplayModifiers({
+      ...createNewGameState("mud"),
       activePilot: "k-rail",
       activeTool: "vector-drive",
       activePet: null,
@@ -105,6 +127,7 @@ describe("multi-mode progression", () => {
 
   it("keeps defensive loadouts easy to understand", () => {
     const modifiers = getGameplayModifiers({
+      ...createNewGameState("mud"),
       activePilot: "bastion-7",
       activeTool: "aegis-projector",
       activePet: null,
@@ -130,6 +153,7 @@ describe("multi-mode progression", () => {
 
   it("makes the sidearm a quick-reload choice instead of an unrelated scanner", () => {
     const modifiers = getGameplayModifiers({
+      ...createNewGameState("mud"),
       activePilot: "nova-reyes",
       activeTool: "echo-scanner",
       activePet: null,

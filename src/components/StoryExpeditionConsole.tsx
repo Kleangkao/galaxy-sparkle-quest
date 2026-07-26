@@ -77,7 +77,7 @@ const STORY_LORE_TH: Record<string, SectorLore> = {
 export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: Props) {
   const { lang, tr } = useI18n();
   const unlocked = PLANETS.filter((planet) => isStoryChapterUnlocked(planet, gameState));
-  const recommended = unlocked.find((planet) => !gameState.visitedPlanets.includes(planet.id)) ?? unlocked.at(-1) ?? PLANETS[0];
+  const recommended = unlocked.find((planet) => !gameState.visitedPlanets.includes(planet.id)) ?? unlocked[unlocked.length - 1] ?? PLANETS[0];
   const [selectedId, setSelectedId] = useState(recommended.id);
   const selected = PLANETS.find((planet) => planet.id === selectedId) ?? recommended;
   const selectedIndex = PLANETS.findIndex((planet) => planet.id === selected.id);
@@ -146,7 +146,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
                 >
                   <span className="story-chapters__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="story-chapters__node">{visited ? <CheckCircle2 /> : chapterUnlocked ? <span>{planet.emoji}</span> : <LockKeyhole />}</span>
-                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").at(-1)?.trim() : tr(`Clear Chapter ${index}`, `ผ่านบท ${index} ก่อน`)}</small></span>
+                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").slice(-1)[0]?.trim() : tr(`Clear Chapter ${index}`, `ผ่านบท ${index} ก่อน`)}</small></span>
                   <ArrowRight className="story-chapters__arrow h-4 w-4" />
                 </button>
               );

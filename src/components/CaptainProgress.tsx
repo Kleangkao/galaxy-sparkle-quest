@@ -15,6 +15,7 @@ interface Props {
 export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay }: Props) {
   const { lang, tr } = useI18n();
   const rank = getRank(gameState.level);
+  const rankName = lang === "th" ? rank.nameTh : rank.name;
   const xp = getXPProgress(gameState.xp, gameState.level);
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
@@ -37,9 +38,9 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
     { name: tr("Frontier Voice", "ผู้ยึดพื้นที่"), detail: tr("Secure one sector", "ยึดพื้นที่ 1 แห่ง"), earned: controlled >= 1, icon: Shield },
   ];
   const earnedMedals = medals.filter((medal) => medal.earned).length;
-  const recommendations: Array<{ title: string; detail: string; mode: PlayMode; icon: typeof Map }> = [];
+  const recommendations: Array<{ title: string; detail: string; mode: PlayMode; icon: typeof Map; openCrew?: boolean }> = [];
   if (gameState.visitedPlanets.length === 0) recommendations.push({ title: tr("Trace the first signal", "ตามรอยสัญญาณแรก"), detail: tr("Begin Story Chapter 1 and learn the controls.", "เริ่มเนื้อเรื่องบทที่ 1 และเรียนรู้การควบคุม"), mode: "story", icon: Map });
-  if (gameState.upgrades.length === 0) recommendations.push({ title: tr("Install a first upgrade", "ติดตั้งอัปเกรดชิ้นแรก"), detail: nextUpgrade ? tr(`${nextUpgrade.name} costs ${nextUpgrade.cost} crystals.`, `${nextUpgrade.name} ใช้ ${nextUpgrade.cost} คริสตัล`) : tr("Visit the Crew Hangar.", "ไปที่หน้าจัดทีม"), mode: "story", icon: Zap });
+  if (gameState.upgrades.length === 0) recommendations.push({ title: tr("Install a first upgrade", "ติดตั้งอัปเกรดชิ้นแรก"), detail: nextUpgrade ? tr(`${nextUpgrade.name} costs ${nextUpgrade.cost} crystals.`, `${nextUpgrade.nameTh} ใช้ ${nextUpgrade.cost} คริสตัล`) : tr("Visit the Crew Hangar.", "ไปที่หน้าจัดทีม"), mode: "story", icon: Zap, openCrew: true });
   if (gameState.modeRecords.discoveryFinds < 6) recommendations.push({ title: tr("Complete a field journal", "ทำสมุดสำรวจให้ครบ"), detail: tr("Discovery is the calmest way to earn mastery and lore.", "โหมดสำรวจเล่นสบายและช่วยเพิ่มความชำนาญ"), mode: "discovery", icon: Binoculars });
   if (recommendations.length < 2) recommendations.push({ title: tr("Raise a mode record", "เพิ่มสถิติโหมดที่ชอบ"), detail: tr("Choose a favorite activity and improve its mastery.", "เลือกโหมดที่ชอบแล้วเพิ่มความชำนาญ"), mode: "swarm", icon: Trophy });
 
@@ -49,15 +50,15 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("All modes", "ทุกโหมด")}</button>
         <div className="captain-progress__identity">
           <img src={pilot.image} alt={pilot.name} />
-          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้านักบิน")}</div><h1>{pilot.name}</h1><p>{rank.name} · {getPilotCallsign(pilot, lang)} · {tool.name}</p></div>
+          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้านักบิน")}</div><h1>{pilot.name}</h1><p>{rankName} · {getPilotCallsign(pilot, lang)} · {tool.name}</p></div>
         </div>
         <div className="captain-progress__rank">
-          <span>{tr(`Rank ${gameState.level}`, `แรงก์ ${gameState.level}`)}</span><strong>{rank.name}</strong><small>{gameState.xp}/{xp.next} XP</small>
-          <i role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(xp.progress)} aria-label={`${Math.round(xp.progress)}% toward next rank`}><b style={{ width: `${xp.progress}%` }} /></i>
+          <span>{tr(`Rank ${gameState.level}`, `แรงก์ ${gameState.level}`)}</span><strong>{rankName}</strong><small>{gameState.xp}/{xp.next} XP</small>
+          <i role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(xp.progress)} aria-label={tr(`${Math.round(xp.progress)}% toward next rank`, `อีก ${100 - Math.round(xp.progress)}% ถึงแรงก์ถัดไป`)}><b style={{ width: `${xp.progress}%` }} /></i>
         </div>
       </header>
 
-      <section className="captain-progress__summary" aria-label="Progress summary">
+      <section className="captain-progress__summary" aria-label={tr("Progress summary", "สรุปความคืบหน้า")}>
         <div><Map /><span>{tr("Story", "เนื้อเรื่อง")}<strong>{tr(`${gameState.visitedPlanets.length}/10 chapters`, `${gameState.visitedPlanets.length}/10 บท`)}</strong></span><b>{campaignPercent}%</b></div>
         <div><Medal /><span>{tr("Captain medals", "เหรียญนักบิน")}<strong>{tr(`${earnedMedals}/${medals.length} earned`, `ได้ ${earnedMedals}/${medals.length}`)}</strong></span><b>{earnedMedals}</b></div>
         <div><PawPrint /><span>{tr("Companions", "เพื่อนร่วมทีม")}<strong>{tr(`${gameState.pets.length} archived`, `มี ${gameState.pets.length} ตัว`)}</strong></span><b>{gameState.modeRecords.puriBond}</b></div>
@@ -70,7 +71,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
           <div className="progress-recommendations">
             {recommendations.slice(0, 3).map((item) => {
               const Icon = item.icon;
-              return <button key={item.title} onClick={() => item.title.includes("upgrade") ? onOpenCrew() : onPlay(item.mode)}><Icon /><span><strong>{item.title}</strong><small>{item.detail}</small></span><ArrowRight /></button>;
+              return <button key={item.title} onClick={() => item.openCrew ? onOpenCrew() : onPlay(item.mode)}><Icon /><span><strong>{item.title}</strong><small>{item.detail}</small></span><ArrowRight /></button>;
             })}
           </div>
           <button className="progress-crew-button" onClick={onOpenCrew}><Users /> {tr("Open Crew Hangar", "เปิดหน้าจัดทีม")} <ArrowRight /></button>
@@ -93,8 +94,8 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
         </section>
 
         <section className="progress-panel progress-panel--puri">
-          <div className="progress-panel__heading"><PawPrint /><div><span>{tr("Adventure companion", "คู่หูผจญภัย")}</span><h2>PURI · {puri.current.name}</h2></div></div>
-          <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{puri.current.ability}</strong><p>{puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? `${puri.next.bond - puri.bond} bond until ${puri.next.ability}` : "Every PURI ability is unlocked"}</small></div></div>
+          <div className="progress-panel__heading"><PawPrint /><div><span>{tr("Adventure companion", "คู่หูผจญภัย")}</span><h2>PURI · {lang === "th" ? puri.current.nameTh : puri.current.name}</h2></div></div>
+          <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{lang === "th" ? puri.current.abilityTh : puri.current.ability}</strong><p>{lang === "th" ? puri.current.descriptionTh : puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? tr(`${puri.next.bond - puri.bond} bond until ${puri.next.ability}`, `อีก ${puri.next.bond - puri.bond} แต้ม จะได้ ${puri.next.abilityTh}`) : tr("Every PURI ability is unlocked", "ปลดล็อกความสามารถ PURI ครบแล้ว")}</small></div></div>
         </section>
 
         <section className="progress-panel">

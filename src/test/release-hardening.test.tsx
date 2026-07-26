@@ -16,6 +16,7 @@ import { getStoryStepCount, isOrthogonallyAdjacent } from "@/lib/storyMovement";
 import FrontierControl from "@/components/FrontierControl";
 import StoryExpeditionConsole from "@/components/StoryExpeditionConsole";
 import PlanetExplore from "@/components/PlanetExplore";
+import PlanetExploration from "@/components/PlanetExploration";
 import { getReachableStoryCellKeys } from "@/lib/storyMap";
 import CrewHangar from "@/components/CrewHangar";
 import { MISSION_BRIEFS } from "@/lib/missionBriefs";
@@ -167,9 +168,10 @@ describe("public test release hardening", () => {
 
     render(<Harness />);
     fireEvent.click(screen.getByRole("button", { name: "Launch relay ship" }));
-    for (let index = 0; index < 4; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /Safe route/ }));
-    }
+    fireEvent.click(screen.getByRole("button", { name: /Risk route/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Risk route/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Safe route/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Safe route/ }));
     fireEvent.click(screen.getByRole("button", { name: "Bank flight rewards" }));
 
     expect(screen.getByRole("heading", { name: "Signal delivered" })).toBeInTheDocument();
@@ -198,6 +200,7 @@ describe("public test release hardening", () => {
         planet={PLANETS[0]}
         gameState={createNewGameState("mud")}
         onCollect={() => undefined}
+        onFailureCollect={() => undefined}
         onBack={() => undefined}
         onContinue={() => undefined}
       />,
@@ -209,6 +212,38 @@ describe("public test release hardening", () => {
     expect(screen.getByText(/Crystal Flight School/)).toBeInTheDocument();
   });
 
+  it("reports a timed-out Story run as failure instead of banking a chapter clear", async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    try {
+      render(
+        <PlanetExploration
+          planetId="sparkle-moon"
+          missionTimeBonus={-49}
+          onComplete={onComplete}
+        />,
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1_600);
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1_200);
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3_000);
+      });
+
+      expect(onComplete).toHaveBeenCalledWith({
+        success: false,
+        bonus: 0,
+        reason: "timeout",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("renders the complete Story briefing in Thai when Thai is selected", () => {
     localStorage.setItem("galaxy-lang", "th");
     render(
@@ -217,6 +252,7 @@ describe("public test release hardening", () => {
           planet={PLANETS[0]}
           gameState={createNewGameState("mud")}
           onCollect={() => undefined}
+          onFailureCollect={() => undefined}
           onBack={() => undefined}
           onContinue={() => undefined}
         />
@@ -249,6 +285,7 @@ describe("public test release hardening", () => {
         planet={PLANETS[1]}
         gameState={state}
         onCollect={() => undefined}
+        onFailureCollect={() => undefined}
         onBack={() => undefined}
         onContinue={() => undefined}
       />,
@@ -288,6 +325,7 @@ describe("public test release hardening", () => {
         planet={PLANETS[7]}
         gameState={createNewGameState("mud")}
         onCollect={() => undefined}
+        onFailureCollect={() => undefined}
         onBack={() => undefined}
         onContinue={() => undefined}
       />,

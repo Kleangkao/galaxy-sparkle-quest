@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useI18n } from "@/lib/i18n";
 
 export interface ConfirmAction {
   title: string;
@@ -24,6 +25,7 @@ export default function ConfirmActionDialog({
   action: ConfirmAction | null;
   onClose: () => void;
 }) {
+  const { tr } = useI18n();
   return (
     <AlertDialog open={Boolean(action)} onOpenChange={(open) => { if (!open) onClose(); }}>
       <AlertDialogContent className="border-border/70 bg-card/95 text-foreground backdrop-blur-xl">
@@ -34,7 +36,7 @@ export default function ConfirmActionDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Not now</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose}>{tr("Not now", "ไว้ก่อน")}</AlertDialogCancel>
           <AlertDialogAction
             className={action?.tone === "danger" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
             onClick={() => { action?.onConfirm(); onClose(); }}

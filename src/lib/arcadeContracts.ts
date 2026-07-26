@@ -67,3 +67,33 @@ export function getArcadeGrade(accuracy: number, cleared: boolean, bestCombo: nu
   if (accuracy >= 0.4) return "C";
   return "D";
 }
+
+export function getArcadeRunOutcome({
+  score,
+  shotsFired,
+  hits,
+  bestCombo,
+  cleared,
+  rewardMultiplier = 1,
+  crystalMultiplier = 1,
+}: {
+  score: number;
+  shotsFired: number;
+  hits: number;
+  bestCombo: number;
+  cleared: boolean;
+  rewardMultiplier?: number;
+  crystalMultiplier?: number;
+}) {
+  const participated = shotsFired >= 3 && hits >= 1;
+  const accuracy = shotsFired > 0 ? hits / shotsFired : 0;
+  return {
+    participated,
+    accuracy,
+    grade: getArcadeGrade(accuracy, cleared, bestCombo),
+    crystals: participated
+      ? Math.ceil((2 + Math.floor(score / 450) + (cleared ? 8 : 0)) * rewardMultiplier * crystalMultiplier)
+      : 0,
+    xp: participated ? 2 + Math.floor(score / 500) + (cleared ? 8 : 0) : 0,
+  };
+}

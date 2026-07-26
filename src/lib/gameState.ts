@@ -76,16 +76,16 @@ export const FACTIONS: Faction[] = [
 ];
 
 export const RANKS = [
-  { level: 1, name: "Cadet", emoji: "🌟" },
-  { level: 2, name: "Explorer", emoji: "🔭" },
-  { level: 3, name: "Navigator", emoji: "🧭" },
-  { level: 4, name: "Pilot", emoji: "✈️" },
-  { level: 5, name: "Captain", emoji: "⚓" },
-  { level: 6, name: "Commander", emoji: "🎖️" },
-  { level: 7, name: "Admiral", emoji: "👑" },
-  { level: 8, name: "Star Master", emoji: "⭐" },
-  { level: 9, name: "Galaxy Hero", emoji: "🦸" },
-  { level: 10, name: "Cosmic Legend", emoji: "🌌" },
+  { level: 1, name: "Cadet", nameTh: "นักบินฝึกหัด", emoji: "🌟" },
+  { level: 2, name: "Explorer", nameTh: "นักสำรวจ", emoji: "🔭" },
+  { level: 3, name: "Navigator", nameTh: "นักนำทาง", emoji: "🧭" },
+  { level: 4, name: "Pilot", nameTh: "นักบิน", emoji: "✈️" },
+  { level: 5, name: "Captain", nameTh: "กัปตัน", emoji: "⚓" },
+  { level: 6, name: "Commander", nameTh: "ผู้บัญชาการ", emoji: "🎖️" },
+  { level: 7, name: "Admiral", nameTh: "พลเรือเอก", emoji: "👑" },
+  { level: 8, name: "Star Master", nameTh: "ผู้พิทักษ์ดวงดาว", emoji: "⭐" },
+  { level: 9, name: "Galaxy Hero", nameTh: "วีรชนกาแล็กซี่", emoji: "🦸" },
+  { level: 10, name: "Cosmic Legend", nameTh: "ตำนานจักรวาล", emoji: "🌌" },
 ];
 
 export const XP_THRESHOLDS = [0, 10, 25, 50, 85, 130, 190, 260, 350, 460];
@@ -93,37 +93,41 @@ export const XP_THRESHOLDS = [0, 10, 25, 50, 85, 130, 190, 260, 350, 460];
 export interface ShipSkin {
   id: string;
   name: string;
+  nameTh: string;
   emoji: string;
   cost: number;
   requiredLevel: number;
 }
 
 export const SHIP_SKINS: ShipSkin[] = [
-  { id: "red-rocket", name: "Red Rocket", emoji: "🚀", cost: 0, requiredLevel: 1 },
-  { id: "candy-ship", name: "Candy Ship", emoji: "🍭", cost: 20, requiredLevel: 2 },
-  { id: "ice-ship", name: "Ice Ship", emoji: "❄️", cost: 35, requiredLevel: 3 },
-  { id: "jungle-cruiser", name: "Jungle Cruiser", emoji: "🌿", cost: 50, requiredLevel: 4 },
-  { id: "rainbow-ship", name: "Rainbow Ship", emoji: "🌈", cost: 70, requiredLevel: 6 },
-  { id: "golden-starship", name: "Golden Starship", emoji: "✨", cost: 100, requiredLevel: 8 },
+  { id: "red-rocket", name: "Vanguard Red", nameTh: "แวนการ์ดแดง", emoji: "🚀", cost: 0, requiredLevel: 1 },
+  { id: "candy-ship", name: "Coral Pulse", nameTh: "คอรัลพัลส์", emoji: "🍭", cost: 20, requiredLevel: 2 },
+  { id: "ice-ship", name: "Frost Vector", nameTh: "ฟรอสต์เวกเตอร์", emoji: "❄️", cost: 35, requiredLevel: 3 },
+  { id: "jungle-cruiser", name: "Verdant Cruiser", nameTh: "เวอร์แดนต์ครูเซอร์", emoji: "🌿", cost: 50, requiredLevel: 4 },
+  { id: "rainbow-ship", name: "Prism Runner", nameTh: "พริซึมรันเนอร์", emoji: "🌈", cost: 70, requiredLevel: 6 },
+  { id: "golden-starship", name: "Aurora Crown", nameTh: "ออโรราคราวน์", emoji: "✨", cost: 100, requiredLevel: 8 },
 ];
 
 export interface ShipUpgrade {
   id: string;
   name: string;
+  nameTh: string;
   emoji: string;
   description: string;
+  descriptionTh: string;
   effect: string;
+  effectTh: string;
   cost: number;
   requiredLevel: number;
 }
 
 export const SHIP_UPGRADES: ShipUpgrade[] = [
-  { id: "shield", name: "Cosmic Shield", emoji: "🛡️", description: "Permanent safety system for Story and Swarm.", effect: "Keep 60% of failed Story rewards and start Swarm with +10 hull.", cost: 8, requiredLevel: 1 },
-  { id: "booster", name: "Turbo Booster", emoji: "⚡", description: "Permanent route-time upgrade.", effect: "+5 seconds in Story, Swarm, and Arcade.", cost: 25, requiredLevel: 2 },
-  { id: "scanner", name: "Crystal Scanner", emoji: "📡", description: "Permanent reward scanner for every mode.", effect: "+15% crystals from every activity.", cost: 40, requiredLevel: 3 },
-  { id: "garden", name: "Xenobiology Habitat", emoji: "🌿", description: "Permanent companion habitat support.", effect: "+15% alien companion discovery chance.", cost: 50, requiredLevel: 4 },
-  { id: "wings", name: "Star Wings", emoji: "🦋", description: "Permanent high-rank route tuning.", effect: "+8 seconds in Story, Swarm, and Arcade.", cost: 80, requiredLevel: 6 },
-  { id: "crown", name: "Galaxy Crown", emoji: "👑", description: "Permanent reward relic for every mode.", effect: "+20% crystals from every activity.", cost: 120, requiredLevel: 8 },
+  { id: "shield", name: "Cosmic Shield", nameTh: "เกราะคอสมิก", emoji: "🛡️", description: "Permanent safety system for Story and Swarm.", descriptionTh: "ระบบป้องกันถาวรสำหรับเนื้อเรื่องและโหมดฝ่าฝูง", effect: "Keep 60% of failed Story rewards and start Swarm with +10 hull.", effectTh: "เก็บรางวัลเนื้อเรื่องที่พลาดไว้ 60% และเริ่มโหมดฝ่าฝูงด้วยพลังยาน +10", cost: 8, requiredLevel: 1 },
+  { id: "booster", name: "Turbo Booster", nameTh: "เทอร์โบบูสเตอร์", emoji: "⚡", description: "Permanent route-time upgrade.", descriptionTh: "ระบบเพิ่มเวลาภารกิจแบบถาวร", effect: "+5 seconds in Story, Swarm, and Arcade.", effectTh: "เพิ่มเวลา 5 วินาทีในเนื้อเรื่อง ฝ่าฝูง และยิงเป้า", cost: 25, requiredLevel: 2 },
+  { id: "scanner", name: "Crystal Scanner", nameTh: "เครื่องสแกนคริสตัล", emoji: "📡", description: "Permanent reward scanner for every mode.", descriptionTh: "เครื่องสแกนรางวัลถาวรสำหรับทุกโหมด", effect: "+15% crystals from every activity.", effectTh: "ได้คริสตัลจากทุกกิจกรรมเพิ่ม 15%", cost: 40, requiredLevel: 3 },
+  { id: "garden", name: "Xenobiology Habitat", nameTh: "ศูนย์ชีววิทยาต่างดาว", emoji: "🌿", description: "Permanent companion habitat support.", descriptionTh: "ศูนย์ดูแลเพื่อนร่วมทางแบบถาวร", effect: "+15% alien companion discovery chance.", effectTh: "โอกาสพบเพื่อนต่างดาวเพิ่ม 15%", cost: 50, requiredLevel: 4 },
+  { id: "wings", name: "Star Wings", nameTh: "ปีกดวงดาว", emoji: "🦋", description: "Permanent high-rank route tuning.", descriptionTh: "ระบบปรับเส้นทางระดับสูงแบบถาวร", effect: "+8 seconds in Story, Swarm, and Arcade.", effectTh: "เพิ่มเวลา 8 วินาทีในเนื้อเรื่อง ฝ่าฝูง และยิงเป้า", cost: 80, requiredLevel: 6 },
+  { id: "crown", name: "Galaxy Crown", nameTh: "มงกุฎกาแล็กซี่", emoji: "👑", description: "Permanent reward relic for every mode.", descriptionTh: "วัตถุเพิ่มรางวัลถาวรสำหรับทุกโหมด", effect: "+20% crystals from every activity.", effectTh: "ได้คริสตัลจากทุกกิจกรรมเพิ่ม 20%", cost: 120, requiredLevel: 8 },
 ];
 
 // ─── Faction Influence System ────────────────────────────────────
@@ -264,6 +268,9 @@ export interface GameState {
   activeTool: string;
   modeRecords: {
     swarmHighScore: number;
+    swarmRuns: number;
+    swarmClears: number;
+    swarmEvolutions: number;
     arcadeHighScore: number;
     discoveryFinds: number;
     strategyWins: number;
@@ -309,23 +316,24 @@ export function getUpgradeCost(upgrade: ShipUpgrade, currentTier: number) {
   return Math.ceil(upgrade.cost * (1 + currentTier * 0.75));
 }
 
-export function getUpgradeEffectAtTier(id: string, tier: number) {
+export function getUpgradeEffectAtTier(id: string, tier: number, lang: "en" | "th" = "en") {
   const safeTier = Math.max(1, Math.min(MAX_UPGRADE_TIER, tier));
+  const bilingual = (en: string, th: string) => lang === "th" ? th : en;
   switch (id) {
     case "shield":
-      return `Keep ${50 + safeTier * 10}% of failed Story rewards · +${safeTier * 10} Swarm hull`;
+      return bilingual(`Keep ${50 + safeTier * 10}% of failed Story rewards · +${safeTier * 10} Swarm hull`, `เก็บรางวัลเนื้อเรื่องที่พลาดไว้ ${50 + safeTier * 10}% · พลังยานฝ่าฝูง +${safeTier * 10}`);
     case "booster":
-      return `+${safeTier * 5} seconds in Story, Swarm, and Arcade`;
+      return bilingual(`+${safeTier * 5} seconds in Story, Swarm, and Arcade`, `เพิ่มเวลา ${safeTier * 5} วินาทีในเนื้อเรื่อง ฝ่าฝูง และยิงเป้า`);
     case "scanner":
-      return `+${safeTier * 15}% crystals from every activity`;
+      return bilingual(`+${safeTier * 15}% crystals from every activity`, `ได้คริสตัลจากทุกกิจกรรมเพิ่ม ${safeTier * 15}%`);
     case "garden":
-      return `+${safeTier * 15}% companion discovery chance`;
+      return bilingual(`+${safeTier * 15}% companion discovery chance`, `โอกาสพบเพื่อนร่วมทางเพิ่ม ${safeTier * 15}%`);
     case "wings":
-      return `+${safeTier * 8} seconds in Story, Swarm, and Arcade`;
+      return bilingual(`+${safeTier * 8} seconds in Story, Swarm, and Arcade`, `เพิ่มเวลา ${safeTier * 8} วินาทีในเนื้อเรื่อง ฝ่าฝูง และยิงเป้า`);
     case "crown":
-      return `+${safeTier * 20}% crystals from every activity`;
+      return bilingual(`+${safeTier * 20}% crystals from every activity`, `ได้คริสตัลจากทุกกิจกรรมเพิ่ม ${safeTier * 20}%`);
     default:
-      return "Permanent ship-system improvement";
+      return bilingual("Permanent ship-system improvement", "ปรับปรุงระบบยานแบบถาวร");
   }
 }
 
@@ -502,6 +510,9 @@ function createStateSnapshot(source: Partial<GameState> | null | undefined, fact
     activeTool: getTool(source?.activeTool).id,
     modeRecords: {
       swarmHighScore: nonNegativeInteger(source?.modeRecords?.swarmHighScore),
+      swarmRuns: nonNegativeInteger(source?.modeRecords?.swarmRuns),
+      swarmClears: nonNegativeInteger(source?.modeRecords?.swarmClears),
+      swarmEvolutions: nonNegativeInteger(source?.modeRecords?.swarmEvolutions),
       arcadeHighScore: nonNegativeInteger(source?.modeRecords?.arcadeHighScore),
       discoveryFinds: nonNegativeInteger(source?.modeRecords?.discoveryFinds),
       strategyWins: nonNegativeInteger(source?.modeRecords?.strategyWins),

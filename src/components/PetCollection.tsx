@@ -66,7 +66,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSe
                       <img src={pet.image} alt={isOwned ? pet.name : tr("Unknown companion signal", "สัญญาณเพื่อนที่ยังไม่รู้จัก")} className={!isOwned ? "grayscale" : ""} />
                       <div className="companion-record__copy">
                         <div className="command-kicker">{isActive ? tr("Active companion", "กำลังร่วมทีม") : isOwned ? tr("Archive confirmed", "บันทึกแล้ว") : tr("Signal not recovered", "ยังไม่พบสัญญาณ")}</div>
-                        <h3>{isOwned ? pet.name : "UNKNOWN SIGNAL"}</h3>
+                        <h3>{isOwned ? pet.name : tr("UNKNOWN SIGNAL", "สัญญาณที่ยังไม่รู้จัก")}</h3>
                         <p>{isOwned ? (lang === "th" ? pet.ability.descTh : pet.ability.descEn) : tr("Find this companion during Story or Discovery.", "ตามหาได้จากเนื้อเรื่องหรือโหมดสำรวจ")}</p>
                         {isOwned && !isActive && <button onClick={() => onSetActivePet(pet.id)}>{tr("Add to active crew", "เลือกเข้าร่วมทีม")}</button>}
                         {isActive && <p className="!text-cosmic-green"><ShieldCheck className="mr-1 inline h-4 w-4" />{tr("Ability is active in supported modes", "ความสามารถพร้อมใช้ในโหมดที่รองรับ")}</p>}
@@ -81,7 +81,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSe
                   "The remaining companions stay encrypted until their final artwork and field record are ready. Their gameplay unlocks remain saved.",
                   "เพื่อนที่เหลือจะยังเป็นสัญญาณลับจนกว่าภาพและข้อมูลจะพร้อม ความคืบหน้าที่ปลดล็อกไว้ยังอยู่ครบ",
                 )}</p>
-                <div className="companion-signals__track" aria-label={`${ALIEN_PETS.length - illustrated.length} unknown signals`}>
+                <div className="companion-signals__track" aria-label={tr(`${ALIEN_PETS.length - illustrated.length} unknown signals`, `สัญญาณที่ยังไม่รู้จัก ${ALIEN_PETS.length - illustrated.length} จุด`)}>
                   {ALIEN_PETS.slice(illustrated.length).map((pet) => <i key={pet.id} className={owned(pet.id, pet.name) ? "!bg-cosmic-green" : ""} />)}
                 </div>
               </div>

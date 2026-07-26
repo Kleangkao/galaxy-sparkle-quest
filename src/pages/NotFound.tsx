@@ -1,14 +1,13 @@
-import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
 
 const NotFound = () => {
-  const location = useLocation();
   const { tr } = useI18n();
+  const pathname = window.location.pathname;
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
+    console.error("404 Error: User attempted to access non-existent route:", pathname);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">
