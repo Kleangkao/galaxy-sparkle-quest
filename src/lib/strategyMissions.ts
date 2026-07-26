@@ -3,6 +3,97 @@ import { GameState, PLANETS, getPlanetController, getSectorLore } from "@/lib/ga
 export type StrategyAction = "scan" | "reinforce" | "disrupt";
 export type SectorTrait = "calm" | "volatile" | "fortified" | "resonant";
 
+export type RelayRouteChoice = {
+  planetIndex: number;
+  signal: number;
+  damage: number;
+  kind: "safe" | "risk";
+};
+
+export type RelayMission = {
+  id: "signal-run" | "cargo-shield" | "storm-gap";
+  name: string;
+  nameTh: string;
+  description: string;
+  descriptionTh: string;
+  targetSignal: number;
+  startingHull: number;
+  recommendedRisks: number;
+  routes: RelayRouteChoice[][];
+};
+
+export const RELAY_MISSIONS: RelayMission[] = [
+  {
+    id: "signal-run",
+    name: "Signal Run",
+    nameTh: "ส่งสัญญาณด่วน",
+    description: "Take two risky jumps. One is too little signal; three will break an unshielded ship.",
+    descriptionTh: "เลือกทางเสี่ยง 2 ครั้ง เลือกครั้งเดียวยังไม่พอ แต่ 3 ครั้งจะทำให้ยานที่ไม่มีเกราะพัง",
+    targetSignal: 95,
+    startingHull: 3,
+    recommendedRisks: 2,
+    routes: [
+      [{ planetIndex: 1, signal: 18, damage: 0, kind: "safe" }, { planetIndex: 2, signal: 30, damage: 1, kind: "risk" }],
+      [{ planetIndex: 3, signal: 19, damage: 0, kind: "safe" }, { planetIndex: 4, signal: 31, damage: 1, kind: "risk" }],
+      [{ planetIndex: 5, signal: 17, damage: 0, kind: "safe" }, { planetIndex: 6, signal: 29, damage: 1, kind: "risk" }],
+      [{ planetIndex: 7, signal: 18, damage: 0, kind: "safe" }, { planetIndex: 8, signal: 32, damage: 1, kind: "risk" }],
+    ],
+  },
+  {
+    id: "cargo-shield",
+    name: "Cargo Escort",
+    nameTh: "คุ้มกันสินค้า",
+    description: "The cargo is fragile. One well-timed risky jump is enough to beat the signal deadline.",
+    descriptionTh: "สินค้าบอบบาง เลือกทางเสี่ยงให้ถูกจังหวะเพียง 1 ครั้ง ก็ส่งสัญญาณทัน",
+    targetSignal: 81,
+    startingHull: 2,
+    recommendedRisks: 1,
+    routes: [
+      [{ planetIndex: 2, signal: 18, damage: 0, kind: "safe" }, { planetIndex: 3, signal: 27, damage: 1, kind: "risk" }],
+      [{ planetIndex: 4, signal: 17, damage: 0, kind: "safe" }, { planetIndex: 5, signal: 28, damage: 1, kind: "risk" }],
+      [{ planetIndex: 6, signal: 18, damage: 0, kind: "safe" }, { planetIndex: 7, signal: 28, damage: 1, kind: "risk" }],
+      [{ planetIndex: 8, signal: 19, damage: 0, kind: "safe" }, { planetIndex: 9, signal: 30, damage: 1, kind: "risk" }],
+    ],
+  },
+  {
+    id: "storm-gap",
+    name: "Storm Gap",
+    nameTh: "ฝ่าช่องพายุ",
+    description: "The relay window is tiny. Take three risky jumps, then use one safe corridor to bring the ship home.",
+    descriptionTh: "ช่วงส่งสัญญาณสั้นมาก เลือกทางเสี่ยง 3 ครั้ง และทางปลอดภัย 1 ครั้ง เพื่อพายานกลับบ้าน",
+    targetSignal: 107,
+    startingHull: 4,
+    recommendedRisks: 3,
+    routes: [
+      [{ planetIndex: 3, signal: 18, damage: 0, kind: "safe" }, { planetIndex: 4, signal: 29, damage: 1, kind: "risk" }],
+      [{ planetIndex: 5, signal: 19, damage: 0, kind: "safe" }, { planetIndex: 6, signal: 31, damage: 1, kind: "risk" }],
+      [{ planetIndex: 7, signal: 20, damage: 0, kind: "safe" }, { planetIndex: 8, signal: 32, damage: 1, kind: "risk" }],
+      [{ planetIndex: 9, signal: 17, damage: 0, kind: "safe" }, { planetIndex: 1, signal: 28, damage: 1, kind: "risk" }],
+    ],
+  },
+];
+
+export function getRelayMission(cycle: number) {
+  return RELAY_MISSIONS[Math.abs(cycle) % RELAY_MISSIONS.length];
+}
+
+export function evaluateRelayRoute(mission: RelayMission, choices: RelayRouteChoice[], shieldCharges = 0) {
+  let hull = mission.startingHull;
+  let shields = Math.max(0, shieldCharges);
+  let signal = 0;
+  choices.forEach((choice) => {
+    signal += choice.signal;
+    if (choice.damage > 0 && shields > 0) shields -= 1;
+    else hull = Math.max(0, hull - choice.damage);
+  });
+  return {
+    signal,
+    hull,
+    riskCount: choices.filter((choice) => choice.kind === "risk").length,
+    complete: choices.length === mission.routes.length && signal >= mission.targetSignal && hull > 0,
+  };
+}
+
 export const SECTOR_TRAITS: Record<string, { trait: SectorTrait; name: string; effect: string }> = Object.fromEntries(
   PLANETS.map((planet, index) => {
     const options = [

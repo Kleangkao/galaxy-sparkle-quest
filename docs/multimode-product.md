@@ -21,7 +21,10 @@ A 60-second survival run inspired by survivor-style games:
 - level-up choices for damage, fire rate, speed, or pickup range
 - a reusable pulse ability
 - Power + Rapid perk evolution into Overdrive
+- rotating Cadet Patrol, Energy Bloom, and Ion Rush conditions after the first two gentle runs
+- occasional elite contacts after the introductory runs
 - Ahr boss arrival and boss health tracking
+- alternating Nova Ring and aimed Fan Burst boss patterns
 - a readable second boss phase below half integrity
 - score, crystals, XP, and persistent high score
 
@@ -35,27 +38,26 @@ A pressure-free search mode:
 
 - no timer and no failure state
 - three selectable biomes with rotating six-find field sets
+- position, direction, and distance clue types with two clearly separated candidates
 - individual lore entries
 - persistent discovery count
 - persistent mastery ranks for each biome
+- five visible research chapters per biome
 - repeatable complete-the-journal objectives
 - periodic optional rare anomalies
 - journal completion rewards
 
 ### Frontier Control
 
-A strategy-lite command cycle:
+A four-jump strategy-lite route puzzle:
 
-- choose any of ten sectors
-- spend four actions per cycle, with a fifth unlocked through PURI
-- complete rotating secure, stabilize, or survey objectives
-- read persistent sector traits that modify action values
-- scout for a safe influence gain
-- reinforce for a larger gain with rival reaction
-- disrupt the leading rival while gaining a small foothold
-- reach 100 influence to secure the sector
+- choose one safe or risky sector at each jump
+- balance signal strength against relay hull
+- rotate between Signal Run, Cargo Escort, and Storm Gap plans
+- use PURI's shield to forgive one storm after the bond milestone
+- gain faction influence in every chosen sector
 - earn objective bonuses and persistent command-cycle records
-- outcomes persist into the campaign galaxy map
+- carry outcomes into the campaign galaxy map
 
 ### Auto-pick
 
@@ -80,8 +82,8 @@ A strategy-lite command cycle:
 
 ## Next roadmap
 
-1. Add aim assistance and contrast presets to accessibility settings.
-2. Add controller navigation to non-combat menus.
+1. Run a small observed desktop playtest in English and Thai before adding another mode.
+2. Add controller navigation to non-combat menus only if desktop players request it.
 3. Add weekly living-frontier states only after rival capture rules are playtested.
 4. Add optional account-based cloud saves only after an identity decision is approved.
-5. Review anonymous aggregate playtest starts, completions, ratings, and difficulty reports before changing reward balance.
+5. Use direct player comments and observation notes; do not add in-game feedback or analytics collection without a new product decision.

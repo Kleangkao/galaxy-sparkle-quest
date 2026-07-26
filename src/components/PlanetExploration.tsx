@@ -571,6 +571,11 @@ export default function PlanetExploration({
     requireReturn: true,
   }), [planetId, theme.timeLimit]);
   const missionTimeLimit = mission.duration + missionTimeBonus;
+  const routeStatus = routeMode === "scout"
+    ? tr("Scout · hidden items revealed, fewer hazards", "สำรวจ · เห็นของซ่อนและลดพื้นที่อันตราย")
+    : routeMode === "salvage"
+      ? tr("Salvage · extra objective and patrol pressure", "เก็บกู้ · มีของให้เก็บและศัตรูเพิ่ม")
+      : tr("Balanced · standard objective and pressure", "ปกติ · เป้าหมายและความยากมาตรฐาน");
   const [mapData] = useState(() => generateMap(theme, mission));
   const [items, setItems] = useState<ExplorationItem[]>(() => mapData.items.map((item) => routeMode === "scout" && item.type === "hidden" ? { ...item, revealed: true } : item));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
@@ -1101,6 +1106,7 @@ export default function PlanetExploration({
           <span className={`rounded-full border px-2.5 py-1 ${canReturn ? "border-cosmic-green/30 bg-cosmic-green/10 text-cosmic-green" : "border-cosmic-yellow/25 bg-cosmic-yellow/10 text-cosmic-yellow"}`}>
             {canReturn ? (mission.requireReturn ? tr("Return route open", "กลับยานได้แล้ว") : tr("Extraction ready", "พร้อมกลับอัตโนมัติ")) : tr("Objective in progress", "กำลังทำเป้าหมาย")}
           </span>
+          <span className="rounded-full border border-cosmic-cyan/25 bg-cosmic-cyan/10 px-2.5 py-1 text-cosmic-cyan">{routeStatus}</span>
         </div>
       <div className="text-center text-[10px] sm:text-xs font-semibold text-cosmic-cyan">
           {tr(mission.name, STORY_MISSION_TH[planetId]?.name ?? mission.name)}: {tr(mission.objective, STORY_MISSION_TH[planetId]?.objective ?? mission.objective)}

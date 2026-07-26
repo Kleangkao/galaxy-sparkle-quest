@@ -1,7 +1,7 @@
 {
   "name": "guardians-of-galia",
   "private": true,
-  "version": "0.9.5",
+  "version": "0.9.6",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:types": "tsc -b",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --workers=1",
     "test:release": "npm run test:types && npm run test && npm run lint && npm run build && npm audit --omit=dev && npm run test:e2e"
   },
   "dependencies": {

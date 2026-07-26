@@ -2,14 +2,24 @@ import { describe, expect, it } from "vitest";
 import { createNewGameState, getGameplayModifiers, getUpgradeEffectAtTier, getUpgradeTier, isStoryChapterUnlocked, PLANETS } from "@/lib/gameState";
 import { getPilotUnlock, getToolModeSummary, getToolUnlock, getTool } from "@/lib/loadouts";
 import { getPuriBonuses, getPuriProgress } from "@/lib/puriBond";
-import { DISCOVERY_BIOMES, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
-import { getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
+import { DISCOVERY_BIOMES, getDiscoveryClue, getDiscoveryDecoyId, getDiscoveryResearchChapter, getDiscoveryRotation, getMasteryTier } from "@/lib/discoveryBiomes";
+import { evaluateRelayRoute, getRelayMission, getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
-import { getBossFightWindow, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
+import { getBossFightWindow, getSwarmRunVariant, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
 import { getArcadeGrade, getArcadeRunOutcome } from "@/lib/arcadeContracts";
+import { getEconomyProjection } from "@/lib/economyBalance";
 
 describe("multi-mode progression", () => {
+  it("keeps the permanent economy welcoming without finishing in one sitting", () => {
+    const projection = getEconomyProjection();
+    expect(projection.firstUpgradeRuns).toBeLessThanOrEqual(2);
+    expect(projection.allTierOneRuns).toBeGreaterThanOrEqual(20);
+    expect(projection.allTierOneRuns).toBeLessThanOrEqual(40);
+    expect(projection.fullBuildRuns).toBeGreaterThanOrEqual(60);
+    expect(projection.fullBuildRuns).toBeLessThanOrEqual(110);
+  });
+
   it("keeps first clears valuable while making Story replays worth doing", () => {
     expect(getStoryReplayMultiplier(false)).toBe(1);
     expect(getStoryReplayMultiplier(true)).toBe(0.55);
@@ -194,6 +204,19 @@ describe("multi-mode progression", () => {
     expect(getMasteryTier(100)).toBe("Master Naturalist");
   });
 
+  it("uses a distant decoy and rotates easy-to-read Discovery clues", () => {
+    const points = [
+      { id: 0, x: 10, y: 10 },
+      { id: 1, x: 18, y: 14 },
+      { id: 2, x: 88, y: 84 },
+    ];
+    expect(getDiscoveryDecoyId(0, points, [])).toBe(2);
+    expect(getDiscoveryClue(points[0], points[2], 0)).toContain("upper-left");
+    expect(getDiscoveryClue(points[0], points[2], 1)).toContain("left");
+    expect(getDiscoveryResearchChapter(0)).toBe(1);
+    expect(getDiscoveryResearchChapter(100)).toBe(5);
+  });
+
   it("rotates strategy objectives predictably", () => {
     expect(getStrategyObjective(0).id).toBe("secure");
     expect(getStrategyObjective(1).id).toBe("focus");
@@ -207,6 +230,20 @@ describe("multi-mode progression", () => {
     expect(values.reinforce).toBeGreaterThanOrEqual(28);
     expect(values.disrupt).toBeGreaterThanOrEqual(16);
     expect(values.rivalPressure).toBeGreaterThanOrEqual(1);
+  });
+
+  it("rotates three solvable relay missions with different risk plans", () => {
+    expect(getRelayMission(0).id).toBe("signal-run");
+    expect(getRelayMission(1).id).toBe("cargo-shield");
+    expect(getRelayMission(2).id).toBe("storm-gap");
+    expect(getRelayMission(3).id).toBe("signal-run");
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      const mission = getRelayMission(cycle);
+      const planned = mission.routes.map((choices, index) =>
+        index < mission.recommendedRisks ? choices[1] : choices[0],
+      );
+      expect(evaluateRelayRoute(mission, planned).complete).toBe(true);
+    }
   });
 
   it("exposes local saves through a cloud-replaceable profile contract", () => {
@@ -227,5 +264,12 @@ describe("Swarm boss balance", () => {
 
   it("reduces background swarm pressure while Ahr is active", () => {
     expect(getSwarmSpawnDelay(40, true)).toBeGreaterThan(getSwarmSpawnDelay(40, false));
+  });
+
+  it("keeps first Swarm runs gentle before rotating boss patterns", () => {
+    expect(getSwarmRunVariant(0).id).toBe("cadet-patrol");
+    expect(getSwarmRunVariant(1).id).toBe("cadet-patrol");
+    expect(getSwarmRunVariant(2).bossPattern).toBe("aimed-fan");
+    expect(getSwarmRunVariant(3).id).toBe("ion-rush");
   });
 });

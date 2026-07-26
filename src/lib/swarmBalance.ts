@@ -9,6 +9,65 @@ export const SWARM_BALANCE = {
   bossProjectileSpeed: 115,
 } as const;
 
+export type SwarmBossPattern = "nova-ring" | "aimed-fan";
+
+export type SwarmRunVariant = {
+  id: "cadet-patrol" | "energy-bloom" | "ion-rush";
+  name: string;
+  nameTh: string;
+  detail: string;
+  detailTh: string;
+  enemyHpMultiplier: number;
+  spawnDelayMultiplier: number;
+  dropMultiplier: number;
+  scoreMultiplier: number;
+  bossPattern: SwarmBossPattern;
+};
+
+const SWARM_VARIANTS: SwarmRunVariant[] = [
+  {
+    id: "cadet-patrol",
+    name: "Cadet Patrol",
+    nameTh: "รอบฝึกนักบิน",
+    detail: "Gentler enemy hulls · Ahr uses expanding rings",
+    detailTh: "ศัตรูพลังน้อยลง · Ahr ยิงเป็นวงรอบตัว",
+    enemyHpMultiplier: 0.9,
+    spawnDelayMultiplier: 1.08,
+    dropMultiplier: 1,
+    scoreMultiplier: 1,
+    bossPattern: "nova-ring",
+  },
+  {
+    id: "energy-bloom",
+    name: "Energy Bloom",
+    nameTh: "พลังงานเบ่งบาน",
+    detail: "Enemies drop more energy · Ahr aims a wide fan",
+    detailTh: "ศัตรูปล่อยพลังเพิ่ม · Ahr ยิงเป็นพัดกว้าง",
+    enemyHpMultiplier: 1,
+    spawnDelayMultiplier: 1,
+    dropMultiplier: 1.45,
+    scoreMultiplier: 1,
+    bossPattern: "aimed-fan",
+  },
+  {
+    id: "ion-rush",
+    name: "Ion Rush",
+    nameTh: "คลื่นไอออน",
+    detail: "More contacts · +15% score · Ahr uses expanding rings",
+    detailTh: "ศัตรูมาเพิ่ม · คะแนน +15% · Ahr ยิงเป็นวงรอบตัว",
+    enemyHpMultiplier: 0.95,
+    spawnDelayMultiplier: 0.9,
+    dropMultiplier: 1,
+    scoreMultiplier: 1.15,
+    bossPattern: "nova-ring",
+  },
+];
+
+export function getSwarmRunVariant(completedRuns: number) {
+  if (completedRuns < 2) return SWARM_VARIANTS[0];
+  return SWARM_VARIANTS[1 + (Math.max(0, completedRuns - 2) % 2)];
+}
+
 export function getSwarmSpawnDelay(elapsed: number, bossActive: boolean) {
   const normalPressure = Math.max(0.5, 1.22 - elapsed * 0.008);
   return normalPressure + (bossActive ? 0.55 : 0);

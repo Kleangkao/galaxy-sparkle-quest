@@ -81,3 +81,59 @@ export function getMasteryTier(mastery: number, lang: "en" | "th" = "en") {
   if (mastery >= 25) return lang === "th" ? "นักสำรวจภาคสนาม" : "Field Scout";
   return lang === "th" ? "ผู้มาใหม่" : "New Arrival";
 }
+
+export type DiscoveryCluePoint = { id: number; x: number; y: number };
+
+export function getDiscoveryDecoyId(
+  targetId: number | undefined,
+  points: DiscoveryCluePoint[],
+  foundIds: number[],
+) {
+  if (targetId === undefined) return undefined;
+  const target = points.find((point) => point.id === targetId);
+  if (!target) return undefined;
+  const available = points.filter((point) => point.id !== targetId && !foundIds.includes(point.id));
+  return available.sort((a, b) => {
+    const distanceA = (a.x - target.x) ** 2 + (a.y - target.y) ** 2;
+    const distanceB = (b.x - target.x) ** 2 + (b.y - target.y) ** 2;
+    return distanceB - distanceA;
+  })[0]?.id;
+}
+
+export function getDiscoveryClue(
+  target: DiscoveryCluePoint | undefined,
+  decoy: DiscoveryCluePoint | undefined,
+  step: number,
+  lang: "en" | "th" = "en",
+) {
+  if (!target) return lang === "th" ? "ตามรอยครบแล้ว" : "Trail complete";
+  const quadrant = target.y < 50
+    ? target.x < 50 ? ["upper-left area", "มุมซ้ายบน"] : ["upper-right area", "มุมขวาบน"]
+    : target.x < 50 ? ["lower-left area", "มุมซ้ายล่าง"] : ["lower-right area", "มุมขวาล่าง"];
+  if (!decoy || step % 3 === 0) {
+    return lang === "th" ? `มองหาจุดที่${quadrant[1]}` : `Search the ${quadrant[0]}`;
+  }
+  if (step % 3 === 1) {
+    const useHorizontal = Math.abs(target.x - decoy.x) >= Math.abs(target.y - decoy.y);
+    if (useHorizontal) {
+      const direction = target.x < decoy.x
+        ? ["farther left", "อยู่ซ้ายกว่า"]
+        : ["farther right", "อยู่ขวากว่า"];
+      return lang === "th" ? `เลือกจุดที่${direction[1]}` : `Choose the signal ${direction[0]}`;
+    }
+    const direction = target.y < decoy.y
+      ? ["higher up", "อยู่สูงกว่า"]
+      : ["lower down", "อยู่ต่ำกว่า"];
+    return lang === "th" ? `เลือกจุดที่${direction[1]}` : `Choose the signal ${direction[0]}`;
+  }
+  const targetCenterDistance = Math.hypot(target.x - 50, target.y - 50);
+  const decoyCenterDistance = Math.hypot(decoy.x - 50, decoy.y - 50);
+  const closerToCenter = targetCenterDistance <= decoyCenterDistance;
+  return lang === "th"
+    ? closerToCenter ? "เลือกจุดที่ใกล้กลางภาพกว่า" : "เลือกจุดที่ใกล้ขอบภาพกว่า"
+    : closerToCenter ? "Choose the signal closer to the center" : "Choose the signal closer to the edge";
+}
+
+export function getDiscoveryResearchChapter(mastery: number) {
+  return Math.min(5, Math.floor(Math.max(0, mastery) / 20) + 1);
+}
