@@ -19,7 +19,7 @@ export interface RunResultData {
   status?: "cleared" | "partial" | "failed" | "no-reward";
 }
 
-export default function UnifiedRunResults({ result, gameState, onDismiss, onExit, onCrew }: { result: RunResultData; gameState: GameState; onDismiss?: () => void; onExit: () => void; onCrew: () => void }) {
+export default function UnifiedRunResults({ result, gameState, onExit, onCrew }: { result: RunResultData; gameState: GameState; onExit: () => void; onCrew: () => void }) {
   const { tr } = useI18n();
   const unlocks = getFreshUnlocks(gameState);
   const improvements = result.improvements?.length
@@ -34,7 +34,7 @@ export default function UnifiedRunResults({ result, gameState, onDismiss, onExit
       : status === "no-reward"
         ? tr("Run ended · no reward earned", "จบรอบแล้ว · ยังไม่ได้รางวัล")
         : tr("Run failed · progress not cleared", "ภารกิจไม่สำเร็จ · ยังไม่ผ่านด่าน");
-  return <Dialog open onOpenChange={(open) => { if (!open) (onDismiss ?? onExit)(); }}>
+  return <Dialog open onOpenChange={(open) => { if (!open) onExit(); }}>
     <DialogContent className={`unified-results is-${status}`} aria-label={tr(`${result.title} results`, `สรุปผล ${result.title}`)}>
       <div className="unified-results__badge"><StatusIcon /></div>
       <div className="command-kicker">{kicker}</div>

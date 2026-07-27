@@ -254,11 +254,56 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
         : gameState.modeRecords.swarmHighScore < 5000
           ? tr("Reach a 5,000 score record.", "ทำสถิติให้ถึง 5,000 คะแนน")
           : tr("All mastery goals cleared. Improve your record or test a new build.", "ผ่านเป้าหมายความชำนาญครบแล้ว ลองทำสถิติใหม่หรือเปลี่ยนชุดพลัง");
+  const perkChoices = [
+    {
+      kind: "damage" as const,
+      name: tr("Heavy Shots", "กระสุนหนัก"),
+      effect: tr("Damage +30%", "โจมตีแรงขึ้น 30%"),
+      pair: tr("Pair with Rapid Fire → Overdrive", "จับคู่กับ ยิงถี่ → โอเวอร์ไดรฟ์"),
+    },
+    {
+      kind: "fireRate" as const,
+      name: tr("Rapid Fire", "ยิงถี่"),
+      effect: tr("Fire 20% faster", "ยิงเร็วขึ้น 20%"),
+      pair: tr("Pair with Heavy Shots → Overdrive", "จับคู่กับ กระสุนหนัก → โอเวอร์ไดรฟ์"),
+    },
+    {
+      kind: "speed" as const,
+      name: tr("Thrusters", "เครื่องยนต์เร่ง"),
+      effect: tr("Move 22% faster", "เคลื่อนที่เร็วขึ้น 22%"),
+      pair: tr("Pair with Energy Pull → Phase Drive", "จับคู่กับ แรงดูดพลัง → เฟสไดรฟ์"),
+    },
+    {
+      kind: "magnet" as const,
+      name: tr("Energy Pull", "แรงดูดพลัง"),
+      effect: tr("Pickup radius +22%", "ระยะเก็บพลังเพิ่ม 22%"),
+      pair: tr("Pair with Thrusters → Phase Drive", "จับคู่กับ เครื่องยนต์เร่ง → เฟสไดรฟ์"),
+    },
+    {
+      kind: "pulse" as const,
+      name: tr("Pulse Recharge", "ชาร์จคลื่นไว"),
+      effect: tr("Pulse cooldown 9s → 7.4s", "รอใช้คลื่นจาก 9 วิ เหลือ 7.4 วิ"),
+      pair: tr("Pair with Field Repair → Guardian Core", "จับคู่กับ ซ่อมฉุกเฉิน → แกนพิทักษ์"),
+    },
+    {
+      kind: "repair" as const,
+      name: tr("Field Repair", "ซ่อมฉุกเฉิน"),
+      effect: tr("Recover 32 hull now", "ฟื้นพลังยาน 32 หน่วยทันที"),
+      pair: tr("Pair with Pulse Recharge → Guardian Core", "จับคู่กับ ชาร์จคลื่นไว → แกนพิทักษ์"),
+    },
+  ];
 
   return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
     <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><span>{tr("Swarm Protocol · Survival", "ฝ่าฝูงศัตรู · เอาตัวรอด")}</span><strong>AHR INCURSION</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
     <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>{tr("Mission objective", "เป้าหมายภารกิจ")}</span><strong>{objectiveText}</strong><small>{tool.name}: {getToolModeSummary(tool, "swarm", lang)}</small>{startingHullBonus > 20 && <small>{tr(`Total loadout hull +${startingHullBonus}`, `พลังยานจากชุด +${startingHullBonus}`)}</small>}{aimBonus > 0 && <small>{tr("Wide aim active", "เปิดช่วยเล็งแบบกว้าง")}</small>}</div>
     <section className="swarm-purpose"><span><Sparkles className="h-4 w-4" /> {tr(`${runVariant.name}: ${runVariant.detail}`, `${runVariant.nameTh}: ${runVariant.detailTh}`)}</span><span><Zap className="h-4 w-4" /> {nextMasteryGoal}</span><button onClick={onOpenHangar}>{tr("Permanent upgrades · Crew Hangar", "อัปเกรดถาวร · จัดทีม")}</button></section>
+    <aside className="swarm-pulse-guide" aria-label={tr("Shock Pulse controls", "วิธีใช้คลื่นกระแทก")}>
+      <Zap className="h-4 w-4" />
+      <div>
+        <strong>{tr("Space / controller A · Shock Pulse", "Space / ปุ่ม A บนจอย · คลื่นกระแทก")}</strong>
+        <span>{tr("Deals 45 damage and clears nearby hazard shots in a wide circle. Recharges in 9 seconds.", "ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัวเป็นวงกว้าง ใช้ซ้ำได้ทุก 9 วินาที")}</span>
+      </div>
+    </aside>
     <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>{tr("Hull", "พลังยาน")}</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>{tr("Perk level", "ระดับพลัง")}</span><strong>{frame.level}</strong><small>{nextPerkAt ? tr(`${frame.energy}/${nextPerkAt} to next perk`, `${frame.energy}/${nextPerkAt} ถึงพลังถัดไป`) : tr("All perks reached", "ได้พลังครบแล้ว")}</small></div><div><Crosshair className="h-4 w-4" /><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong><small>{tr(`${frame.enemies.length} contacts`, `ศัตรู ${frame.enemies.length} ตัว`)}</small></div><div><Zap className="h-4 w-4" /><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong><small>{bossStatus}</small></div></section>
     <div className="combat-arena-wrap"><div className={`combat-arena ${frame.invulnerable > 0 ? "is-hit" : ""} ${frame.bossWarning > 0 ? "boss-warning" : ""} ${frame.bossIntro > 0 ? "boss-arrival" : ""}`} style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}><div className="combat-grid" />
       {frame.bossWarning > 0 && <div className="boss-message is-warning">{tr("AHR WAVE INCOMING", "คลื่นโจมตี AHR กำลังมา")}</div>}
@@ -269,11 +314,11 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : enemy.kind === "elite" ? "◆" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
       {!running && !ended && <div className="combat-overlay"><div className="command-kicker">{tr(`${duration}-second survival · ${runVariant.name}`, `เอาตัวรอด ${duration} วินาที · ${runVariant.nameTh}`)}</div><h1>{tr("Swarm Protocol", "ฝ่าฝูงศัตรู")}</h1><p>{tr("Your weapon fires automatically. Move with WASD or arrows, collect enemy energy, and choose a perk whenever the action pauses. Space activates a safety pulse.", "ปืนจะยิงให้อัตโนมัติ ขยับด้วย WASD หรือปุ่มลูกศร เก็บพลังจากศัตรู แล้วเลือกความสามารถใหม่เมื่อเกมหยุด กด Space เพื่อปล่อยคลื่นป้องกัน")}</p><div className="swarm-start-summary"><span><strong>1</strong>{tr("Dodge & collect", "หลบและเก็บพลัง")}</span><span><strong>2</strong>{tr("Choose perks", "เลือกความสามารถ")}</span><span><strong>3</strong>{tr("Defeat Ahr", "กำจัด Ahr")}</span></div><small>{tr(runVariant.detail, runVariant.detailTh)}</small><small>{tr(`Rewards activate after active movement or collecting ${SWARM_PARTICIPATION.energyCollected} energy.`, `เริ่มรับรางวัลเมื่อขยับหลบอย่างจริงจัง หรือเก็บพลัง ${SWARM_PARTICIPATION.energyCollected} ชิ้น`)}</small><button onClick={reset}><Play className="h-4 w-4" /> {tr("Begin run", "เริ่มเล่น")}</button></div>}
-      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `ความสามารถระดับ ${upgradeLevel}`)}</div><h2>{tr("Choose your build", "เลือกแนวทางของคุณ")}</h2><p>{tr("The run is paused. Pair Power + Rapid, Boost + Magnet, or Pulse + Repair to unlock an evolution.", "เกมหยุดอยู่ จับคู่ พลังโจมตี + ยิงเร็ว, ความเร็ว + แม่เหล็ก หรือ คลื่นป้องกัน + ซ่อมยาน เพื่อปลดพลังผสม")}</p><div className="combat-upgrades"><button onClick={() => chooseUpgrade("damage")}>{tr("Power", "พลังโจมตี")}<strong>{tr("+30% damage", "พลังโจมตี +30%")}</strong></button><button onClick={() => chooseUpgrade("fireRate")}>{tr("Rapid", "ยิงเร็ว")}<strong>{tr("+20% fire rate", "ยิงเร็วขึ้น 20%")}</strong></button><button onClick={() => chooseUpgrade("speed")}>{tr("Boost", "เร่งความเร็ว")}<strong>{tr("+22% speed", "เคลื่อนที่เร็วขึ้น 22%")}</strong></button><button onClick={() => chooseUpgrade("magnet")}>{tr("Magnet", "แม่เหล็ก")}<strong>{tr("+22% pickup range", "ระยะเก็บพลัง +22%")}</strong></button><button onClick={() => chooseUpgrade("pulse")}>{tr("Pulse Core", "แกนคลื่นป้องกัน")}<strong>{tr("-18% pulse cooldown", "รอใช้คลื่นสั้นลง 18%")}</strong></button><button onClick={() => chooseUpgrade("repair")}>{tr("Repair", "ซ่อมยาน")}<strong>{tr("Restore 32 hull", "ซ่อมยาน 32 หน่วย")}</strong></button></div></div>}
+      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `ความสามารถระดับ ${upgradeLevel}`)}</div><h2>{tr("Choose one upgrade", "เลือกอัปเกรด 1 อย่าง")}</h2><p>{tr("Green text is the immediate effect. The smaller line shows which second perk creates an evolution.", "ตัวหนังสือสีเขียวคือผลที่ได้ทันที บรรทัดเล็กบอกว่าต้องจับคู่กับอะไรเพื่อปลดพลังผสม")}</p><div className="combat-upgrades">{perkChoices.map((perk) => <button key={perk.kind} onClick={() => chooseUpgrade(perk.kind)}><span>{perk.name}</span><strong>{perk.effect}</strong><small>{perk.pair}</small></button>)}</div></div>}
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("AHR CORE CLEARED", "ทำลายแกน AHR แล้ว") : tr("RUN COMPLETE", "จบรอบแล้ว")}</div>}
     </div></div>
     <div className="combat-touch" aria-label={tr("Movement controls", "ปุ่มเคลื่อนที่")}><button {...combatInput.directionHandlers("up")} aria-label={tr("Move up", "ขึ้น")}>▲</button><button {...combatInput.directionHandlers("left")} aria-label={tr("Move left", "ซ้าย")}>◀</button><button {...combatInput.directionHandlers("down")} aria-label={tr("Move down", "ลง")}>▼</button><button {...combatInput.directionHandlers("right")} aria-label={tr("Move right", "ขวา")}>▶</button></div>
-    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว · ใช้อนาล็อกซ้าย") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มสัมผัสอยู่") : tr("WASD / arrows · Move", "WASD / ปุ่มลูกศร · เคลื่อนที่")}</span><button onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0}>Space / A · {tr("Pulse", "คลื่นป้องกัน")} {frame.pulseCooldown > 0 ? `${Math.ceil(frame.pulseCooldown)}${lang === "th" ? " วิ" : "s"}` : tr("Ready", "พร้อม")}</button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
+    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว · ใช้อนาล็อกซ้าย") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มสัมผัสอยู่") : tr("WASD / arrows · Move", "WASD / ปุ่มลูกศร · เคลื่อนที่")}</span><button className="combat-pulse-control" onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0} title={tr("45 damage and clears nearby hazard shots", "ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว")}><strong>Space / A · {tr("Shock Pulse", "คลื่นกระแทก")}</strong><small>{frame.pulseCooldown > 0 ? tr(`Ready in ${Math.ceil(frame.pulseCooldown)}s`, `พร้อมอีกครั้งใน ${Math.ceil(frame.pulseCooldown)} วิ`) : tr("45 damage · clears nearby hazards", "ดาเมจ 45 · ลบลูกพลังรอบตัว")}</small></button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
     {boss && <div className="boss-banner">AHR · {tr(runVariant.bossPattern === "aimed-fan" ? "FAN BURST" : "NOVA RING", runVariant.bossPattern === "aimed-fan" ? "ยิงพัดกว้าง" : "คลื่นวงแหวน")} · {tr(`${Math.ceil(boss.hp)} integrity`, `พลัง ${Math.ceil(boss.hp)}`)}{boss.hp <= boss.maxHp * 0.5 ? tr(" · PHASE 2", " · ช่วงที่ 2") : ""}{frame.bossWarning > 0 ? tr(" · ATTACK INCOMING", " · กำลังโจมตี") : ""}</div>}
   </main>;
 }

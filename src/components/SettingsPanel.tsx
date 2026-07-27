@@ -98,7 +98,7 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             <SettingRow label={tr("Movement", "เคลื่อนที่")} detail={tr("WASD or arrows · hold Shift and a direction to dash in Story.", "ใช้ WASD หรือปุ่มลูกศร · กด Shift พร้อมทิศทางเพื่อพุ่งใน Story")}>
               <span className="text-xs font-bold text-cosmic-cyan">WASD</span>
             </SettingRow>
-            <SettingRow label={tr("Combat", "ต่อสู้")} detail={tr("Space uses Swarm pulse · R reloads Arcade · Escape pauses.", "Space ใช้พลังใน Swarm · R เติมกระสุน Arcade · Escape หยุดเกม")}>
+            <SettingRow label={tr("Combat", "ต่อสู้")} detail={tr("Space/controller A uses Swarm Shock Pulse (45 damage and clears nearby hazard shots) · R reloads Arcade · Escape pauses.", "Space / ปุ่ม A บนจอย ใช้คลื่นกระแทกในโหมดฝ่าฝูงศัตรู (ดาเมจ 45 และลบลูกพลังรอบตัว) · R เติมกระสุนในโหมดยิงเป้า · Escape หยุดเกม")}>
               <span className="text-xs font-bold text-cosmic-cyan">Space · R · Esc</span>
             </SettingRow>
             <SettingRow label={tr("Display", "หน้าจอ")} detail={tr("Fullscreen keeps important controls visible.", "เต็มจอช่วยให้เห็นปุ่มสำคัญครบ")}>

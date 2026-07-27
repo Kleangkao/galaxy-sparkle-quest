@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Check, Crosshair, Gauge, Radar, Shield, UserRound, Zap } from "lucide-react";
+import { ArrowLeft, Check, Crosshair, Gauge, PawPrint, Radar, Shield, UserRound, Zap } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import {
   PILOTS,
@@ -24,6 +24,7 @@ interface Props {
   onBuyUpgrade: (id: string, cost: number) => void;
   onBuySkin: (id: string, cost: number) => void;
   onEquipSkin: (id: string) => void;
+  onOpenPets: () => void;
   onBack: () => void;
 }
 
@@ -58,7 +59,13 @@ export default function CrewHangar(props: Props) {
           <h1>{tr("Crew & Hangar", "จัดทีมและโรงเก็บยาน")}</h1>
           <p>{tr("Choose one pilot for your overall play style and one weapon for combat. Every effect names the modes where it works.", "เลือกนักบิน 1 คนตามสไตล์ที่ชอบ และเลือกอาวุธ 1 ชิ้นสำหรับโหมดต่อสู้ แต่ละความสามารถจะบอกชัดว่าใช้กับโหมดไหน")}</p>
         </div>
-        <button className="hangar-ship-link" onClick={() => setView("ship")}>{tr("Ship systems", "ระบบยาน")} →</button>
+        <div className="hangar-header__actions">
+          <button className="hangar-ship-link is-companion" onClick={props.onOpenPets}>
+            <PawPrint className="h-4 w-4" />
+            {tr(`Companions · ${props.gameState.pets.length}`, `เพื่อนร่วมทาง · ${props.gameState.pets.length}`)} →
+          </button>
+          <button className="hangar-ship-link" onClick={() => setView("ship")}>{tr("Ship systems", "ระบบยาน")} →</button>
+        </div>
       </header>
 
       <section className="loadout-summary" aria-label={tr("Active expedition loadout", "ชุดที่ใช้อยู่")}>

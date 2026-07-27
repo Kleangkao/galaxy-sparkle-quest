@@ -333,6 +333,7 @@ describe("public test release hardening", () => {
           onBuyUpgrade={() => undefined}
           onBuySkin={() => undefined}
           onEquipSkin={() => undefined}
+          onOpenPets={() => undefined}
           onBack={() => undefined}
         />
       </I18nProvider>,
@@ -406,14 +407,12 @@ describe("public test release hardening", () => {
     expect(onExit).toHaveBeenCalledOnce();
   });
 
-  it("labels a zero-action Arcade result honestly and lets Escape close only the result", () => {
-    const onDismiss = vi.fn();
+  it("labels a zero-action Arcade result honestly and lets Escape leave the completed run", () => {
     const onExit = vi.fn();
     render(
       <UnifiedRunResults
         result={{ mode: "arcade", status: "no-reward", title: "Assignment incomplete", outcome: "No target was hit.", crystals: 0, xp: 0 }}
         gameState={createNewGameState("mud")}
-        onDismiss={onDismiss}
         onExit={onExit}
         onCrew={() => undefined}
       />,
@@ -422,8 +421,7 @@ describe("public test release hardening", () => {
     expect(screen.getByText("Run ended · no reward earned")).toBeInTheDocument();
     expect(screen.queryByText("Run complete · rewards banked")).not.toBeInTheDocument();
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(onDismiss).toHaveBeenCalledOnce();
-    expect(onExit).not.toHaveBeenCalled();
+    expect(onExit).toHaveBeenCalledOnce();
   });
 
   it("moves the Arcade reticle without rerendering React on every pointer event", () => {

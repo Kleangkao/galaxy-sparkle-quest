@@ -82,6 +82,7 @@ export default function Index() {
   const [guidedOpen, setGuidedOpen] = useState(() => !hasSeenGuidedFlight(gameState.faction));
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const [runResult, setRunResult] = useState<RunResultData | null>(null);
+  const [petsReturnScreen, setPetsReturnScreen] = useState<"map" | "shop">("map");
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [activeRun, setActiveRun] = useState(false);
   const [documentHidden, setDocumentHidden] = useState(() => typeof document !== "undefined" && document.hidden);
@@ -559,7 +560,10 @@ export default function Index() {
       <HUD
         gameState={gameState}
         activeScreen={screen}
-        onNavigate={requestNavigation}
+        onNavigate={(next) => {
+          if (next === "pets") setPetsReturnScreen(screen === "shop" ? "shop" : "map");
+          requestNavigation(next);
+        }}
         onClaimDaily={screen === "map" ? handleClaimDaily : undefined}
         onLogoClick={requestFactionSwitch}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -616,6 +620,10 @@ export default function Index() {
               onBuyUpgrade={handleBuyUpgrade}
               onBuySkin={handleBuySkin}
               onEquipSkin={handleEquipSkin}
+              onOpenPets={() => {
+                setPetsReturnScreen("shop");
+                setScreen("pets");
+              }}
               onBack={() => setScreen("map")}
             />
           </Suspense>
@@ -631,7 +639,8 @@ export default function Index() {
               ownedPets={gameState.pets}
               activePet={gameState.activePet}
               eggs={gameState.eggs}
-              onBack={() => setScreen("map")}
+              backTarget={petsReturnScreen === "shop" ? "crew" : "map"}
+              onBack={() => setScreen(petsReturnScreen)}
               onSetActivePet={handleSetActivePet}
               onHatchEgg={handleStartHatch}
             />
@@ -747,7 +756,7 @@ export default function Index() {
 
       {runResult && (
         <Suspense fallback={null}>
-          <UnifiedRunResults result={runResult} gameState={gameState} onDismiss={() => setRunResult(null)} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
+          <UnifiedRunResults result={runResult} gameState={gameState} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
         </Suspense>
       )}
 

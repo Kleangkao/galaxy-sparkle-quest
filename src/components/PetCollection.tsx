@@ -9,12 +9,13 @@ interface Props {
   ownedPets: string[];
   activePet: string | null;
   eggs: AlienEgg[];
+  backTarget?: "map" | "crew";
   onBack: () => void;
   onSetActivePet: (petId: string) => void;
   onHatchEgg: (egg: AlienEgg) => void;
 }
 
-export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSetActivePet, onHatchEgg }: Props) {
+export default function PetCollection({ ownedPets, activePet, eggs, backTarget = "map", onBack, onSetActivePet, onHatchEgg }: Props) {
   const { tr, lang } = useI18n();
   const [tab, setTab] = useState<"archive" | "eggs">("archive");
   const owned = (petId: string, petName: string) => ownedPets.some((value) => value.toLowerCase() === petId || value.toLowerCase() === petName.toLowerCase());
@@ -26,7 +27,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, onBack, onSe
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
       <button onClick={() => { playClickSound(); onBack(); }} className="hangar-back">
-        <ArrowLeft className="h-4 w-4" /> {tr("Galaxy map", "แผนที่กาเลีย")}
+        <ArrowLeft className="h-4 w-4" /> {backTarget === "crew" ? tr("Crew Hangar", "กลับหน้าจัดทีม") : tr("Galaxy map", "แผนที่กาเลีย")}
       </button>
 
       <div className="companion-archive">

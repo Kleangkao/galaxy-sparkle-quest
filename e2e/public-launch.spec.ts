@@ -226,15 +226,19 @@ test("Thai Swarm keeps its controls visible on a 720p desktop", async ({ page })
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await page.getByRole("button", { name: /ฝ่าฝูงศัตรู/ }).first().click();
   await expect(page.getByText(/ยิงเร็วขึ้น 8% ในฝ่าฝูงศัตรู/)).toBeVisible();
+  await expect(page.getByText(/Space \/ ปุ่ม A บนจอย · คลื่นกระแทก/)).toBeVisible();
+  await expect(page.getByText(/ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว/)).toBeVisible();
   await page.getByRole("button", { name: "เริ่มเล่น" }).click();
 
   const controlsBounds = await page.locator(".combat-controls").boundingBox();
   expect(controlsBounds && controlsBounds.y + controlsBounds.height).toBeLessThanOrEqual(720);
   await expect(page.locator(".combat-touch")).toBeHidden();
   await expect(page.getByRole("button", { name: /หยุด/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Space \/ A · คลื่นกระแทก/ })).toBeVisible();
 });
 
 test("Discovery uses a clue trail and awards only after all six signals", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
   await enterMudGame(page);
   await page.getByRole("button", { name: /Discovery Runs/ }).click();
   await page.getByRole("button", { name: /Explore this area/ }).first().click();
@@ -243,8 +247,24 @@ test("Discovery uses a clue trail and awards only after all six signals", async 
     await page.locator(".discovery-point:not([disabled]):not(.is-found)").first().click();
   }
   await expect(page.getByText(/Trail complete/).first()).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole("button", { name: /Claim journal rewards/ }).click();
-  await expect(page.getByRole("dialog", { name: /Field journal complete/ })).toBeVisible();
+  const results = page.getByRole("dialog", { name: /Field journal complete/ });
+  await expect(results).toBeVisible();
+  const resultsBounds = await results.boundingBox();
+  expect(resultsBounds && resultsBounds.y).toBeGreaterThanOrEqual(0);
+  expect(resultsBounds && resultsBounds.y + resultsBounds.height).toBeLessThanOrEqual(720);
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(page.getByRole("region", { name: "Game modes" })).toBeVisible();
+});
+
+test("Crew Hangar exposes the companion archive and returns to Crew", async ({ page }) => {
+  await enterMudGame(page);
+  await page.getByRole("button", { name: "Crew" }).click();
+  await page.getByRole("button", { name: /Companions/ }).click();
+  await expect(page.getByText("Companion Archive")).toBeVisible();
+  await page.getByRole("button", { name: /Crew Hangar/ }).click();
+  await expect(page.getByRole("heading", { name: /Crew & Hangar/ })).toBeVisible();
 });
 
 test("Discovery restores the top of the page when entering and leaving a biome", async ({ page }) => {

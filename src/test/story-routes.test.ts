@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addStoryRouteItems,
   generateMap,
+  getStoryEnemySpawnCells,
   MISSION_PROFILES,
   PLANET_THEMES,
 } from "@/components/PlanetExploration";
@@ -33,6 +34,21 @@ describe("all Story chapter and route combinations", () => {
           } else {
             expect(items.some((item) => item.id === "salvage-cargo")).toBe(false);
           }
+          const enemyCount = (mission.enemyCount ?? 0) + (route === "salvage" && mission.enemyCount ? 1 : 0);
+          const enemySpawns = getStoryEnemySpawnCells(mission, items, enemyCount);
+          const protectedCells = new Set([
+            ...items.map((item) => `${item.row},${item.col}`),
+            ...(mission.speedTiles ?? []).map(([row, col]) => `${row},${col}`),
+            ...(mission.dropZones ?? []).map(([row, col]) => `${row},${col}`),
+            ...(mission.hazards ?? []).map(([row, col]) => `${row},${col}`),
+            ...(mission.teleportPairs ?? []).flatMap(([a, b]) => [`${a[0]},${a[1]}`, `${b[0]},${b[1]}`]),
+            "7,4",
+          ]);
+          expect(enemySpawns, `${planetId} ${route} must create every patrol`).toHaveLength(enemyCount);
+          expect(
+            enemySpawns.every(([row, col]) => reachable.has(`${row},${col}`) && !protectedCells.has(`${row},${col}`)),
+            `${planetId} ${route} patrols must not spawn on objectives, hazards, portals, or the ship`,
+          ).toBe(true);
           expect(map.requiredCollect).toBe(mission.crystalGoal ?? map.requiredCollect);
         }
       });

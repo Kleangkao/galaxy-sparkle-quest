@@ -455,6 +455,55 @@ function coordKey(row: number, col: number) {
   return `${row},${col}`;
 }
 
+export function getStoryEnemySpawnCells(
+  mission: MissionProfile,
+  items: ExplorationItem[],
+  count: number,
+): Coord[] {
+  if (count <= 0) return [];
+  const reachable = getReachableStoryCellKeys(mission.walls, GRID_ROWS, GRID_COLS);
+  const blocked = new Set((mission.walls ?? []).map(([row, col]) => coordKey(row, col)));
+  (mission.hazards ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.speedTiles ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.dropZones ?? []).forEach(([row, col]) => blocked.add(coordKey(row, col)));
+  (mission.teleportPairs ?? []).forEach(([a, b]) => {
+    blocked.add(coordKey(a[0], a[1]));
+    blocked.add(coordKey(b[0], b[1]));
+  });
+  items.filter((item) => !item.collected).forEach((item) => blocked.add(coordKey(item.row, item.col)));
+  blocked.add(coordKey(GRID_ROWS - 1, Math.floor(GRID_COLS / 2)));
+
+  const directions: Coord[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  const candidates = Array.from(reachable)
+    .filter((key) => !blocked.has(key))
+    .map((key) => key.split(",").map(Number) as Coord)
+    .map(([row, col]) => ({
+      row,
+      col,
+      exits: directions.filter(([dr, dc]) => reachable.has(coordKey(row + dr, col + dc))).length,
+      distance: distFromStart(row, col),
+    }))
+    .filter((cell) => cell.exits >= 2 && cell.distance >= 3)
+    .sort((a, b) => b.exits - a.exits || b.distance - a.distance || a.row - b.row || a.col - b.col);
+
+  const selected: Coord[] = [];
+  for (const candidate of candidates) {
+    if (selected.every(([row, col]) => Math.abs(row - candidate.row) + Math.abs(col - candidate.col) >= 2)) {
+      selected.push([candidate.row, candidate.col]);
+      if (selected.length === count) break;
+    }
+  }
+  if (selected.length < count) {
+    for (const candidate of candidates) {
+      if (!selected.some(([row, col]) => row === candidate.row && col === candidate.col)) {
+        selected.push([candidate.row, candidate.col]);
+        if (selected.length === count) break;
+      }
+    }
+  }
+  return selected;
+}
+
 export function generateMap(theme: PlanetTheme, mission: MissionProfile): { items: ExplorationItem[]; ground: string[][]; decorations: (string | null)[][]; requiredCollect: number } {
   const ground: string[][] = [];
   const decorations: (string | null)[][] = [];
@@ -653,11 +702,11 @@ export default function PlanetExploration({
   const [landing, setLanding] = useState(true);
   const shipPos = useRef({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [enemies, setEnemies] = useState<{ row: number; col: number }[]>(
-    () =>
-      Array.from({ length: (mission.enemyCount ?? 0) + (routeMode === "salvage" && mission.enemyCount ? 1 : 0) }, (_, index) => ({
-        row: 1 + (index % 2),
-        col: GRID_COLS - 2 - index,
-      })),
+    () => getStoryEnemySpawnCells(
+      mission,
+      items,
+      (mission.enemyCount ?? 0) + (routeMode === "salvage" && mission.enemyCount ? 1 : 0),
+    ).map(([row, col]) => ({ row, col })),
   );
   const totalCollected = useRef(0);
   const collectedItemCount = useRef(0);
@@ -691,6 +740,16 @@ export default function PlanetExploration({
     });
     return map;
   }, [mission.teleportPairs]);
+  const patrolBlockedCells = useMemo(() => {
+    const blocked = new Set(walls);
+    hazards.forEach((key) => blocked.add(key));
+    speedTiles.forEach((key) => blocked.add(key));
+    dropZones.forEach(([row, col]) => blocked.add(coordKey(row, col)));
+    teleportMap.forEach((_, key) => blocked.add(key));
+    items.filter((item) => !item.collected).forEach((item) => blocked.add(coordKey(item.row, item.col)));
+    blocked.add(coordKey(shipPos.current.row, shipPos.current.col));
+    return blocked;
+  }, [dropZones, hazards, items, speedTiles, teleportMap, walls]);
 
   const completeOnce = useCallback((result: ExplorationResult) => {
     if (!mountedRef.current || completedRef.current) return;
@@ -1003,8 +1062,9 @@ export default function PlanetExploration({
   useEffect(() => {
     if (landing || gameOver || suspended || enemies.length === 0) return;
     const timer = setInterval(() => {
-      setEnemies((prev) =>
-        prev.map((enemy) => {
+      setEnemies((prev) => {
+        const occupied = new Set(prev.map((enemy) => coordKey(enemy.row, enemy.col)));
+        return prev.map((enemy) => {
           const dirs: Coord[] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
           const chase = Math.random() < 0.35;
           const rowDistance = playerPos.row - enemy.row;
@@ -1016,13 +1076,24 @@ export default function PlanetExploration({
             : dirs[Math.floor(Math.random() * dirs.length)];
           const nr = enemy.row + dr;
           const nc = enemy.col + dc;
-          if (nr < 0 || nr >= GRID_ROWS || nc < 0 || nc >= GRID_COLS || walls.has(coordKey(nr, nc))) return enemy;
+          const nextKey = coordKey(nr, nc);
+          occupied.delete(coordKey(enemy.row, enemy.col));
+          if (
+            nr < 0 || nr >= GRID_ROWS ||
+            nc < 0 || nc >= GRID_COLS ||
+            patrolBlockedCells.has(nextKey) ||
+            occupied.has(nextKey)
+          ) {
+            occupied.add(coordKey(enemy.row, enemy.col));
+            return enemy;
+          }
+          occupied.add(nextKey);
           return { row: nr, col: nc };
-        }),
-      );
+        });
+      });
     }, 900);
     return () => clearInterval(timer);
-  }, [landing, gameOver, suspended, enemies.length, playerPos.row, playerPos.col, walls]);
+  }, [landing, gameOver, suspended, enemies.length, patrolBlockedCells, playerPos.row, playerPos.col]);
 
   useEffect(() => {
     if (landing || gameOver || suspended || enemies.length === 0) return;
@@ -1030,9 +1101,25 @@ export default function PlanetExploration({
     if (collided) {
       applyDamage(playerPos.row, playerPos.col);
       addCollectEffect("👾", 0, playerPos.row, playerPos.col, "robot");
-      setPlayerPos({ row: shipPos.current.row, col: shipPos.current.col });
+      setEnemies((previous) => {
+        const safeCells = getStoryEnemySpawnCells(mission, items, previous.length + 2);
+        const occupied = new Set(
+          previous
+            .filter((enemy) => enemy.row !== playerPos.row || enemy.col !== playerPos.col)
+            .map((enemy) => coordKey(enemy.row, enemy.col)),
+        );
+        return previous.map((enemy) => {
+          if (enemy.row !== playerPos.row || enemy.col !== playerPos.col) return enemy;
+          const retreat = safeCells.find(([row, col]) =>
+            (row !== playerPos.row || col !== playerPos.col) && !occupied.has(coordKey(row, col)),
+          );
+          if (!retreat) return enemy;
+          occupied.add(coordKey(retreat[0], retreat[1]));
+          return { row: retreat[0], col: retreat[1] };
+        });
+      });
     }
-  }, [enemies, playerPos.row, playerPos.col, landing, gameOver, suspended, addCollectEffect, applyDamage]);
+  }, [enemies, playerPos.row, playerPos.col, landing, gameOver, suspended, addCollectEffect, applyDamage, items, mission]);
 
   useEffect(() => {
     if (landing || gameOver || mission.requireReturn) return;
@@ -1206,7 +1293,7 @@ export default function PlanetExploration({
             ? tr("Win condition: complete every counter, then walk back onto the ship tile.", "เงื่อนไขผ่าน: ทำตัวนับให้ครบ แล้วเดินกลับมาที่ช่องยาน")
             : tr("Win condition: complete every counter. Extraction then happens automatically.", "เงื่อนไขผ่าน: ทำตัวนับให้ครบ แล้วระบบจะพากลับอัตโนมัติ")}
         </div>
-        {(mission.enemyCount ?? 0) > 0 && <div className="text-center text-[10px] text-muted-foreground sm:text-xs">{tr("Patrols move continuously. Avoid them—defeating enemies is not required.", "ศัตรูเดินเองตามเวลา แค่หลบให้พ้น ไม่ต้องกำจัดศัตรูก็ผ่านได้")}</div>}
+        {(mission.enemyCount ?? 0) > 0 && <div className="text-center text-[10px] text-muted-foreground sm:text-xs">{tr("Patrols move continuously. Contact drains one hull, but patrols retreat and never lock an objective.", "ศัตรูเดินเองตามเวลา ถ้าชนจะเสียพลังยาน 1 หน่วย แต่ศัตรูจะถอยและไม่ขวางเป้าหมายถาวร")}</div>}
         {mission.bossName && (
           <div className="story-boss-bar" aria-label={`${mission.bossName} shield ${bossShield}%`}>
             <div><span>{tr("Boss encounter", "เผชิญหน้าบอส")}</span><strong>{mission.bossName}</strong><small>{tr("Shield", "เกราะ")} {bossShield}%</small></div>
@@ -1362,6 +1449,7 @@ export default function PlanetExploration({
                     ${isHazard ? "is-hazard" : ""}
                     ${isPatrolSight && !isPlayer ? "is-patrol-sight" : ""}
                     ${isActivatedNode ? "is-activated" : ""}
+                    ${item?.id === trailTargetId ? "is-trail-target-cell" : ""}
                   `}
                 >
                   {isWall && !isPlayer && (
@@ -1401,15 +1489,18 @@ export default function PlanetExploration({
                         </motion.span>
                       ) : (
                         <motion.span
-                          initial={{ scale: 0 }}
                           animate={
                             isOpeningThis
                               ? { scale: [1, 1.5, 0], rotate: [0, 20, -20, 0] }
-                              : { scale: 1, y: [0, -3, 0] }
+                              : item.id === trailTargetId
+                                ? { y: 0 }
+                                : { y: [0, -2, 0] }
                           }
                           transition={
                             isOpeningThis
                               ? { duration: 0.7 }
+                              : item.id === trailTargetId
+                                ? { duration: 0 }
                               : { duration: 1.5 + Math.random(), repeat: Infinity }
                           }
                           className={`${item.type === "robot" ? "animate-pulse" : ""} ${item.id === trailTargetId ? "is-trail-target" : ""}`}
