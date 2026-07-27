@@ -134,6 +134,11 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
     return () => onActiveChange?.(false);
   }, [onActiveChange, phase]);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    return () => cancelAnimationFrame(frame);
+  }, [phase, planet.id]);
+
   const baseCrystals = Math.floor(planet.crystals * getStoryReplayMultiplier(alreadyVisited));
   const routeRewardMultiplier = approachId === "salvage" && phase === "celebration"
     ? (salvageRecovered ? approach.crystalMultiplier : 1)

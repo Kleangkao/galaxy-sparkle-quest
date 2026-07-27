@@ -298,6 +298,7 @@ describe("public test release hardening", () => {
     fireEvent.click(screen.getByRole("button", { name: /Launch Balanced route/ }));
     expect(container.querySelectorAll('[data-story-item-type="crystal"]')).toHaveLength(7);
     expect(container.querySelectorAll(".is-trail-target")).toHaveLength(1);
+    expect(container.querySelectorAll(".is-trail-target-cell")).toHaveLength(0);
   });
 
   it("localizes the live Story tracking marker instead of generating English from CSS", () => {
@@ -344,6 +345,30 @@ describe("public test release hardening", () => {
     expect(screen.getByText("ความแรงอาวุธ +20% ในฝ่าฝูงศัตรูและยิงเป้า")).toBeInTheDocument();
     expect(screen.getByText(/ผ่านเนื้อเรื่องบท 2 หรือภารกิจยิงเป้า 1 ภารกิจ/)).toBeInTheDocument();
     expect(screen.queryByText("+6 seconds in Story, Swarm, and Arcade")).not.toBeInTheDocument();
+  });
+
+  it("uses the equipped ship artwork consistently and returns to Crew from ship systems", () => {
+    const { container } = render(
+      <CrewHangar
+        gameState={{ ...createNewGameState("mud"), activeSkin: "candy-ship", ownedSkins: ["red-rocket", "candy-ship"] }}
+        onSetPilot={() => undefined}
+        onSetTool={() => undefined}
+        onBuyUpgrade={() => undefined}
+        onBuySkin={() => undefined}
+        onEquipSkin={() => undefined}
+        onOpenPets={() => undefined}
+        onBack={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Ship systems/ }));
+
+    const currentMark = container.querySelector(".ship-hangar-current-mark") as HTMLElement;
+    const activeCard = screen.getByRole("button", { name: /Coral Pulse/ });
+    const cardMark = activeCard.querySelector(".galia-hangar-sprite") as HTMLElement;
+    expect(currentMark).toHaveClass("galia-hangar-sprite");
+    expect(currentMark.style.backgroundPosition).toBe(cardMark.style.backgroundPosition);
+    expect(screen.getByRole("button", { name: "Crew Hangar" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Galaxy Map" })).not.toBeInTheDocument();
   });
 
   it("places the required glow node in Story chapter 8", () => {
@@ -447,6 +472,25 @@ describe("public test release hardening", () => {
     }
 
     expect(commits).toBe(commitsBeforeMovement);
+  });
+
+  it("makes an active Arcade reload visible in the arena, HUD, and controls", () => {
+    const { container } = render(
+      <ArcadeShooter
+        gameState={createNewGameState("mud")}
+        onBack={() => undefined}
+        onComplete={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Start assignment" }));
+    const range = container.querySelector(".arcade-range") as HTMLDivElement;
+    fireEvent.pointerDown(range, { clientX: 80, clientY: 80 });
+    fireEvent.click(screen.getByRole("button", { name: /R · Reload/ }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("RELOADING");
+    expect(container.querySelector(".arcade-ammo-card")).toHaveClass("is-reloading");
+    expect(container.querySelector(".arcade-reticle")).toHaveClass("is-reloading");
+    expect(container.querySelector(".arcade-shooter__controls > span")).toHaveClass("is-reloading");
   });
 
   it("suspends Story countdowns while a global modal or hidden tab is active", async () => {

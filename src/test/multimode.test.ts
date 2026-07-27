@@ -175,15 +175,15 @@ describe("multi-mode progression", () => {
   });
 
   it("unlocks PURI abilities at stable milestone thresholds", () => {
-    expect(getPuriBonuses(24)).toMatchObject({ combatMagnet: 1.25, combatHull: 0, discoveryHint: false });
-    expect(getPuriBonuses(75)).toMatchObject({ combatHull: 15, discoveryHint: true, strategyActions: 1, rewardMultiplier: 1 });
+    expect(getPuriBonuses(24)).toMatchObject({ combatMagnet: 1.25, combatHull: 0, arcadeReloadMultiplier: 1, combatDamageMultiplier: 1 });
+    expect(getPuriBonuses(75)).toMatchObject({ combatHull: 15, arcadeReloadMultiplier: 0.85, combatDamageMultiplier: 1.1, rewardMultiplier: 1 });
     expect(getPuriBonuses(100).rewardMultiplier).toBe(1.15);
   });
 
   it("reports PURI progress toward the next named ability", () => {
     const progress = getPuriProgress(32);
     expect(progress.current.ability).toBe("Cushion Shield");
-    expect(progress.next?.ability).toBe("Curious Nose");
+    expect(progress.next?.ability).toBe("Quick Reload");
     expect(progress.progress).toBe(28);
   });
 

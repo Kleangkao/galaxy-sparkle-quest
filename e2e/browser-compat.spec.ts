@@ -17,7 +17,11 @@ test("core bilingual journey works across supported desktop engines", async ({ p
   await page.getByRole("button", { name: /ยิงเป้า/ }).first().click();
   await expect(page.getByRole("heading", { name: /เลือกภารกิจยิงเป้า/ })).toBeVisible();
   await page.getByRole("button", { name: /โหมด/ }).first().click();
-  await page.getByRole("heading", { name: "ออกสำรวจ" }).click();
-  await expect(page.getByText(/ไม่มีเวลาและไม่มีแพ้/).first()).toBeVisible();
+  const modes = page.getByRole("region", { name: /Game modes|โหมดเกม/ });
+  await expect(modes.getByRole("heading", { name: "ผจญภัยตามเนื้อเรื่อง" })).toBeVisible();
+  await expect(modes.getByRole("heading", { name: "ฝ่าฝูงศัตรู" })).toBeVisible();
+  await expect(modes.getByRole("heading", { name: "ยิงเป้าอาร์เคด" })).toBeVisible();
+  await expect(modes.getByText("ออกสำรวจ", { exact: true })).toHaveCount(0);
+  await expect(modes.getByText("วางแผนเส้นทาง", { exact: true })).toHaveCount(0);
   expect(runtimeErrors).toEqual([]);
 });

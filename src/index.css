@@ -707,7 +707,6 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .story-grid-cell.is-hazard::before { border:1px solid hsl(350 90% 64%/.46); background:hsl(350 85% 38%/.13); }
 .story-grid-cell.is-patrol-sight::before { border:1px dashed hsl(350 90% 64%/.32); background:linear-gradient(135deg,transparent 35%,hsl(350 90% 55%/.12) 35% 50%,transparent 50%); }
 .story-grid-cell.is-activated::before { border:1px solid hsl(155 80% 54%/.55); background:hsl(155 80% 35%/.14); }
-.story-grid-cell.is-trail-target-cell::before { border:2px solid hsl(var(--cosmic-yellow)); background:hsl(var(--cosmic-yellow)/.12); box-shadow:inset 0 0 18px hsl(var(--cosmic-yellow)/.14),0 0 18px hsl(var(--cosmic-yellow)/.2); }
 .story-grid-cell.is-extraction { --ship-accent: var(--board-accent); }
 .story-grid-cell.is-extraction.is-skin-red-rocket { --ship-accent:350 90% 64%; }.story-grid-cell.is-extraction.is-skin-candy-ship { --ship-accent:326 90% 70%; }.story-grid-cell.is-extraction.is-skin-ice-ship { --ship-accent:190 94% 62%; }.story-grid-cell.is-extraction.is-skin-jungle-cruiser { --ship-accent:155 78% 54%; }.story-grid-cell.is-extraction.is-skin-rainbow-ship { --ship-accent:276 90% 72%; }.story-grid-cell.is-extraction.is-skin-golden-starship { --ship-accent:44 96% 62%; }
 .story-grid-cell.is-extraction::before { border:1px dashed hsl(var(--ship-accent)/.48); background:hsl(var(--ship-accent)/.09); }
@@ -815,6 +814,10 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .arcade-shooter__hud { position: relative; display: grid; grid-template-columns: repeat(4,1fr); gap: .4rem; margin-bottom: .45rem; padding-bottom: .4rem; }
 .arcade-shooter__hud > div { display: flex; align-items: baseline; justify-content: space-between; padding: .45rem .6rem; border: 1px solid hsl(var(--border) / .5); border-radius: .65rem; background: hsl(var(--card) / .5); }
 .arcade-shooter__hud span { color: hsl(var(--muted-foreground)); font-size: .56rem; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }.arcade-shooter__hud strong { color: white; font-family: var(--font-display); }
+.arcade-ammo-card { flex-wrap:wrap; gap:.15rem .55rem; }
+.arcade-ammo-card small { width:100%; color:hsl(var(--cosmic-cyan)); font-size:.55rem; font-weight:800; text-align:right; }
+.arcade-ammo-card.is-reloading { border-color:hsl(var(--cosmic-yellow)/.72); background:hsl(var(--cosmic-yellow)/.12); box-shadow:inset 0 0 18px hsl(var(--cosmic-yellow)/.08); }
+.arcade-ammo-card.is-reloading strong { color:hsl(var(--cosmic-yellow)); }
 .arcade-shooter__hud > i { position: absolute; right: 0; bottom: 0; left: 0; height: .25rem; overflow: hidden; border-radius: 999px; background: hsl(var(--muted)); }.arcade-shooter__hud > i b { display: block; height: 100%; background: linear-gradient(90deg,hsl(var(--cosmic-orange)),hsl(var(--cosmic-yellow))); }
 .arcade-range-wrap { width: min(100%, calc((100vh - 17rem) * 1.769)); min-width: 42rem; margin-inline: auto; padding: .45rem; border: 1px solid hsl(var(--cosmic-orange) / .28); border-radius: 1.15rem; background: hsl(var(--card) / .46); }
 .arcade-shooter.is-active { padding-top:6.25rem; }
@@ -843,6 +846,12 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 }
 .arcade-range { position: relative; overflow: hidden; cursor: none; border-radius: .8rem; background: radial-gradient(circle at 50% 45%,hsl(220 36% 18%),hsl(240 42% 5%) 72%); }
 .arcade-range__grid { position: absolute; inset: 0; opacity: .18; background-image: linear-gradient(hsl(var(--cosmic-orange) / .18) 1px,transparent 1px),linear-gradient(90deg,hsl(var(--cosmic-orange) / .18) 1px,transparent 1px); background-size: 52px 52px; }
+.arcade-reload-banner { position:absolute; top:.75rem; left:50%; z-index:11; display:flex; width:min(18rem,calc(100% - 2rem)); translate:-50% 0; align-items:center; gap:.65rem; padding:.55rem .7rem; border:1px solid hsl(var(--cosmic-yellow)/.72); border-radius:.8rem; background:hsl(235 40% 8%/.94); color:hsl(var(--cosmic-yellow)); box-shadow:0 8px 28px hsl(40 90% 40%/.2); pointer-events:none; }
+.arcade-reload-banner > div { display:grid; grid-template-columns:1fr auto; gap:.15rem .6rem; width:100%; }
+.arcade-reload-banner strong { font-family:var(--font-display); font-size:.76rem; letter-spacing:.12em; }
+.arcade-reload-banner span { color:white; font-size:.7rem; font-weight:900; }
+.arcade-reload-banner i { grid-column:1/-1; display:block; height:.3rem; overflow:hidden; border-radius:999px; background:hsl(var(--muted)); }
+.arcade-reload-banner i b { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,hsl(var(--cosmic-orange)),hsl(var(--cosmic-yellow))); transition:width 80ms linear; }
 .arcade-target { position: absolute; z-index: 3; display: grid; place-items: center; translate: -50% -50%; border: 3px solid hsl(var(--cosmic-cyan)); border-radius: 999px; background: hsl(var(--cosmic-cyan) / .18); box-shadow: 0 0 18px hsl(var(--cosmic-cyan) / .35); color: white; font-weight: 950; cursor: none; }
 .arcade-target.is-crystal { border-color: hsl(var(--cosmic-yellow)); color: hsl(var(--cosmic-yellow)); }.arcade-target.is-decoy { border-color: hsl(var(--cosmic-red)); background: hsl(var(--cosmic-red) / .2); color: hsl(var(--cosmic-red)); }.arcade-target.is-boss { overflow: visible; border-color: hsl(var(--cosmic-orange)); }
 .arcade-target.is-boss img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }.arcade-target i { position: absolute; top: -.55rem; width: 130%; height: .25rem; overflow: hidden; border-radius: 999px; background: black; }.arcade-target i b { display: block; height: 100%; background: hsl(var(--cosmic-orange)); }
@@ -853,11 +862,13 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .arcade-target__weakpoint { position:absolute; left:50%; top:42%; width:22%; height:22%; transform:translate(-50%,-50%); border:2px solid hsl(var(--cosmic-yellow)); border-radius:999px; background:hsl(var(--cosmic-pink)/.7); box-shadow:0 0 16px hsl(var(--cosmic-yellow)/.85); pointer-events:none; }
 .arcade-reticle { position:absolute; left:0; top:0; z-index:8; display:grid; width:2.2rem; height:2.2rem; place-items:center; color:white; filter:drop-shadow(0 0 5px hsl(var(--cosmic-orange))); pointer-events:none; will-change:transform; transform:translate3d(-100px,-100px,0); contain:layout paint; }
 .arcade-reticle svg { width: 100%; height: 100%; }
+.arcade-reticle.is-reloading { color:hsl(var(--cosmic-yellow)); opacity:.38; filter:drop-shadow(0 0 5px hsl(var(--cosmic-yellow))); }
 .arcade-overlay { position: absolute; z-index: 12; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; cursor: default; text-align: center; background: hsl(var(--background) / .84); backdrop-filter: blur(8px); }
 .arcade-overlay h2 { margin-top: .2rem; font-family: var(--font-hero); font-size: clamp(2rem,5vw,4rem); font-weight: 950; color: white; }.arcade-overlay p { max-width: 34rem; margin-top: .4rem; color: hsl(var(--muted-foreground)); font-size: .78rem; }
 .arcade-overlay > button, .arcade-overlay__actions button { display: inline-flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .4rem; margin-top: .9rem; padding: .65rem 1rem; border-radius: .75rem; background: hsl(var(--cosmic-orange)); color: hsl(230 35% 8%); font-weight: 950; }
 .arcade-overlay__actions { display: flex; gap: .45rem; }.arcade-overlay__actions button:last-child { background: hsl(var(--card)); color: white; }
 .arcade-shooter__controls { display: flex; align-items: center; justify-content: center; gap: .5rem; margin-top: .5rem; }.arcade-shooter__controls span { padding: .55rem .7rem; color: hsl(var(--muted-foreground)); font-size: .65rem; }
+.arcade-shooter__controls span.is-reloading { border:1px solid hsl(var(--cosmic-yellow)/.5); border-radius:.7rem; background:hsl(var(--cosmic-yellow)/.1); color:hsl(var(--cosmic-yellow)); font-weight:950; letter-spacing:.04em; }
 
 .discovery-how { margin: .8rem 0 1rem; }.discovery-how svg { color: hsl(var(--cosmic-green)); }
 .discovery-run-guide { display: grid; grid-template-columns: 1fr 1fr auto; gap: .5rem; margin: .65rem 0; }
@@ -1076,6 +1087,8 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
     background: hsl(var(--card) / 0.92); color: white; font-family: var(--font-display); font-size: 0.75rem; font-weight: 800;
     box-shadow: 0 12px 30px hsl(230 70% 2% / 0.32); backdrop-filter: blur(14px);
   }
+  .ship-hangar-back { align-self: flex-start; }
+  .ship-hangar-current-mark { width: 5.5rem; height: 4rem; filter: drop-shadow(0 10px 18px hsl(var(--cosmic-cyan) / .24)); }
 
   .hangar-header { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 1.25rem; }
   .hangar-header h1 { margin-top: 0.3rem; font-family: var(--font-hero); font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 950; line-height: 1; letter-spacing: -0.05em; color: white; }

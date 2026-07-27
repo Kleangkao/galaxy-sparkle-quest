@@ -47,10 +47,10 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
   const pilot = getPilot(gameState.activePilot);
   const tool = getTool(gameState.activeTool);
   const modifiers = getGameplayModifiers(gameState);
-  const magazine = BASE_MAGAZINE + modifiers.arcadeMagazineBonus;
-  const reloadDuration = 1.05 * modifiers.arcadeReloadMultiplier;
-  const duration = contract.duration + modifiers.missionTimeBonus;
   const puri = getPuriBonuses(gameState.modeRecords.puriBond);
+  const magazine = BASE_MAGAZINE + modifiers.arcadeMagazineBonus;
+  const reloadDuration = 1.05 * modifiers.arcadeReloadMultiplier * puri.arcadeReloadMultiplier;
+  const duration = contract.duration + modifiers.missionTimeBonus;
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const [ended, setEnded] = useState(false);
@@ -157,7 +157,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
       state.hits += 1;
       playImpactSound();
       const weakPointHit = target.kind === "boss" && (state.combo + 1) % 4 === 0;
-      target.hp -= modifiers.combatDamage * (weakPointHit ? 2 : 1);
+      target.hp -= modifiers.combatDamage * puri.combatDamageMultiplier * (weakPointHit ? 2 : 1);
       state.combo += 1;
       state.bestCombo = Math.max(state.bestCombo, state.combo);
       if (target.kind === "crystal") {
@@ -179,7 +179,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
     }
     if (state.ammo <= 0) state.reloading = reloadDuration;
     setFrame({ ...state, targets: [...state.targets] });
-  }, [effectivePaused, modifiers.combatDamage, reload, reloadDuration, running, tr]);
+  }, [effectivePaused, modifiers.combatDamage, puri.combatDamageMultiplier, reload, reloadDuration, running, tr]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -289,6 +289,9 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
     : contract.objective === "energy"
       ? Math.min(1, frame.energy / contract.target)
       : Math.min(1, frame.score / contract.target);
+  const isReloading = frame.reloading > 0;
+  const reloadProgress = isReloading ? Math.max(0, Math.min(1, 1 - frame.reloading / reloadDuration)) : 1;
+  const reloadSeconds = Math.max(0.1, Math.ceil(frame.reloading * 10) / 10);
 
   return (
     <main className={`arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
@@ -308,7 +311,11 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
         <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong></div>
         <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
         <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "—"}</strong></div>
-        <div><span>{contract.objective === "energy" ? tr("Signals", "สัญญาณ") : tr("Ammo", "กระสุน")}</span><strong>{contract.objective === "energy" ? `${frame.energy}/${contract.target}` : `${frame.ammo}/${magazine}`}</strong></div>
+        <div className={isReloading ? "arcade-ammo-card is-reloading" : "arcade-ammo-card"}>
+          <span>{tr("Ammo", "กระสุน")}</span>
+          <strong>{frame.ammo}/{magazine}</strong>
+          {contract.objective === "energy" && <small>{tr("Signals", "สัญญาณ")} {frame.energy}/{contract.target}</small>}
+        </div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
 
@@ -320,6 +327,16 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
           style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}
         >
           <div className="arcade-range__grid" />
+          {isReloading && running && !effectivePaused && (
+            <div className="arcade-reload-banner" role="status" aria-live="assertive">
+              <RotateCcw className="h-5 w-5" />
+              <div>
+                <strong>{tr("RELOADING", "กำลังเติมกระสุน")}</strong>
+                <span>{reloadSeconds}{lang === "th" ? " วิ" : "s"}</span>
+                <i><b style={{ width: `${reloadProgress * 100}%` }} /></i>
+              </div>
+            </div>
+          )}
           {frame.targets.map((target) => (
             <button
               key={target.id}
@@ -333,7 +350,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
             </button>
           ))}
           {shotFeedback.map((feedback) => <span key={feedback.id} className={`arcade-hit-feedback is-${feedback.tone}`} style={{ left: `${feedback.x / WIDTH * 100}%`, top: `${feedback.y / HEIGHT * 100}%` }}>{feedback.text}</span>)}
-          <span ref={reticleRef} className="arcade-reticle"><Crosshair /></span>
+          <span ref={reticleRef} className={`arcade-reticle ${isReloading ? "is-reloading" : ""}`}><Crosshair /></span>
 
           {!running && !ended && (
             <div className="arcade-overlay">
@@ -350,7 +367,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
       </div>
 
       <footer className="arcade-shooter__controls">
-        <span>{frame.reloading > 0 ? tr(`Reloading ${Math.ceil(frame.reloading * 10) / 10}s`, `กำลังเติมกระสุน ${Math.ceil(frame.reloading * 10) / 10} วิ`) : tr("Mouse · aim and fire", "เมาส์ · เล็งและยิง")}</span>
+        <span className={isReloading ? "is-reloading" : ""}>{isReloading ? tr(`RELOADING · ${reloadSeconds}s`, `กำลังเติมกระสุน · ${reloadSeconds} วิ`) : tr("Mouse · aim and fire", "เมาส์ · เล็งและยิง")}</span>
         <button onClick={reload} disabled={!running || effectivePaused || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · {tr("Reload", "เติมกระสุน")}</button>
         <button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button>
       </footer>

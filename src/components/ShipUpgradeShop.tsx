@@ -1,4 +1,4 @@
-import { GameState, SHIP_UPGRADES, SHIP_SKINS, getActiveShipEmoji, getUpgradeCost, getUpgradeEffectAtTier, getUpgradeTier, MAX_UPGRADE_TIER } from "@/lib/gameState";
+import { GameState, SHIP_UPGRADES, SHIP_SKINS, getUpgradeCost, getUpgradeEffectAtTier, getUpgradeTier, MAX_UPGRADE_TIER } from "@/lib/gameState";
 import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
@@ -18,7 +18,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const ownedSkins = gameState.ownedSkins || ["red-rocket"];
   const upgrades = gameState.upgrades || [];
-  const activeShipEmoji = getActiveShipEmoji(gameState);
+  const activeSkin = SHIP_SKINS.find((skin) => skin.id === gameState.activeSkin) ?? SHIP_SKINS[0];
   const installedUpgrades = SHIP_UPGRADES.filter((upgrade) => upgrades.includes(upgrade.id));
   const availableUpgrades = SHIP_UPGRADES.filter((upgrade) => !upgrades.includes(upgrade.id));
 
@@ -27,11 +27,11 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
       <button onClick={onBack}
         className="ship-hangar-back flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-colors hover:bg-card">
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-        <span className="text-xs sm:text-sm font-bold">{t("galaxyMap")}</span>
+        <span className="text-xs sm:text-sm font-bold">{tr("Crew Hangar", "กลับหน้าจัดทีม")}</span>
       </button>
 
       <div className="mb-3 text-center animate-slide-up sm:mb-4">
-        <div className="text-3xl sm:text-4xl md:text-5xl mb-2 animate-float">{activeShipEmoji}</div>
+        <ShipSkinVisual skin={activeSkin} className="ship-hangar-current-mark mx-auto mb-2 animate-float" />
         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-[-0.03em] text-white" style={{ fontFamily: "var(--font-hero)" }}>{t("shipHangar")}</h2>
         <p className="text-[10px] sm:text-xs text-muted-foreground">💎 {gameState.crystals} {t("crystals")}</p>
       </div>
@@ -46,7 +46,10 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
         </div>
         <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">{tr("Current ship", "ยานที่ใช้อยู่")}</div>
-          <div className="mt-1 text-lg font-black text-white" style={{ fontFamily: "var(--font-display)" }}>{activeShipEmoji}</div>
+          <div className="mt-1 flex items-center justify-center gap-2 text-sm font-black text-white" style={{ fontFamily: "var(--font-display)" }}>
+            <ShipSkinVisual skin={activeSkin} className="h-8 w-12" />
+            <span>{lang === "th" ? activeSkin.nameTh : activeSkin.name}</span>
+          </div>
         </div>
       </div>
 
@@ -80,8 +83,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                   ${active ? "border-cosmic-green bg-cosmic-green/10 scale-105" : owned ? "border-border bg-card/60 hover:scale-[1.03] cursor-pointer" : canAfford && levelOk ? "border-border bg-card/40 hover:bg-card/60 cursor-pointer" : "border-border/40 bg-card/20 opacity-50"}
                 `}>
                 <div className="mb-0.5 flex h-10 items-center justify-center sm:mb-1">
-                  <GaliaHangarSprite id={skin.id} className="h-10 w-14" />
-                  {!["red-rocket", "candy-ship", "ice-ship", "jungle-cruiser"].includes(skin.id) && <span className="text-xl sm:text-2xl">{skin.emoji}</span>}
+                  <ShipSkinVisual skin={skin} className="h-10 w-14" />
                 </div>
                 <div className="text-[11px] sm:text-xs font-bold text-foreground mt-1">{lang === "th" ? skin.nameTh : skin.name}</div>
                 {active && <span className="text-[10px] sm:text-[11px] text-cosmic-green font-bold">{t("equipped")}</span>}
@@ -177,4 +179,11 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
       <ConfirmActionDialog action={confirmAction} onClose={() => setConfirmAction(null)} />
     </div>
   );
+}
+
+const SPRITE_SHIP_IDS = new Set(["red-rocket", "candy-ship", "ice-ship", "jungle-cruiser"]);
+
+function ShipSkinVisual({ skin, className = "" }: { skin: (typeof SHIP_SKINS)[number]; className?: string }) {
+  if (SPRITE_SHIP_IDS.has(skin.id)) return <GaliaHangarSprite id={skin.id} className={className} />;
+  return <span aria-hidden="true" className={`inline-grid place-items-center text-2xl ${className}`}>{skin.emoji}</span>;
 }

@@ -1449,7 +1449,6 @@ export default function PlanetExploration({
                     ${isHazard ? "is-hazard" : ""}
                     ${isPatrolSight && !isPlayer ? "is-patrol-sight" : ""}
                     ${isActivatedNode ? "is-activated" : ""}
-                    ${item?.id === trailTargetId ? "is-trail-target-cell" : ""}
                   `}
                 >
                   {isWall && !isPlayer && (

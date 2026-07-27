@@ -39,8 +39,8 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
             <div className="command-kicker"><Radio className="h-4 w-4" /> {tr("Companion Archive", "คลังเพื่อนร่วมทาง")}</div>
             <h1>{tr("Find a friend. Build a bond.", "ออกตามหา แล้วเติบโตไปด้วยกัน")}</h1>
             <p>{tr(
-              "Companions are practical crew partners, not a separate sticker collection. Equip one ability for every activity and recover new signals through Story and Discovery.",
-              "เพื่อนร่วมทางช่วยทีมได้จริง เลือกใช้ความสามารถได้ 1 อย่างในทุกโหมด และออกตามหาสัญญาณใหม่จากเนื้อเรื่องกับโหมดสำรวจ",
+              "Companions are practical crew partners, not a separate sticker collection. Equip one ability for every activity and recover new signals through Story expeditions.",
+              "เพื่อนร่วมทางช่วยทีมได้จริง เลือกใช้ความสามารถได้ 1 อย่างในทุกโหมด และออกตามหาสัญญาณใหม่จากการเล่นเนื้อเรื่อง",
             )}</p>
             <div className="companion-archive__stats">
               <div><span>{tr("Archive records", "บันทึกที่พบ")}</span><strong>{ownedCount}/{ALIEN_PETS.length}</strong></div>
@@ -68,7 +68,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
                       <div className="companion-record__copy">
                         <div className="command-kicker">{isActive ? tr("Active companion", "กำลังร่วมทีม") : isOwned ? tr("Archive confirmed", "บันทึกแล้ว") : tr("Signal not recovered", "ยังไม่พบสัญญาณ")}</div>
                         <h3>{isOwned ? pet.name : tr("UNKNOWN SIGNAL", "สัญญาณที่ยังไม่รู้จัก")}</h3>
-                        <p>{isOwned ? (lang === "th" ? pet.ability.descTh : pet.ability.descEn) : tr("Find this companion during Story or Discovery.", "ตามหาได้จากเนื้อเรื่องหรือโหมดสำรวจ")}</p>
+                        <p>{isOwned ? (lang === "th" ? pet.ability.descTh : pet.ability.descEn) : tr("Find this companion during Story expeditions.", "ตามหาเพื่อนตัวนี้ได้จากการเล่นเนื้อเรื่อง")}</p>
                         {isOwned && !isActive && <button onClick={() => onSetActivePet(pet.id)}>{tr("Add to active crew", "เลือกเข้าร่วมทีม")}</button>}
                         {isActive && <p className="!text-cosmic-green"><ShieldCheck className="mr-1 inline h-4 w-4" />{tr("Ability is active in supported modes", "ความสามารถพร้อมใช้ในโหมดที่รองรับ")}</p>}
                       </div>
@@ -89,7 +89,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
             </motion.section>
           ) : (
             <motion.section key="eggs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {eggs.length === 0 ? <div className="col-span-full rounded-2xl border border-border/50 bg-card/30 p-10 text-center text-sm text-muted-foreground">{tr("No egg signals are waiting. Story and Discovery can uncover them.", "ตอนนี้ยังไม่มีไข่รอฟัก ลองตามหาจากเนื้อเรื่องหรือโหมดสำรวจ")}</div> : eggs.map((egg) => {
+              {eggs.length === 0 ? <div className="col-span-full rounded-2xl border border-border/50 bg-card/30 p-10 text-center text-sm text-muted-foreground">{tr("No egg signals are waiting. Story expeditions can uncover them.", "ตอนนี้ยังไม่มีไข่รอฟัก ลองตามหาจากการเล่นเนื้อเรื่อง")}</div> : eggs.map((egg) => {
                 const colors = EGG_COLORS[egg.rarity];
                 return <article key={egg.id} className={`rounded-2xl border-2 ${colors.border} ${colors.bg} p-5`}>
                   <Egg className="h-12 w-12 text-cosmic-pink" />

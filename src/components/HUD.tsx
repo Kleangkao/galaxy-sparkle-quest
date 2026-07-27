@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Binoculars,
   Crosshair,
   Gamepad2,
   Info,
@@ -19,7 +18,7 @@ import { GameState, getRank, getXPProgress, getFaction, canClaimDaily, countCont
 import { useI18n } from "@/lib/i18n";
 import LanguageToggle from "@/components/LanguageToggle";
 
-export type AppScreen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "discovery" | "strategy" | "progress";
+export type AppScreen = "hub" | "map" | "planet" | "shop" | "pets" | "info" | "swarm" | "arcade-select" | "arcade" | "progress";
 
 interface Props {
   gameState: GameState;
@@ -42,8 +41,6 @@ const DOCK_ITEMS: DockItem[] = [
   { label: "Story", icon: Map, screen: "map", active: (screen) => screen === "map" || screen === "planet" },
   { label: "Swarm", icon: Swords, screen: "swarm", active: (screen) => screen === "swarm" },
   { label: "Arcade", icon: Crosshair, screen: "arcade-select", active: (screen) => screen === "arcade" || screen === "arcade-select" },
-  { label: "Discover", icon: Binoculars, screen: "discovery", active: (screen) => screen === "discovery" },
-  { label: "Control", icon: Shield, screen: "strategy", active: (screen) => screen === "strategy" },
   { label: "Progress", icon: Trophy, screen: "progress", active: (screen) => screen === "progress" },
   { label: "Crew", icon: Users, screen: "shop", active: (screen) => screen === "shop" },
 ];
@@ -119,8 +116,6 @@ function DockButton({ item, activeScreen, onNavigate }: { item: DockItem; active
         Story: "เนื้อเรื่อง",
         Swarm: "ฝ่าศัตรู",
         Arcade: "ยิงเป้า",
-        Discover: "สำรวจ",
-        Control: "วางแผน",
         Progress: "ความคืบหน้า",
         Crew: "จัดทีม",
       }[item.label] ?? item.label)}</span>

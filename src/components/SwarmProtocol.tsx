@@ -155,7 +155,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       }
 
       const target = state.enemies.reduce<Enemy | null>((best, enemy) => !best || distance(enemy, state.player) < distance(best, state.player) ? enemy : best, null);
-      if (target && state.fireTimer <= 0) { const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x); state.shots.push({ id: state.nextId++, x: state.player.x, y: state.player.y, vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430, damage: 13 * upgrades.current.damage * modifiers.combatDamage }); state.fireTimer = 0.58 / (upgrades.current.fireRate * modifiers.combatFireRate); }
+      if (target && state.fireTimer <= 0) { const angle = Math.atan2(target.y - state.player.y, target.x - state.player.x); state.shots.push({ id: state.nextId++, x: state.player.x, y: state.player.y, vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430, damage: 13 * upgrades.current.damage * modifiers.combatDamage * puri.combatDamageMultiplier }); state.fireTimer = 0.58 / (upgrades.current.fireRate * modifiers.combatFireRate); }
       state.shots.forEach((shot) => { shot.x += shot.vx * dt; shot.y += shot.vy * dt; });
       state.shots = state.shots.filter((shot) => shot.x > -30 && shot.x < WIDTH + 30 && shot.y > -30 && shot.y < HEIGHT + 30);
 
@@ -220,7 +220,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       if (state.hp <= 0) finish(false); else if (success) finish(true); else if (state.elapsed >= duration) finish(false);
     }, tickMs);
     return () => window.clearInterval(timer);
-  }, [aimBonus, bossTime, duration, effectivePaused, finish, gameState.accessibility.combatSpeed, gameState.modeRecords.swarmRuns, inputVector, modifiers.combatDamage, modifiers.combatFireRate, puri.combatMagnet, runVariant.bossPattern, runVariant.dropMultiplier, runVariant.enemyHpMultiplier, runVariant.scoreMultiplier, runVariant.spawnDelayMultiplier, running, upgradeLevel]);
+  }, [aimBonus, bossTime, duration, effectivePaused, finish, gameState.accessibility.combatSpeed, gameState.modeRecords.swarmRuns, inputVector, modifiers.combatDamage, modifiers.combatFireRate, puri.combatDamageMultiplier, puri.combatMagnet, runVariant.bossPattern, runVariant.dropMultiplier, runVariant.enemyHpMultiplier, runVariant.scoreMultiplier, runVariant.spawnDelayMultiplier, running, upgradeLevel]);
 
   const chooseUpgrade = (kind: "damage" | "speed" | "fireRate" | "magnet" | "pulse" | "repair") => {
     if (kind === "repair") { arena.current.hp = Math.min(arena.current.maxHp, arena.current.hp + 32); upgrades.current.repairCount += 1; }

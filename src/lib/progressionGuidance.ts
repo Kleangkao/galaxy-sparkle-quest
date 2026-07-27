@@ -24,7 +24,7 @@ export function getProgressGoal(state: GameState): ProgressGoal {
   if (upgrade) {
     const tier = getUpgradeTier(state, upgrade.id);
     const cost = getUpgradeCost(upgrade, tier);
-    return { title: `${upgrade.name} Tier ${tier + 1}`, titleTh: `${upgrade.name} ระดับ ${tier + 1}`, detail: `${Math.max(0, cost - state.crystals)} more crystals needed in the Crew Hangar.`, detailTh: `ต้องการอีก ${Math.max(0, cost - state.crystals)} คริสตัล แล้วไปอัปเกรดที่หน้าจัดทีม`, mode: state.modeRecords.discoveryFinds < 18 ? "discovery" : "swarm", progress: Math.min(1, state.crystals / cost) };
+    return { title: `${upgrade.name} Tier ${tier + 1}`, titleTh: `${upgrade.name} ระดับ ${tier + 1}`, detail: `${Math.max(0, cost - state.crystals)} more crystals needed in the Crew Hangar.`, detailTh: `ต้องการอีก ${Math.max(0, cost - state.crystals)} คริสตัล แล้วไปอัปเกรดที่หน้าจัดทีม`, mode: "swarm", progress: Math.min(1, state.crystals / cost) };
   }
   return { title: "Master the frontier", titleTh: "พิชิตกาเลียให้สมบูรณ์", detail: "Push a favorite record and complete the ten-chapter campaign.", detailTh: "ทำสถิติโหมดที่ชอบ และผ่านเนื้อเรื่องให้ครบ 10 บท", mode: "story", progress: state.visitedPlanets.length / PLANETS.length };
 }
@@ -35,8 +35,6 @@ export function getFreshUnlocks(state: GameState) {
   TOOLS.forEach((tool) => { if (tool.id !== "echo-scanner" && getToolUnlock(tool.id, state).unlocked) unlocks.push(`${tool.name} available`); });
   if (state.modeRecords.swarmHighScore >= 1500) unlocks.push("Swarm Hull: +1 Story HP active");
   if (Object.values(state.modeRecords.arcadeContracts).some((record) => record.clears > 0)) unlocks.push("Arcade Dash active in Story");
-  if (state.modeRecords.discoveryFinds >= 18) unlocks.push("Field Scanner: +10% companion chance");
-  if (state.modeRecords.strategyObjectives >= 2) unlocks.push("Frontier Network: +10% crystals");
   return [...new Set(unlocks)].slice(-3);
 }
 

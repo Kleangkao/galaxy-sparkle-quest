@@ -1,10 +1,10 @@
-import { ArrowRight, Binoculars, Crosshair, Gamepad2, Map, Sparkles, Swords, Trophy, Users } from "lucide-react";
+import { ArrowRight, Crosshair, Gamepad2, Map, Sparkles, Swords, Trophy, Users } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { getPilot, getPilotCallsign } from "@/lib/loadouts";
 import PuriBondPanel from "@/components/PuriBondPanel";
 import { useI18n } from "@/lib/i18n";
 
-export type PlayMode = "story" | "arcade" | "discovery" | "strategy" | "swarm";
+export type PlayMode = "story" | "arcade" | "swarm";
 
 interface Props {
   gameState: GameState;
@@ -47,20 +47,6 @@ const MODES: Array<{
     play: "Mouse aim · click fire · R reload", progress: "Contract records · crystals · XP",
     th: { name: "ยิงเป้าอาร์เคด", label: "แอ็กชัน", description: "เล็งด้วยเมาส์ ยิงเป้าที่เคลื่อนที่ หลบเป้าหลอก ต่อคอมโบ และยิงจุดอ่อนของบอส", status: "เล็งและยิง", play: "เล็งเมาส์ · คลิกยิง · กด R เติมกระสุน", progress: "สถิติ · คริสตัล · XP" },
   },
-  {
-    id: "discovery", name: "Discovery Runs", label: "Relax", icon: Binoculars,
-    description: "A relaxed clue hunt. Follow the active signal, choose between nearby leads, and complete a six-entry field journal.",
-    image: "/assets/galia-current/discovery-scout-v1.webp", color: "green", status: "Hidden objects",
-    play: "Pick biome · follow clues · complete journal", progress: "Biome mastery · lore · crystals",
-    th: { name: "ออกสำรวจ", label: "เล่นสบาย ๆ", description: "ตามสัญญาณที่กำลังทำงาน เลือกร่องรอยใกล้เคียงให้ถูก และเติมสมุดสำรวจให้ครบ 6 รายการ", status: "ตามรอยสัญญาณ", play: "เลือกพื้นที่ · ตามคำใบ้ · เติมสมุด", progress: "ความชำนาญ · เรื่องราว · คริสตัล" },
-  },
-  {
-    id: "strategy", name: "Frontier Control", label: "Strategy-lite", icon: Sparkles,
-    description: "A four-jump relay puzzle. Choose safer or riskier routes, protect the hull, and reach the final beacon.",
-    image: "/assets/galia-current/mud-leader-charon-master-v2.webp", color: "yellow", status: "4-turn puzzle",
-    play: "Read forecast · choose route · make 4 jumps", progress: "Influence · captures · command rewards",
-    th: { name: "วางแผนเส้นทาง", label: "วางแผน", description: "อ่านสภาพเส้นทาง เลือกทางปลอดภัยหรือทางเสี่ยง รักษาพลังยาน และไปให้ถึงจุดส่งสัญญาณสุดท้าย", status: "4 ช่วงทาง", play: "อ่านข้อมูล · เลือกทาง · เดินทาง 4 ครั้ง", progress: "คะแนนพื้นที่ · การยึดครอง · รางวัล" },
-  },
 ];
 
 export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCrew }: Props) {
@@ -74,7 +60,7 @@ export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCre
         <div>
           <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> {tr("Galia operations network", "ศูนย์ภารกิจแห่งกาเลีย")}</div>
           <h1>{tr("Choose today’s", "วันนี้อยากออกไป")}<br /><span>{tr("frontier operation.", "ผจญภัยแบบไหน?")}</span></h1>
-          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Every operation advances the same campaign.", "รวมทีม Guardian ออกตามหาที่มาของสัญญาณปริศนา และเตรียมพร้อมก่อนเดินทางสู่ Aurora Crown ไม่ว่าจะเลือกเล่นโหมดไหน ทีมของคุณก็แข็งแกร่งขึ้น")}</p>
+          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Story, Swarm, and Arcade all strengthen the same crew.", "รวมทีม Guardian ออกตามหาที่มาของสัญญาณปริศนา และเตรียมพร้อมก่อนเดินทางสู่ Aurora Crown ทั้งเนื้อเรื่อง ฝ่าฝูง และยิงเป้า จะช่วยให้ทีมเดียวกันแข็งแกร่งขึ้น")}</p>
         </div>
         <div className="mode-hub__aside">
           <div className="mode-hub__captain">

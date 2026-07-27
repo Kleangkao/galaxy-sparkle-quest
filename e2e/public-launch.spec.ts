@@ -63,7 +63,7 @@ test("404 route offers a safe return to the game", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Return to game|กลับเข้าเกม/ })).toHaveAttribute("href", "/");
 });
 
-test("new player can choose a faction and reach every game category", async ({ page }) => {
+test("new player can choose a faction and reach the three public game modes", async ({ page }) => {
   await page.getByRole("button", { name: /MUD/ }).click();
   await page.getByRole("button", { name: /Continue with MUD/ }).click();
   await page.getByRole("button", { name: /Skip guided flight/ }).click();
@@ -73,8 +73,8 @@ test("new player can choose a faction and reach every game category", async ({ p
   await expect(modes).toContainText("Story Expeditions");
   await expect(modes).toContainText("Swarm Protocol");
   await expect(modes).toContainText("Arcade Ops");
-  await expect(modes).toContainText("Discovery Runs");
-  await expect(modes).toContainText("Frontier Control");
+  await expect(modes).not.toContainText("Discovery Runs");
+  await expect(modes).not.toContainText("Frontier Control");
 });
 
 test("public entry and mode hub have no serious accessibility violations", async ({ page }) => {
@@ -208,7 +208,7 @@ test("Settings pause Swarm and leaving a live run requires confirmation", async 
   await page.waitForTimeout(1_100);
   await expect(timeValue).not.toHaveText(beforeSettings ?? "");
 
-  await page.getByRole("button", { name: "Discover" }).click();
+  await page.getByRole("button", { name: "Story" }).click();
   await expect(page.getByRole("alertdialog", { name: /Leave the active run/ })).toBeVisible();
   await page.getByRole("button", { name: "Not now" }).click();
   await expect(page.getByText(/Swarm Protocol · Survival/)).toBeVisible();
@@ -237,7 +237,7 @@ test("Thai Swarm keeps its controls visible on a 720p desktop", async ({ page })
   await expect(page.getByRole("button", { name: /Space \/ A · คลื่นกระแทก/ })).toBeVisible();
 });
 
-test("Discovery uses a clue trail and awards only after all six signals", async ({ page }) => {
+test.skip("Archived Discovery prototype retains its internal journey", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await enterMudGame(page);
   await page.getByRole("button", { name: /Discovery Runs/ }).click();
@@ -267,7 +267,7 @@ test("Crew Hangar exposes the companion archive and returns to Crew", async ({ p
   await expect(page.getByRole("heading", { name: /Crew & Hangar/ })).toBeVisible();
 });
 
-test("Discovery restores the top of the page when entering and leaving a biome", async ({ page }) => {
+test.skip("Archived Discovery prototype restores scroll position", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await enterMudGame(page);
   await page.getByRole("button", { name: /Discovery Runs/ }).click();
@@ -304,7 +304,7 @@ test("downloaded saves can be imported through the real Settings interface", asy
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("cosmic-explorer-save-v2:mud") ?? "{}").crystals)).toBe(0);
 });
 
-test("Frontier Control requires a readable two-risk route and resolves visibly", async ({ page }) => {
+test.skip("Archived Control prototype retains its internal journey", async ({ page }) => {
   await enterMudGame(page);
   await page.getByRole("button", { name: /Frontier Control/ }).click();
   await page.getByRole("button", { name: /Launch relay ship/ }).click();

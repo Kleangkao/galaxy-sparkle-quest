@@ -7,7 +7,6 @@ import ScreenErrorBoundary from "@/components/ScreenErrorBoundary";
 import {
   PLANETS, Planet, GameState, FactionId, createNewGameState, getLevelFromXP,
   calcInfluenceGain, simulateRivalInfluence, getPlanetController, INFLUENCE_TO_CAPTURE, canClaimDaily,
-  getGameplayModifiers,
 } from "@/lib/gameState";
 import { generateEgg, AlienEgg, AlienPet, ALIEN_PETS } from "@/lib/pets";
 import { playClickSound, playTravelSound, setMusicMode, setSoundMode, startModeAmbience, stopModeAmbience } from "@/lib/sounds";
@@ -19,7 +18,6 @@ import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PlayMode } from "@/components/ModeHub";
 import type { ArcadeContract } from "@/lib/arcadeContracts";
-import { getPuriBonuses } from "@/lib/puriBond";
 import { profileRepository } from "@/lib/profileRepository";
 import { hasSeenGuidedFlight, markGuidedFlightSeen } from "@/lib/onboarding";
 import type { RunResultData } from "@/components/UnifiedRunResults";
@@ -44,8 +42,6 @@ const ModeHub = lazy(() => import("@/components/ModeHub"));
 const ArcadeContracts = lazy(() => import("@/components/ArcadeContracts"));
 const SwarmProtocol = lazy(() => import("@/components/SwarmProtocol"));
 const ArcadeShooter = lazy(() => import("@/components/ArcadeShooter"));
-const DiscoveryRun = lazy(() => import("@/components/DiscoveryRun"));
-const FrontierControl = lazy(() => import("@/components/FrontierControl"));
 const StoryExpeditionConsole = lazy(() => import("@/components/StoryExpeditionConsole"));
 const SettingsPanel = lazy(() => import("@/components/SettingsPanel"));
 const CaptainProgress = lazy(() => import("@/components/CaptainProgress"));
@@ -116,10 +112,8 @@ export default function Index() {
     setMusicMode(gameState.accessibility.music);
     const ambientMode = screen === "map" || screen === "planet" ? "story"
       : screen === "arcade" || screen === "arcade-select" ? "arcade"
-        : screen === "strategy" ? "strategy"
-          : screen === "progress" ? "progress"
-            : screen === "discovery" ? "discovery"
-              : screen === "swarm" ? "swarm" : "hub";
+        : screen === "progress" ? "progress"
+          : screen === "swarm" ? "swarm" : "hub";
     startModeAmbience(ambientMode);
     return stopModeAmbience;
   }, [gameState.accessibility.music, gameState.accessibility.sound, screen]);
@@ -389,7 +383,7 @@ export default function Index() {
     playClickSound();
     if (mode === "story") setScreen("map");
     else if (mode === "arcade") setScreen("arcade-select");
-    else setScreen(mode);
+    else setScreen("swarm");
   };
 
   const handleCombatComplete = (result: { score: number; crystals: number; xp: number; won: boolean; variant: "swarm" | "arcade"; contractId?: string; accuracy?: number; grade?: string; evolutions?: number; participated?: boolean }) => {
@@ -456,33 +450,6 @@ export default function Index() {
           ? ["ไม่ได้รับคริสตัลหรือความสนิทกับ PURI", "ครั้งหน้าลองยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง"]
           : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],
     });
-  };
-
-  const handleDiscoveryComplete = ({ biomeId, finds, mastery }: { biomeId: string; finds: number; mastery: number }) => {
-    setActiveRun(false);
-    const previewReward = Math.ceil(finds * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
-    updateState((prev) => {
-      const xp = prev.xp + finds;
-      const reward = Math.ceil(finds * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
-      const currentMastery = prev.modeRecords.discoveryMastery[biomeId] || 0;
-      return { ...prev, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, discoveryFinds: prev.modeRecords.discoveryFinds + finds, discoveryRuns: prev.modeRecords.discoveryRuns + 1, discoveryMastery: { ...prev.modeRecords.discoveryMastery, [biomeId]: Math.min(100, currentMastery + mastery) }, puriBond: Math.min(100, prev.modeRecords.puriBond + 2) } };
-    });
-    setRunResult({ mode: "discovery", status: "cleared", title: tr("Field journal complete", "บันทึกการสำรวจครบแล้ว"), outcome: tr("Six linked signals were recorded and this biome's research rank advanced.", "เก็บสัญญาณที่เชื่อมโยงกันครบแล้ว และระดับสำรวจพื้นที่นี้เพิ่มขึ้น"), crystals: previewReward, xp: finds, mastery: `+${mastery} biome mastery`, masteryTh: `ความชำนาญพื้นที่ +${mastery}`, improvements: ["Biome mastery increased", "Discovery total and PURI bond increased"], improvementsTh: ["ความชำนาญพื้นที่เพิ่มขึ้น", "จำนวนสิ่งที่พบและความสนิทกับ PURI เพิ่มขึ้น"] });
-    toast(tr("Field journal saved. Discovery rewards added.", "บันทึกสมุดสำรวจและรับรางวัลแล้ว"));
-  };
-
-  const handleStrategyComplete = ({ captures, objectiveComplete, influence }: { captures: number; objectiveComplete: boolean; influence: GameState["influence"] }) => {
-    setActiveRun(false);
-    const previewXp = 6 + (objectiveComplete ? 4 : 0);
-    const previewReward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(gameState.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(gameState).crystalMultiplier);
-    updateState((prev) => {
-      const xpReward = 6 + (objectiveComplete ? 4 : 0);
-      const xp = prev.xp + xpReward;
-      const reward = Math.ceil((6 + captures * 5 + (objectiveComplete ? 5 : 0)) * getPuriBonuses(prev.modeRecords.puriBond).rewardMultiplier * getGameplayModifiers(prev).crystalMultiplier);
-      return { ...prev, influence, crystals: prev.crystals + reward, xp, level: getLevelFromXP(xp), modeRecords: { ...prev.modeRecords, strategyWins: prev.modeRecords.strategyWins + captures, strategyCycles: prev.modeRecords.strategyCycles + 1, strategyObjectives: prev.modeRecords.strategyObjectives + (objectiveComplete ? 1 : 0), puriBond: Math.min(100, prev.modeRecords.puriBond + (objectiveComplete ? 2 : 1)) } };
-    });
-    setRunResult({ mode: "strategy", status: objectiveComplete ? "cleared" : "partial", title: objectiveComplete ? tr("Command objective complete", "ทำเป้าหมายวางแผนสำเร็จ") : tr("Command cycle banked", "บันทึกรอบวางแผนแล้ว"), outcome: objectiveComplete ? tr("Your faction secured the objective bonus and advanced its frontier network.", "ฝ่ายของคุณได้รับโบนัสเป้าหมาย และเครือข่ายพื้นที่แข็งแกร่งขึ้น") : tr("Your influence was saved. Try the objective again next cycle.", "บันทึกคะแนนพื้นที่แล้ว ลองทำเป้าหมายอีกครั้งในรอบหน้าได้"), crystals: previewReward, xp: previewXp, mastery: captures ? `${captures} sector captured` : "+1 control cycle", masteryTh: captures ? `ยึดพื้นที่ ${captures} แห่ง` : "รอบวางแผน +1", improvements: [objectiveComplete ? "Control objective progress increased" : "Faction influence was saved", captures ? `${captures} new sector captured` : "PURI bond and Captain XP increased"], improvementsTh: [objectiveComplete ? "ความคืบหน้าเป้าหมายวางแผนเพิ่มขึ้น" : "บันทึกคะแนนพื้นที่ของฝ่ายแล้ว", captures ? `ยึดพื้นที่ใหม่ ${captures} แห่ง` : "ความสนิทกับ PURI และ XP นักบินเพิ่มขึ้น"] });
-    toast(tr("Command cycle saved to the frontier.", "บันทึกรอบวางแผนแล้ว"));
   };
 
   const dismissGuidedFlight = () => {
@@ -702,26 +669,6 @@ export default function Index() {
                 onBack={() => requestNavigation("arcade-select")}
                 onComplete={handleCombatComplete}
               />
-            </Suspense>
-          </ScreenErrorBoundary>
-        </motion.div>
-      )}
-
-      {screen === "discovery" && (
-        <motion.div key="discovery" {...screenTransition}>
-          <ScreenErrorBoundary screenName="discovery" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Preparing discovery field..." labelTh="กำลังเตรียมพื้นที่สำรวจ..." />}>
-              <DiscoveryRun gameState={gameState} onActiveChange={setActiveRun} onBack={() => requestNavigation("hub")} onComplete={handleDiscoveryComplete} />
-            </Suspense>
-          </ScreenErrorBoundary>
-        </motion.div>
-      )}
-
-      {screen === "strategy" && (
-        <motion.div key="strategy" {...screenTransition}>
-          <ScreenErrorBoundary screenName="strategy" onFallback={() => setScreen("hub")}>
-            <Suspense fallback={<ScreenLoadingFallback label="Opening tactical grid..." labelTh="กำลังเปิดเส้นทางวางแผน..." />}>
-              <FrontierControl gameState={gameState} onActiveChange={setActiveRun} onBack={() => requestNavigation("hub")} onComplete={handleStrategyComplete} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>
