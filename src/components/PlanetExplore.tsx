@@ -112,7 +112,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   const approaches = {
     scout: { id: "scout" as const, name: tr("Scout route", "เส้นทางสำรวจ"), detail: tr("Reveal hidden items · fewer hazards · start with dash · -10% reward", "เห็นของซ่อน · อันตรายน้อยลง · เริ่มพร้อมพุ่ง · รางวัล -10%"), timeBonus: 8, crystalMultiplier: 0.9, icon: Clock3 },
     steady: { id: "steady" as const, name: tr("Balanced route", "เส้นทางปกติ"), detail: tr("Standard map, objective, pressure, and reward", "แผนที่ เป้าหมาย ความยาก และรางวัลแบบปกติ"), timeBonus: 0, crystalMultiplier: 1, icon: ShieldCheck },
-    salvage: { id: "salvage" as const, name: tr("Salvage route", "เส้นทางเก็บกู้"), detail: tr("Optional cargo · more patrols · up to +25% reward", "มีกล่องเสริมให้เก็บ · ศัตรูเพิ่ม · รับโบนัสสูงสุด +25%"), timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
+    salvage: { id: "salvage" as const, name: tr("Salvage route", "เส้นทางเก็บกู้"), detail: tr("Optional cargo · more patrols where present · up to +25% reward", "มีกล่องเสริมให้เก็บ · มีศัตรูเพิ่มในบทที่มีศัตรู · รับโบนัสสูงสุด +25%"), timeBonus: -4, crystalMultiplier: 1.25, icon: Gem },
   };
   const approach = approaches[approachId];
 
@@ -138,11 +138,15 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   const routeRewardMultiplier = approachId === "salvage" && phase === "celebration"
     ? (salvageRecovered ? approach.crystalMultiplier : 1)
     : approach.crystalMultiplier;
-  const totalCrystals = Math.floor(
-    getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier * routeRewardMultiplier
-  );
+  const rewardBeforeRoute = getCrystalBonus(baseCrystals + bonusCrystals, gameState.faction) * modifiers.crystalMultiplier;
+  const totalCrystals = Math.floor(rewardBeforeRoute * routeRewardMultiplier);
+  const guaranteedCrystals = Math.floor(rewardBeforeRoute * (approachId === "scout" ? approach.crystalMultiplier : 1));
+  const salvageWithCargoCrystals = Math.floor(rewardBeforeRoute * approaches.salvage.crystalMultiplier);
+  const estimatedCrystalLabel = approachId === "salvage" && phase !== "celebration"
+    ? tr(`${guaranteedCrystals} guaranteed · ${salvageWithCargoCrystals} with cargo`, `${guaranteedCrystals} แน่นอน · ${salvageWithCargoCrystals} เมื่อเก็บกล่อง`)
+    : totalCrystals.toString();
   const totalXP = alreadyVisited ? Math.floor(planet.xp / 2) : planet.xp;
-  const factionBonusLabel = gameState.faction === "mud" ? tr("MUD salvage +20%", "โบนัสเก็บกู้ MUD +20%") : tr("No faction crystal bonus", "ไม่มีโบนัสคริสตัลจากฝ่าย");
+  const factionBonusLabel = gameState.faction === "mud" ? tr("MUD faction bonus +20%", "โบนัสฝ่าย MUD +20%") : tr("No faction crystal bonus", "ไม่มีโบนัสคริสตัลจากฝ่าย");
   const pilotBonusLabel = pilot.crystalMultiplier ? `${pilot.name} +${Math.round((pilot.crystalMultiplier - 1) * 100)}%` : tr(`${pilot.name} utility`, `ความสามารถ ${pilot.name}`);
   const otherCrystalMultiplier = modifiers.crystalMultiplier / (pilot.crystalMultiplier ?? 1);
   const systemBonusLabel = otherCrystalMultiplier > 1.001 ? tr(`systems +${Math.round((otherCrystalMultiplier - 1) * 100)}%`, `ระบบยาน +${Math.round((otherCrystalMultiplier - 1) * 100)}%`) : tr("no other reward bonus", "ไม่มีโบนัสอื่น");
@@ -212,8 +216,9 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
               </div>
               <div className="rounded-xl border border-cosmic-cyan/15 bg-cosmic-cyan/5 px-3 py-2">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-cyan">{tr("Estimated crystals", "คริสตัลที่คาดว่าจะได้")}</div>
-                <div className="mt-1 text-sm font-bold text-white">{totalCrystals}</div>
+                <div className="mt-1 text-sm font-bold text-white">{estimatedCrystalLabel}</div>
                 <div className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">{tr("Base", "พื้นฐาน")} {baseCrystals} · {factionBonusLabel} · {pilotBonusLabel} · {systemBonusLabel} · {approach.name}</div>
+                <div className="mt-1 text-[10px] leading-relaxed text-cyan-50/50">{tr("Bonuses calculate in order and round down to whole crystals.", "คำนวณโบนัสตามลำดับ และปัดเศษลงเป็นคริสตัลเต็มจำนวน")}</div>
               </div>
               <div className="rounded-xl border border-cosmic-green/15 bg-cosmic-green/5 px-3 py-2">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">{tr("Companion intel", "ข้อมูลเพื่อนร่วมทาง")}</div>
@@ -276,7 +281,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
           )}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
             <span>⭐ {tr("Final", "รับ")} {totalXP} {t("xp")}</span>
-            <span>💎 {tr("Estimated", "คาดว่าจะได้")} {totalCrystals} {t("crystals")}</span>
+            <span>💎 {tr("Estimated", "คาดว่าจะได้")} {estimatedCrystalLabel} {t("crystals")}</span>
             {planet.pet && <span>🐾 {planet.pet.emoji} {planet.pet.name}</span>}
           </div>
           <Button onClick={() => setPhase("exploring")}

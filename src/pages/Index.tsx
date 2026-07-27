@@ -395,6 +395,7 @@ export default function Index() {
     setActiveRun(false);
     setSettingsOpen(false);
     setConfirmAction(null);
+    const participated = result.participated !== false;
     updateState((prev) => {
       const xp = prev.xp + result.xp;
       const previousContract = result.contractId ? prev.modeRecords.arcadeContracts[result.contractId] ?? { bestScore: 0, clears: 0 } : null;
@@ -405,10 +406,10 @@ export default function Index() {
         level: getLevelFromXP(xp),
         modeRecords: {
           ...prev.modeRecords,
-          swarmHighScore: result.variant === "swarm" ? Math.max(prev.modeRecords.swarmHighScore, result.score) : prev.modeRecords.swarmHighScore,
-          swarmRuns: result.variant === "swarm" ? prev.modeRecords.swarmRuns + 1 : prev.modeRecords.swarmRuns,
-          swarmClears: result.variant === "swarm" && result.won ? prev.modeRecords.swarmClears + 1 : prev.modeRecords.swarmClears,
-          swarmEvolutions: result.variant === "swarm" ? prev.modeRecords.swarmEvolutions + (result.evolutions ?? 0) : prev.modeRecords.swarmEvolutions,
+          swarmHighScore: result.variant === "swarm" && participated ? Math.max(prev.modeRecords.swarmHighScore, result.score) : prev.modeRecords.swarmHighScore,
+          swarmRuns: result.variant === "swarm" && participated ? prev.modeRecords.swarmRuns + 1 : prev.modeRecords.swarmRuns,
+          swarmClears: result.variant === "swarm" && result.won && participated ? prev.modeRecords.swarmClears + 1 : prev.modeRecords.swarmClears,
+          swarmEvolutions: result.variant === "swarm" && participated ? prev.modeRecords.swarmEvolutions + (result.evolutions ?? 0) : prev.modeRecords.swarmEvolutions,
           arcadeHighScore: result.variant === "arcade" ? Math.max(prev.modeRecords.arcadeHighScore, result.score) : prev.modeRecords.arcadeHighScore,
           puriBond: Math.min(100, prev.modeRecords.puriBond + (result.participated === false ? 0 : result.won ? 3 : 1)),
           arcadeContracts: result.contractId && previousContract ? {
@@ -424,11 +425,15 @@ export default function Index() {
       status: result.participated === false ? "no-reward" : result.won ? "cleared" : "partial",
       title: result.won
         ? isSwarm ? tr("Ahr defeated", "กำจัด Ahr สำเร็จ") : tr(`Contract cleared · Grade ${result.grade ?? "B"}`, `ผ่านภารกิจยิงเป้า · ระดับ ${result.grade ?? "B"}`)
-        : result.participated === false ? tr("Assignment incomplete", "ภารกิจยังไม่สำเร็จ") : tr("Rewards secured", "รับรางวัลแล้ว"),
+        : result.participated === false
+          ? isSwarm ? tr("Run not counted", "รอบนี้ไม่นับ") : tr("Assignment incomplete", "ภารกิจยังไม่สำเร็จ")
+          : tr("Rewards secured", "รับรางวัลแล้ว"),
       outcome: result.variant === "arcade" && result.accuracy !== undefined
         ? result.participated === false
           ? tr("No reward was issued because no target was hit with meaningful participation.", "ยังไม่ได้รางวัล เพราะต้องยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง")
           : tr(`${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; try again when ready."}`, `ยิงแม่น ${Math.round(result.accuracy * 100)}% · ${result.won ? "บันทึกสถิติภารกิจแล้ว" : "ได้รับรางวัลบางส่วน พร้อมแล้วค่อยลองใหม่"}`)
+        : isSwarm && result.participated === false
+          ? tr("Move actively or collect at least 3 energy so the run counts toward rewards and mastery.", "ขยับหลบอย่างจริงจัง หรือเก็บพลังอย่างน้อย 3 ชิ้น เพื่อให้รอบนี้นับรางวัลและความชำนาญ")
         : result.won ? tr("Full clear rewards and mastery were banked.", "ได้รับรางวัลชนะและความชำนาญครบแล้ว") : tr("Partial rewards were banked. Upgrade or try a different build.", "ได้รับรางวัลบางส่วน ลองอัปเกรดหรือเลือกพลังแบบใหม่ได้"),
       crystals: result.crystals,
       xp: result.xp,
@@ -436,12 +441,16 @@ export default function Index() {
       mastery: result.grade ? `Grade ${result.grade}` : undefined,
       masteryTh: result.grade ? `ระดับ ${result.grade}` : undefined,
       improvements: isSwarm
-        ? ["Swarm record and PURI bond increased", result.won ? "Ahr clear counts toward combat mastery" : "Crystals for permanent upgrades increased"]
+        ? result.participated === false
+          ? ["No currency, mastery, or PURI bond was awarded", "Move actively or collect 3 energy next time"]
+          : ["Swarm record and PURI bond increased", result.won ? "Ahr clear counts toward combat mastery" : "Crystals for permanent upgrades increased"]
         : result.participated === false
           ? ["No currency or PURI bond was awarded", "Fire 3+ shots and hit at least one target next time"]
           : ["Arcade record and PURI bond increased", result.won ? "This contract clear was saved" : "Accuracy practice and upgrade fund increased"],
       improvementsTh: isSwarm
-        ? ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "การกำจัด Ahr เพิ่มความชำนาญการต่อสู้" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
+        ? result.participated === false
+          ? ["ไม่ได้รับคริสตัล ความชำนาญ หรือความสนิทกับ PURI", "ครั้งหน้าขยับหลบอย่างจริงจัง หรือเก็บพลัง 3 ชิ้น"]
+          : ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "การกำจัด Ahr เพิ่มความชำนาญการต่อสู้" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
         : result.participated === false
           ? ["ไม่ได้รับคริสตัลหรือความสนิทกับ PURI", "ครั้งหน้าลองยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง"]
           : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],

@@ -88,6 +88,22 @@ test("public entry and mode hub have no serious accessibility violations", async
   expect(hub.violations.filter((issue) => issue.impact === "critical" || issue.impact === "serious")).toEqual([]);
 });
 
+test("guided flight traps keyboard focus and closes with Escape", async ({ page }) => {
+  await page.getByRole("button", { name: /MUD/ }).click();
+  await page.getByRole("button", { name: /Continue with MUD/ }).click();
+  const dialog = page.getByRole("dialog", { name: /Welcome to MUD/ });
+  await expect(dialog).toBeVisible();
+
+  for (let index = 0; index < 12; index += 1) {
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => Boolean(document.activeElement?.closest('[role="dialog"]')))).toBe(true);
+  }
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole("region", { name: "Game modes" })).toBeVisible();
+});
+
 test("Arcade pointer tracking stays responsive without runtime failures", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   const runtimeErrors: string[] = [];
@@ -152,6 +168,28 @@ test("all 30 Story chapter-route combinations launch with solvable route content
   expect(runtimeErrors).toEqual([]);
 });
 
+test("Story resumes from its remaining time after Settings closes", async ({ page }) => {
+  await enterMudGame(page);
+  await page.getByRole("button", { name: /Story Expeditions/ }).click();
+  await page.getByRole("button", { name: /Choose route and deploy/ }).click();
+  await page.getByRole("button", { name: /^Balanced route/ }).click();
+  await page.getByRole("button", { name: /Launch Balanced route/ }).click();
+  await expect(page.getByText(/Live mission/)).toBeVisible();
+
+  const timer = page.getByLabel("Time remaining");
+  const readSeconds = async () => Number.parseInt((await timer.textContent()) ?? "0", 10);
+  await page.waitForTimeout(1_400);
+  const beforePause = await readSeconds();
+  await page.getByRole("button", { name: /Game settings/ }).click();
+  await page.waitForTimeout(1_500);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(350);
+  const afterPause = await readSeconds();
+
+  expect(afterPause).toBeLessThanOrEqual(beforePause);
+  expect(afterPause).toBeGreaterThanOrEqual(beforePause - 1);
+});
+
 test("Settings pause Swarm and leaving a live run requires confirmation", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await enterMudGame(page);
@@ -181,6 +219,21 @@ test("Settings pause Swarm and leaving a live run requires confirmation", async 
   expect(navBounds && backBounds && backBounds.y).toBeGreaterThanOrEqual((navBounds?.y ?? 0) + (navBounds?.height ?? 0));
 });
 
+test("Thai Swarm keeps its controls visible on a 720p desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await enterMudGame(page);
+  await page.getByRole("button", { name: /EN \/ ไทย/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "th");
+  await page.getByRole("button", { name: /ฝ่าฝูงศัตรู/ }).first().click();
+  await expect(page.getByText(/ยิงเร็วขึ้น 8% ในฝ่าฝูงศัตรู/)).toBeVisible();
+  await page.getByRole("button", { name: "เริ่มเล่น" }).click();
+
+  const controlsBounds = await page.locator(".combat-controls").boundingBox();
+  expect(controlsBounds && controlsBounds.y + controlsBounds.height).toBeLessThanOrEqual(720);
+  await expect(page.locator(".combat-touch")).toBeHidden();
+  await expect(page.getByRole("button", { name: /หยุด/ })).toBeVisible();
+});
+
 test("Discovery uses a clue trail and awards only after all six signals", async ({ page }) => {
   await enterMudGame(page);
   await page.getByRole("button", { name: /Discovery Runs/ }).click();
@@ -192,6 +245,43 @@ test("Discovery uses a clue trail and awards only after all six signals", async 
   await expect(page.getByText(/Trail complete/).first()).toBeVisible();
   await page.getByRole("button", { name: /Claim journal rewards/ }).click();
   await expect(page.getByRole("dialog", { name: /Field journal complete/ })).toBeVisible();
+});
+
+test("Discovery restores the top of the page when entering and leaving a biome", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await enterMudGame(page);
+  await page.getByRole("button", { name: /Discovery Runs/ }).click();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.getByRole("button", { name: /Explore this area/ }).last().click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.getByRole("button", { name: "Biomes" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Biomes" }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test("downloaded saves can be imported through the real Settings interface", async ({ page }) => {
+  await enterMudGame(page);
+  await page.getByRole("button", { name: /Game settings/ }).click();
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: /Download save/ }).click();
+  const download = await downloadPromise;
+  const savePath = await download.path();
+  expect(savePath).toBeTruthy();
+  await page.keyboard.press("Escape");
+
+  await page.evaluate(() => {
+    const key = "cosmic-explorer-save-v2:mud";
+    const state = JSON.parse(localStorage.getItem(key) ?? "{}");
+    state.crystals = 77;
+    localStorage.setItem(key, JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.locator("body")).toContainText("77");
+  await page.getByRole("button", { name: /Game settings/ }).click();
+  await page.locator('input[type="file"]').setInputFiles(savePath!);
+  await expect(page.getByText("Save imported.")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("cosmic-explorer-save-v2:mud") ?? "{}").crystals)).toBe(0);
 });
 
 test("Frontier Control requires a readable two-risk route and resolves visibly", async ({ page }) => {

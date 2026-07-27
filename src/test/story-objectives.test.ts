@@ -81,4 +81,81 @@ describe("Story objective contract", () => {
     expect(evaluateStoryObjective(rules, progress).complete).toBe(false);
     expect(evaluateStoryObjective(rules, { ...progress, atShip: true }).complete).toBe(true);
   });
+
+  it("resolves every chapter only after all of its declared goals are complete", () => {
+    for (const [planetId, mission] of Object.entries(MISSION_PROFILES)) {
+      const itemGoal = mission.crystalGoal ?? 0;
+      const itemType = mission.goalItemType ?? "crystal";
+      const petGoal = mission.petGoal ?? 0;
+      const rules = {
+        itemGoal,
+        itemType,
+        petGoal,
+        deliveryGoal: mission.deliveryGoal,
+        nodeGoal: mission.nodeGoal,
+        requireReturn: mission.requireReturn,
+      };
+      const completeProgress = {
+        items: [
+          ...Array.from({ length: itemGoal }, () => ({ type: itemType, collected: true })),
+          ...Array.from({ length: petGoal }, () => ({ type: "pet", collected: true })),
+        ],
+        delivered: mission.deliveryGoal ?? 0,
+        nodes: mission.nodeGoal ?? 0,
+        atShip: mission.requireReturn,
+      };
+
+      expect(
+        evaluateStoryObjective(rules, completeProgress).complete,
+        `${planetId} should clear when every displayed objective is complete`,
+      ).toBe(true);
+
+      if (itemGoal > 0) {
+        expect(
+          evaluateStoryObjective(rules, {
+            ...completeProgress,
+            items: completeProgress.items.filter((_, index) => index !== 0),
+          }).complete,
+          `${planetId} should not clear before its collection goal`,
+        ).toBe(false);
+      }
+
+      if (petGoal > 0) {
+        expect(
+          evaluateStoryObjective(rules, {
+            ...completeProgress,
+            items: completeProgress.items.filter((item) => item.type !== "pet"),
+          }).complete,
+          `${planetId} should not clear before its companion goal`,
+        ).toBe(false);
+      }
+
+      if ((mission.deliveryGoal ?? 0) > 0) {
+        expect(
+          evaluateStoryObjective(rules, {
+            ...completeProgress,
+            delivered: (mission.deliveryGoal ?? 0) - 1,
+          }).complete,
+          `${planetId} should not clear before its delivery goal`,
+        ).toBe(false);
+      }
+
+      if ((mission.nodeGoal ?? 0) > 0) {
+        expect(
+          evaluateStoryObjective(rules, {
+            ...completeProgress,
+            nodes: (mission.nodeGoal ?? 0) - 1,
+          }).complete,
+          `${planetId} should not clear before its node goal`,
+        ).toBe(false);
+      }
+
+      if (mission.requireReturn) {
+        expect(
+          evaluateStoryObjective(rules, { ...completeProgress, atShip: false }).complete,
+          `${planetId} should not clear before returning to the ship`,
+        ).toBe(false);
+      }
+    }
+  });
 });

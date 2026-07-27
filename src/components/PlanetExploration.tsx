@@ -626,13 +626,14 @@ export default function PlanetExploration({
   const routeStatus = routeMode === "scout"
     ? tr("Scout · hidden items revealed, fewer hazards", "สำรวจ · เห็นของซ่อนและลดพื้นที่อันตราย")
     : routeMode === "salvage"
-      ? tr("Salvage · extra objective and patrol pressure", "เก็บกู้ · มีของให้เก็บและศัตรูเพิ่ม")
+      ? tr("Salvage · extra objective and patrol pressure where present", "เก็บกู้ · มีของให้เก็บ และมีศัตรูเพิ่มในบทที่มีศัตรู")
       : tr("Balanced · standard objective and pressure", "ปกติ · เป้าหมายและความยากมาตรฐาน");
   const [mapData] = useState(() => generateMap(theme, mission));
   const [items, setItems] = useState<ExplorationItem[]>(() => addStoryRouteItems(mapData.items, mission, routeMode));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
   const [timeLeft, setTimeLeft] = useState(missionTimeLimit);
   const deadlineRef = useRef<number | null>(null);
+  const suspendedAtRef = useRef<number | null>(null);
   const [score, setScore] = useState(0);
   const maxHp = 3 + startingHpBonus;
   const [hp, setHp] = useState(maxHp);
@@ -725,17 +726,29 @@ export default function PlanetExploration({
   // The deadline is wall-clock based. Movement and React renders must never
   // postpone the timer tick on faster or slower machines.
   useEffect(() => {
-    if (landing || gameOver || suspended) {
+    if (landing || gameOver) {
       deadlineRef.current = null;
+      suspendedAtRef.current = null;
       return;
     }
-    if (deadlineRef.current === null) deadlineRef.current = Date.now() + missionTimeLimit * 1000;
+    if (suspended) {
+      if (deadlineRef.current !== null && suspendedAtRef.current === null) {
+        suspendedAtRef.current = Date.now();
+      }
+      return;
+    }
+    if (deadlineRef.current === null) {
+      deadlineRef.current = Date.now() + missionTimeLimit * 1000;
+    } else if (suspendedAtRef.current !== null) {
+      deadlineRef.current += Date.now() - suspendedAtRef.current;
+      suspendedAtRef.current = null;
+    }
     const timer = window.setInterval(() => {
       if (deadlineRef.current === null) return;
       setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
     }, 200);
     return () => window.clearInterval(timer);
-  }, [landing, gameOver, missionTimeLimit, suspended, timeLeft]);
+  }, [landing, gameOver, missionTimeLimit, suspended]);
 
   useEffect(() => {
     if (landing || gameOver) return;
@@ -1214,7 +1227,7 @@ export default function PlanetExploration({
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 bg-primary/10 px-2 py-1 rounded-lg">
             <Clock3 className="h-4 w-4 text-cosmic-green" />
-            <span className={`text-xs sm:text-sm font-bold tabular-nums ${timerColor}`}>{timeLeft}{lang === "th" ? " วิ" : "s"}</span>
+            <span aria-label={tr("Time remaining", "เวลาที่เหลือ")} className={`text-xs sm:text-sm font-bold tabular-nums ${timerColor}`}>{timeLeft}{lang === "th" ? " วิ" : "s"}</span>
           </div>
         </div>
         {routeMode === "salvage" && (

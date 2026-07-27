@@ -21,5 +21,15 @@ export default defineConfig({
       name: "desktop-chromium",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
+    {
+      name: "desktop-firefox-smoke",
+      testMatch: /browser-compat\.spec\.ts/,
+      use: { ...devices["Desktop Firefox"], viewport: { width: 1280, height: 720 } },
+    },
+    {
+      name: "desktop-webkit-smoke",
+      testMatch: /browser-compat\.spec\.ts/,
+      use: { ...devices["Desktop Safari"], viewport: { width: 1280, height: 720 } },
+    },
   ],
 });

@@ -32,6 +32,7 @@ export default function DiscoveryRun({ gameState, onActiveChange, onBack, onComp
   const [wrongPick, setWrongPick] = useState<number | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const scanTimer = useRef<number | null>(null);
+  const previousViewRef = useRef(`biomes:${runNumber}`);
   const requiredFinds = Math.min(6, points.length);
   const coreComplete = requiredFinds > 0 && found.filter((id) => id < requiredFinds).length === requiredFinds;
   const complete = coreComplete && (!rareSignalActive || found.includes(requiredFinds));
@@ -47,6 +48,13 @@ export default function DiscoveryRun({ gameState, onActiveChange, onBack, onComp
     onActiveChange?.(Boolean(biome && !claimed));
     return () => onActiveChange?.(false);
   }, [biome, claimed, onActiveChange]);
+  useEffect(() => {
+    const viewKey = `${biome?.id ?? "biomes"}:${runNumber}`;
+    if (previousViewRef.current !== viewKey) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      previousViewRef.current = viewKey;
+    }
+  }, [biome?.id, runNumber]);
 
   const chooseBiome = (next: DiscoveryBiome) => { setBiome(next); setFound([]); setSelected(null); setClaimed(false); setScanCharges(3); setWrongPick(null); };
   const find = (item: (typeof points)[number]) => {
@@ -120,7 +128,7 @@ export default function DiscoveryRun({ gameState, onActiveChange, onBack, onComp
   const visibleJournalPoints = points.filter((item) => item.id < requiredFinds || rareSignalActive);
   return (
     <main className="discovery-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
-      <header className="discovery-header"><button onClick={leaveBiome}><ArrowLeft className="h-4 w-4" /> {tr("Biomes", "พื้นที่สำรวจ")}</button><div><div className="command-kicker">{tr(`Discovery Run · ${biome.name}`, `ออกสำรวจ · ${biome.nameTh}`)}</div><h1>{tr(`Follow the signal trail${rareSignalActive ? " and find the rare anomaly" : ""}.`, `ตามรอยสัญญาณ${rareSignalActive ? " และค้นหาสัญญาณหายาก" : ""}`)}</h1><p>{tr("Clues now rotate between map position, direction, and distance. A wrong guess has no penalty.", "คำใบ้จะสลับระหว่างตำแหน่ง ทิศทาง และระยะ ตอบผิดไม่เสียอะไร")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery, lang)}<small>{tr(`Research ${researchChapter}/5`, `บันทึก ${researchChapter}/5`)}</small></span></div></header>
+      <header className="discovery-header"><button onClick={leaveBiome}><ArrowLeft className="h-4 w-4" /> {tr("Biomes", "พื้นที่สำรวจ")}</button><div><div className="command-kicker">{tr(`Discovery Run · ${biome.name}`, `ออกสำรวจ · ${biome.nameTh}`)}</div><h1>{tr(`Follow the signal trail${rareSignalActive ? " and find the rare anomaly" : ""}.`, `ตามรอยสัญญาณ${rareSignalActive ? " และค้นหาสัญญาณหายาก" : ""}`)}</h1><p>{tr("Clues now rotate between map position, direction, and distance. A wrong guess has no penalty.", "คำใบ้จะสลับระหว่างตำแหน่ง ทิศทาง และระยะ ตอบผิดไม่เสียอะไร")}</p></div><div className="discovery-pilot"><img src={pilot.image} alt="" /><span>{getMasteryTier(currentMastery, lang)}<small>{tr(`Research level ${researchChapter}/5`, `ระดับสมุดสำรวจ ${researchChapter}/5`)}</small></span></div></header>
       <section className="discovery-run-guide"><div><MousePointerClick className="h-4 w-4" /><span>{tr("Current clue", "เบาะแสตอนนี้")}<strong>{complete ? tr("Trail complete · claim your rewards", "ตามรอยครบแล้ว · รับรางวัลได้เลย") : `${nextTargetId === requiredFinds ? tr("Rare signal", "สัญญาณหายาก") : tr(`Signal ${coreFoundCount + 1}/${requiredFinds}`, `สัญญาณ ${coreFoundCount + 1}/${requiredFinds}`)} · ${clueText}`}</strong></span></div><div><Gift className="h-4 w-4" /><span>{tr("Journal reward", "รางวัลสมุดบันทึก")}<strong>{tr(`+${Math.ceil(requiredFinds * puri.rewardMultiplier * modifiers.crystalMultiplier)} crystals${rareSignalActive ? ` · rare signal +${Math.ceil(puri.rewardMultiplier * modifiers.crystalMultiplier)}` : ""}`, `+${Math.ceil(requiredFinds * puri.rewardMultiplier * modifiers.crystalMultiplier)} คริสตัล${rareSignalActive ? ` · สัญญาณหายาก +${Math.ceil(puri.rewardMultiplier * modifiers.crystalMultiplier)}` : ""}`)}</strong></span></div><button onClick={scan} disabled={scanCharges <= 0 || scanActive}><ScanLine className="h-4 w-4" /> {tr(`Reveal answer · ${scanCharges} left`, `เฉลยจุด · เหลือ ${scanCharges} ครั้ง`)}</button></section>
       <section className="discovery-layout">
         <div className="discovery-scene"><img className="discovery-scene__backdrop" src={biome.backdrop} alt={tr(`${biome.name} landscape`, `พื้นที่ ${biome.nameTh}`)} /><div className="discovery-scene__wash" /><div className="discovery-scene__hint"><Leaf className="h-4 w-4" /> {wrongPick !== null ? tr("That signal does not match the clue. Try the other visible point.", "จุดนั้นไม่ตรงกับคำใบ้ ลองอีกจุดที่มองเห็นได้") : puri.discoveryHint ? tr("PURI is highlighting the correct signal.", "PURI กำลังช่วยไฮไลต์สัญญาณที่ถูกต้อง") : tr("Use the location clue above. Two signal points are visible.", "ดูคำใบ้ตำแหน่งด้านบน จะมีสัญญาณให้เลือก 2 จุด")}</div>

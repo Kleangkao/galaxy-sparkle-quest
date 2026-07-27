@@ -6,6 +6,7 @@ import { I18nProvider } from "@/lib/i18n";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { installGlobalErrorHandlers } from "@/lib/selfHealing";
 import { useEffect, useState } from "react";
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -35,14 +36,25 @@ const App = () => {
             <Sonner />
             {isGameRoute ? <Index /> : <NotFound />}
             {updateReady && (
-              <div className="version-update" role="alertdialog" aria-modal="true" aria-labelledby="version-update-title">
-                <div>
-                  <strong id="version-update-title">Game updated · เกมมีเวอร์ชันใหม่</strong>
-                  <p>Your progress is safe. Reload once to continue with the newest version.</p>
-                  <p>เซฟของคุณยังอยู่ กดโหลดใหม่หนึ่งครั้งเพื่อเล่นเวอร์ชันล่าสุด</p>
-                  <button onClick={() => window.location.reload()}>Reload game · โหลดเกมใหม่</button>
-                </div>
-              </div>
+              <AlertDialogPrimitive.Root open>
+                <AlertDialogPrimitive.Portal>
+                  <AlertDialogPrimitive.Overlay className="version-update" />
+                  <AlertDialogPrimitive.Content className="version-update__panel">
+                    <AlertDialogPrimitive.Title asChild>
+                      <strong>Game updated · เกมมีเวอร์ชันใหม่</strong>
+                    </AlertDialogPrimitive.Title>
+                    <AlertDialogPrimitive.Description asChild>
+                      <div>
+                        <p>Your progress is safe. Reload once to continue with the newest version.</p>
+                        <p>เซฟของคุณยังอยู่ กดโหลดใหม่หนึ่งครั้งเพื่อเล่นเวอร์ชันล่าสุด</p>
+                      </div>
+                    </AlertDialogPrimitive.Description>
+                    <AlertDialogPrimitive.Action asChild>
+                      <button onClick={() => window.location.reload()}>Reload game · โหลดเกมใหม่</button>
+                    </AlertDialogPrimitive.Action>
+                  </AlertDialogPrimitive.Content>
+                </AlertDialogPrimitive.Portal>
+              </AlertDialogPrimitive.Root>
             )}
           </TooltipProvider>
         </I18nProvider>

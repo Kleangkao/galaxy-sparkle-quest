@@ -9,6 +9,11 @@ export const SWARM_BALANCE = {
   bossProjectileSpeed: 115,
 } as const;
 
+export const SWARM_PARTICIPATION = {
+  movementDistance: 650,
+  energyCollected: 3,
+} as const;
+
 export type SwarmBossPattern = "nova-ring" | "aimed-fan";
 
 export type SwarmRunVariant = {
@@ -75,4 +80,21 @@ export function getSwarmSpawnDelay(elapsed: number, bossActive: boolean) {
 
 export function getBossFightWindow(duration = SWARM_BALANCE.duration, bossTime = SWARM_BALANCE.bossTime) {
   return Math.max(0, duration - bossTime);
+}
+
+export function hasMeaningfulSwarmParticipation({
+  won,
+  movementDistance,
+  energy,
+  perkLevel,
+}: {
+  won: boolean;
+  movementDistance: number;
+  energy: number;
+  perkLevel: number;
+}) {
+  return won
+    || movementDistance >= SWARM_PARTICIPATION.movementDistance
+    || energy >= SWARM_PARTICIPATION.energyCollected
+    || perkLevel >= 2;
 }

@@ -78,7 +78,7 @@ const translations = {
   controlledCount: { en: "Controlled", th: "ครอบครอง" },
   equipped: { en: "EQUIPPED", th: "ใส่แล้ว" },
   owned: { en: "✓ Owned", th: "✓ มีแล้ว" },
-  unlockAtLevel: { en: "🔒 Unlocks at Level", th: "🔒 ปลดล็อคเลเวล" },
+  unlockAtLevel: { en: "🔒 Unlocks at Level", th: "🔒 ปลดล็อกที่เลเวล" },
 
   // Planet Card
   controlled: { en: "Controlled", th: "ครอบครอง" },
@@ -105,12 +105,12 @@ const translations = {
   mudSubtitle: { en: "The Builders", th: "นักสร้าง" },
   mudDescription: { en: "The MUD explorers love building bases and collecting crystals. Brave, curious, and hardworking!", th: "ทีม MUD ชอบสร้างฐานและเก็บคริสตัล กล้าหาญ อยากรู้อยากเห็น และขยัน!" },
   mudBonus2: { en: "+20% more crystals from planets", th: "+20% คริสตัลเพิ่มจากดาว" },
-  oniSubtitle: { en: "The Alien Masters", th: "เจ้าแห่งเอเลี่ยน" },
-  oniDescription: { en: "The ONI aliens use special space magic and discover rare alien pets. Smart, mysterious, and creative!", th: "ทีม ONI ใช้เวทมนตร์อวกาศและค้นพบเพื่อนเอเลี่ยนหายาก ฉลาด ลึกลับ และสร้างสรรค์!" },
+  oniSubtitle: { en: "Alien Pathfinders", th: "นักสำรวจต่างดาว" },
+  oniDescription: { en: "ONI pathfinders study mysterious technology and discover rare life across the frontier. Smart, curious, and inventive!", th: "ทีม ONI ศึกษาเทคโนโลยีลึกลับและค้นพบสิ่งมีชีวิตหายาก ฉลาด ช่างสงสัย และเก่งเรื่องประดิษฐ์!" },
   oniBonus: { en: "Higher chance to find alien pets", th: "โอกาสเจอเพื่อนเอเลี่ยนมากขึ้น" },
   usturSubtitle: { en: "The Robot Intelligence", th: "หุ่นยนต์อัจฉริยะ" },
   usturDescription: { en: "The USTUR robots use smart technology to travel faster in space. Logical, fast, and helpful!", th: "ทีม USTUR ใช้เทคโนโลยีเดินทางเร็วขึ้น มีเหตุผล รวดเร็ว และช่วยเหลือดี!" },
-  usturBonus: { en: "Faster travel + unlock planets earlier", th: "เดินทางเร็วขึ้น + ปลดล็อคดาวเร็วขึ้น" },
+  usturBonus: { en: "Faster travel + unlock planets earlier", th: "เดินทางเร็วขึ้น + ปลดล็อกดาวเร็วขึ้น" },
 
   // Exploration extra
   landingOn: { en: "Landing on", th: "กำลังลงจอดที่" },
@@ -127,7 +127,7 @@ const translations = {
   // Toasts
   levelUp: { en: "🎉 Level Up! You are now Level", th: "🎉 เลเวลอัพ! ตอนนี้เลเวล" },
   upgradeInstalled: { en: "⚡ Upgrade installed!", th: "⚡ อัพเกรดสำเร็จ!" },
-  newShipColor: { en: "🎨 New ship color unlocked!", th: "🎨 ปลดล็อคสียานใหม่!" },
+  newShipColor: { en: "🎨 New ship color unlocked!", th: "🎨 ปลดล็อกสียานใหม่!" },
   dailyReward: { en: "🎁 Daily Reward:", th: "🎁 ของขวัญประจำวัน:" },
   plusCrystals: { en: "crystals!", th: "คริสตัล!" },
   plusNewPet: { en: "+ New pet:", th: "+ เพื่อนใหม่:" },

@@ -6,7 +6,7 @@ import { DISCOVERY_BIOMES, getDiscoveryClue, getDiscoveryDecoyId, getDiscoveryRe
 import { evaluateRelayRoute, getRelayMission, getStrategyActionValues, getStrategyObjective } from "@/lib/strategyMissions";
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
-import { getBossFightWindow, getSwarmRunVariant, getSwarmSpawnDelay, SWARM_BALANCE } from "@/lib/swarmBalance";
+import { getBossFightWindow, getSwarmRunVariant, getSwarmSpawnDelay, hasMeaningfulSwarmParticipation, SWARM_BALANCE } from "@/lib/swarmBalance";
 import { getArcadeGrade, getArcadeRunOutcome } from "@/lib/arcadeContracts";
 import { getEconomyProjection } from "@/lib/economyBalance";
 
@@ -111,7 +111,7 @@ describe("multi-mode progression", () => {
   it("explains exact upgrade tiers and mode-specific weapon relevance", () => {
     expect(getUpgradeEffectAtTier("shield", 1)).toContain("60%");
     expect(getUpgradeEffectAtTier("shield", 3)).toContain("80%");
-    expect(getToolModeSummary(getTool("echo-scanner"), "swarm")).toContain("No Swarm bonus");
+    expect(getToolModeSummary(getTool("echo-scanner"), "swarm")).toContain("+8% Swarm fire rate");
     expect(getToolModeSummary(getTool("vector-drive"), "swarm")).toContain("+20% weapon damage");
   });
 
@@ -271,5 +271,12 @@ describe("Swarm boss balance", () => {
     expect(getSwarmRunVariant(1).id).toBe("cadet-patrol");
     expect(getSwarmRunVariant(2).bossPattern).toBe("aimed-fan");
     expect(getSwarmRunVariant(3).id).toBe("ion-rush");
+  });
+
+  it("does not count an idle auto-fire Swarm run as meaningful participation", () => {
+    expect(hasMeaningfulSwarmParticipation({ won: false, movementDistance: 0, energy: 0, perkLevel: 1 })).toBe(false);
+    expect(hasMeaningfulSwarmParticipation({ won: false, movementDistance: 700, energy: 0, perkLevel: 1 })).toBe(true);
+    expect(hasMeaningfulSwarmParticipation({ won: false, movementDistance: 0, energy: 3, perkLevel: 1 })).toBe(true);
+    expect(hasMeaningfulSwarmParticipation({ won: true, movementDistance: 0, energy: 0, perkLevel: 1 })).toBe(true);
   });
 });

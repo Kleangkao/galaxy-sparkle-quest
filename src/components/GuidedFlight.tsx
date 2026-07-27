@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle2, Map, PawPrint, Rocket, Sparkles, Users, X } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { GameState, getFaction } from "@/lib/gameState";
 import { getPilot } from "@/lib/loadouts";
 import { useI18n } from "@/lib/i18n";
@@ -20,14 +21,22 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
   const PrimaryIcon = primary.icon;
 
   return (
-    <div className="guided-flight" role="dialog" aria-modal="true" aria-labelledby="guided-flight-title">
-      <div className="guided-flight__panel">
-        <button className="guided-flight__close" onClick={onDismiss} aria-label={tr("Skip guided flight", "ข้ามคำแนะนำ")}><X /></button>
+    <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) onDismiss(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="guided-flight" />
+        <DialogPrimitive.Content className="guided-flight__panel guided-flight__panel--modal" aria-describedby="guided-flight-description">
+        <DialogPrimitive.Close asChild>
+          <button className="guided-flight__close" aria-label={tr("Skip guided flight", "ข้ามคำแนะนำ")}><X /></button>
+        </DialogPrimitive.Close>
         <div className="guided-flight__visual"><img src={pilot.image} alt={pilot.name} /><span><PawPrint /> {tr("PURI online", "PURI พร้อมแล้ว")}</span></div>
         <div className="guided-flight__copy">
           <div className="command-kicker"><Rocket className="h-3.5 w-3.5" /> {tr("First flight · about 3 minutes", "เที่ยวบินแรก · ประมาณ 3 นาที")}</div>
-          <h1 id="guided-flight-title">{tr(`Welcome to ${faction?.name}, Captain.`, `ยินดีต้อนรับสู่ฝ่าย ${faction?.name}`)}</h1>
-          <p>{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณคือ ${pilot.name} และ PURI จะเดินทางไปด้วยกัน พร้อมปลดล็อกความสามารถใหม่ในทุกโหมด`)}</p>
+          <DialogPrimitive.Title asChild>
+            <h1>{tr(`Welcome to ${faction?.name}, Captain.`, `ยินดีต้อนรับสู่ฝ่าย ${faction?.name}`)}</h1>
+          </DialogPrimitive.Title>
+          <DialogPrimitive.Description asChild>
+            <p id="guided-flight-description">{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณคือ ${pilot.name} และ PURI จะเดินทางไปด้วยกัน พร้อมปลดล็อกความสามารถใหม่ในทุกโหมด`)}</p>
+          </DialogPrimitive.Description>
           <p className="guided-flight__save-note">{tr("Progress saves in this browser on this device. Download a backup from Settings before changing devices or clearing browser data.", "เซฟเกมจะอยู่ในเบราว์เซอร์ของเครื่องนี้ ควรดาวน์โหลดไฟล์สำรองจากหน้าตั้งค่าก่อนเปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์")}</p>
           <div className="guided-flight__steps">
             <Step done label={tr("Choose a faction", "เลือกฝ่าย")} detail={tr(`${faction?.name} progress now saves separately.`, `เซฟของฝ่าย ${faction?.name} จะแยกจากฝ่ายอื่น`)} />
@@ -39,8 +48,9 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
           <button className="guided-flight__primary" onClick={primary.action}><PrimaryIcon /> {primary.label} <ArrowRight /></button>
           <button className="guided-flight__skip" onClick={onDismiss}>{tr("Skip for now · replay anytime in Settings", "ข้ามก่อน · เปิดดูใหม่ได้ทุกเมื่อในหน้าตั้งค่า")}</button>
         </div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 

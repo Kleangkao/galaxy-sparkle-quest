@@ -472,6 +472,36 @@ describe("public test release hardening", () => {
     }
   });
 
+  it("resumes a Story countdown from the exact remaining time instead of resetting it", async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    try {
+      const view = render(
+        <PlanetExploration planetId="sparkle-moon" missionTimeBonus={-45} suspended={false} onComplete={onComplete} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(1_600));
+      await act(async () => vi.advanceTimersByTimeAsync(1_200));
+      const beforePause = Number.parseInt(screen.getByLabelText("Time remaining").textContent ?? "0", 10);
+
+      view.rerender(
+        <PlanetExploration planetId="sparkle-moon" missionTimeBonus={-45} suspended onComplete={onComplete} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(5_000));
+      expect(onComplete).not.toHaveBeenCalled();
+      expect(Number.parseInt(screen.getByLabelText("Time remaining").textContent ?? "0", 10)).toBe(beforePause);
+
+      view.rerender(
+        <PlanetExploration planetId="sparkle-moon" missionTimeBonus={-45} suspended={false} onComplete={onComplete} />,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(1_200));
+      const afterResume = Number.parseInt(screen.getByLabelText("Time remaining").textContent ?? "0", 10);
+      expect(afterResume).toBeLessThan(beforePause);
+      expect(afterResume).toBeGreaterThanOrEqual(beforePause - 2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("suspends both real-time combat simulations when the app is suspended", async () => {
     vi.useFakeTimers();
     try {
@@ -559,5 +589,23 @@ describe("public test release hardening", () => {
     fireEvent.click(screen.getByRole("button", { name: "Biomes" }));
 
     expect(screen.getByRole("alertdialog", { name: "Leave this unfinished journal?" })).toBeInTheDocument();
+  });
+
+  it("restores the top of the page when Discovery changes internal views", () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(
+      <DiscoveryRun
+        gameState={createNewGameState("mud")}
+        onBack={() => undefined}
+        onComplete={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /Explore this area/ })[2]);
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: "auto" });
+    scrollTo.mockClear();
+
+    fireEvent.click(screen.getByRole("button", { name: "Biomes" }));
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: "auto" });
   });
 });
