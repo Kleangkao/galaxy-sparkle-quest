@@ -24,7 +24,7 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
     <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) onDismiss(); }}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="guided-flight" />
-        <DialogPrimitive.Content className="guided-flight__panel guided-flight__panel--modal" aria-describedby="guided-flight-description">
+        <DialogPrimitive.Content className="guided-flight__panel guided-flight__panel--modal">
         <DialogPrimitive.Close asChild>
           <button className="guided-flight__close" aria-label={tr("Skip guided flight", "ข้ามคำแนะนำ")}><X /></button>
         </DialogPrimitive.Close>
@@ -35,7 +35,7 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
             <h1>{tr(`Welcome to ${faction?.name}, Captain.`, `ยินดีต้อนรับสู่ฝ่าย ${faction?.name}`)}</h1>
           </DialogPrimitive.Title>
           <DialogPrimitive.Description asChild>
-            <p id="guided-flight-description">{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณคือ ${pilot.name} และ PURI จะเดินทางไปด้วยกัน พร้อมปลดล็อกความสามารถใหม่ในทุกโหมด`)}</p>
+            <p>{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณคือ ${pilot.name} และ PURI จะเดินทางไปด้วยกัน พร้อมปลดล็อกความสามารถใหม่ในทุกโหมด`)}</p>
           </DialogPrimitive.Description>
           <p className="guided-flight__save-note">{tr("Progress saves in this browser on this device. Download a backup from Settings before changing devices or clearing browser data.", "เซฟเกมจะอยู่ในเบราว์เซอร์ของเครื่องนี้ ควรดาวน์โหลดไฟล์สำรองจากหน้าตั้งค่าก่อนเปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์")}</p>
           <div className="guided-flight__steps">
