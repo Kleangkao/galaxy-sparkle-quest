@@ -1653,9 +1653,10 @@ export default function PlanetExploration({
 
       {/* D-Pad for mobile */}
       {!gameOver && !landing && (
-        <div className="flex flex-col items-center gap-1 sm:hidden">
+        <div className="story-touch-dpad flex flex-col items-center gap-1 sm:hidden" role="group" aria-label={tr("Movement controls", "ปุ่มเคลื่อนที่")}>
           <button
             onClick={() => handleDpad("up")}
+            aria-label={tr("Move up", "ขึ้น")}
             className="w-14 h-14 min-h-[56px] rounded-xl bg-card/80 border border-border/60 flex items-center justify-center active:bg-primary/30 active:scale-90 transition-all touch-manipulation shadow-md"
           >
             <ChevronUp className="w-8 h-8 text-foreground" />
@@ -1663,6 +1664,7 @@ export default function PlanetExploration({
           <div className="flex gap-1">
             <button
               onClick={() => handleDpad("left")}
+              aria-label={tr("Move left", "ซ้าย")}
               className="w-14 h-14 min-h-[56px] rounded-xl bg-card/80 border border-border/60 flex items-center justify-center active:bg-primary/30 active:scale-90 transition-all touch-manipulation shadow-md"
             >
               <ChevronLeft className="w-8 h-8 text-foreground" />
@@ -1670,6 +1672,7 @@ export default function PlanetExploration({
             <div className="w-14 h-14" />
             <button
               onClick={() => handleDpad("right")}
+              aria-label={tr("Move right", "ขวา")}
               className="w-14 h-14 min-h-[56px] rounded-xl bg-card/80 border border-border/60 flex items-center justify-center active:bg-primary/30 active:scale-90 transition-all touch-manipulation shadow-md"
             >
               <ChevronRight className="w-8 h-8 text-foreground" />
@@ -1677,6 +1680,7 @@ export default function PlanetExploration({
           </div>
           <button
             onClick={() => handleDpad("down")}
+            aria-label={tr("Move down", "ลง")}
             className="w-14 h-14 min-h-[56px] rounded-xl bg-card/80 border border-border/60 flex items-center justify-center active:bg-primary/30 active:scale-90 transition-all touch-manipulation shadow-md"
           >
             <ChevronDown className="w-8 h-8 text-foreground" />

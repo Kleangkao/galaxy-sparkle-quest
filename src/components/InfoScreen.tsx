@@ -10,9 +10,9 @@ const operatorFacts = [
 ];
 
 const playFacts = [
-  ["Story", "Move one tile at a time, complete the mission objective, then return to your ship.", "เนื้อเรื่อง", "เดินครั้งละ 1 ช่อง ทำเป้าหมายให้ครบ แล้วกลับไปที่ยาน"],
-  ["Swarm", "Move with WASD or arrows. Shooting is automatic. Collect energy and choose perks.", "ฝ่าฝูงศัตรู", "ขยับด้วย WASD หรือปุ่มลูกศร ปืนยิงอัตโนมัติ เก็บพลังแล้วเลือกความสามารถ"],
-  ["Arcade", "Aim with the mouse, click to shoot, and press R to reload.", "ยิงเป้า", "เล็งด้วยเมาส์ คลิกเพื่อยิง และกด R เพื่อเติมกระสุน"],
+  ["Story", "Move one tile at a time with the keyboard, on-screen arrows, or by tapping a nearby tile. Complete the objective, then return to your ship.", "เนื้อเรื่อง", "เดินครั้งละ 1 ช่อง ใช้คีย์บอร์ด ปุ่มลูกศรบนจอ หรือแตะช่องข้างตัว ทำเป้าหมายให้ครบ แล้วกลับไปที่ยาน"],
+  ["Swarm", "Move with WASD, arrows, or the on-screen direction pad. Shooting is automatic. Collect energy and choose perks.", "ฝ่าฝูงศัตรู", "ขยับด้วย WASD ปุ่มลูกศร หรือปุ่มทิศทางบนจอ ปืนจะยิงอัตโนมัติ เก็บพลังแล้วเลือกความสามารถ"],
+  ["Arcade", "Aim and shoot with a mouse or by tapping targets. Use the on-screen Reload button or press R.", "ยิงเป้า", "ใช้เมาส์เล็งแล้วยิง หรือแตะเป้าบนหน้าจอ เติมกระสุนด้วยปุ่มบนจอหรือกด R"],
 ];
 
 export default function InfoScreen() {
@@ -50,7 +50,7 @@ export default function InfoScreen() {
 
       <section className="info-center__panel">
         <div className="info-center__heading"><BookOpen /><div><span>{tr("Website-only release", "เล่นบนเว็บไซต์เท่านั้น")}</span><h2>{tr("Supported play", "รูปแบบที่รองรับ")}</h2></div></div>
-        <p>{tr("The main release is designed for desktop browsers with a keyboard and mouse. Mobile layouts may open, but mobile gameplay is not yet the supported launch experience.", "เวอร์ชันหลักออกแบบสำหรับเว็บบนคอมพิวเตอร์ ใช้คีย์บอร์ดและเมาส์ มือถืออาจเปิดได้ แต่ยังไม่ใช่รูปแบบหลักที่รองรับในการเปิดตัวครั้งนี้")}</p>
+        <p>{tr("Play directly in a current desktop, tablet, or mobile browser. Keyboard and mouse controls remain available on computers, while touch controls appear automatically on smaller screens.", "เล่นได้บนเว็บเบราว์เซอร์รุ่นปัจจุบัน ทั้งคอมพิวเตอร์ แท็บเล็ต และมือถือ บนคอมใช้คีย์บอร์ดกับเมาส์ได้ ส่วนจอเล็กจะแสดงปุ่มสัมผัสให้อัตโนมัติ")}</p>
         <small>{lang === "th" ? `เวอร์ชัน ${GAME_VERSION} · อัปเดตอัตโนมัติเมื่อโหลดหน้าเว็บใหม่` : `Version ${GAME_VERSION} · updates apply when the webpage reloads`}</small>
       </section>
     </main>

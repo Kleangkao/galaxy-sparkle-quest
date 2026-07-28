@@ -510,6 +510,11 @@ export default function Index() {
     if (!runResult) return;
     const completedMode = runResult.mode;
     setRunResult(null);
+    if (completedMode === "swarm") {
+      setRunReplayKey((value) => value + 1);
+      setScreen("swarm");
+      return;
+    }
     setScreen(completedMode === "arcade" ? "arcade-select" : "hub");
   };
 

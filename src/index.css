@@ -2401,6 +2401,29 @@ summary {
 }
 
 @media (max-width: 540px) {
+  .command-dock {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: .08rem;
+    overflow-x: hidden;
+    padding-right: max(.25rem, env(safe-area-inset-right));
+    padding-left: max(.25rem, env(safe-area-inset-left));
+  }
+  html[lang="th"] .command-dock button,
+  .command-dock button {
+    min-width: 0;
+    gap: .08rem;
+    padding-right: .05rem;
+    padding-left: .05rem;
+  }
+  html[lang="th"] .command-dock button span,
+  .command-dock button span {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: .54rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .app-status-bar__captain {
     display: none;
   }
@@ -2500,6 +2523,49 @@ summary {
     grid-template-columns: repeat(3, 3.4rem);
     grid-template-rows: repeat(2, 3.4rem);
   }
+  .screen-planet .story-touch-dpad {
+    position: fixed;
+    right: max(.55rem, env(safe-area-inset-right));
+    bottom: max(.55rem, env(safe-area-inset-bottom));
+    z-index: 45;
+    display: grid;
+    grid-template-columns: repeat(3, 2.75rem);
+    grid-template-rows: repeat(2, 2.75rem);
+    gap: .2rem;
+    padding: .3rem;
+    border: 1px solid hsl(var(--border) / .7);
+    border-radius: 1rem;
+    background: hsl(var(--background) / .78);
+    box-shadow: 0 12px 32px hsl(235 70% 2% / .45);
+    backdrop-filter: blur(12px);
+  }
+  .screen-planet .story-touch-dpad > button {
+    width: 2.75rem;
+    min-height: 2.75rem;
+    height: 2.75rem;
+  }
+  .screen-planet .story-touch-dpad > button:first-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .screen-planet .story-touch-dpad > div {
+    display: contents;
+  }
+  .screen-planet .story-touch-dpad > div > button:first-child {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .screen-planet .story-touch-dpad > div > div {
+    display: none;
+  }
+  .screen-planet .story-touch-dpad > div > button:last-child {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .screen-planet .story-touch-dpad > button:last-child {
+    grid-column: 2;
+    grid-row: 2;
+  }
   .combat-controls > span,
   .arcade-shooter__controls > span {
     width: 100%;
@@ -2571,10 +2637,33 @@ summary {
   .screen-planet .story-mission-screen {
     padding-top: calc(4.15rem + env(safe-area-inset-top)) !important;
   }
+  .screen-planet .story-mission-screen .animate-slide-up {
+    animation: none;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 540px) and (max-height: 700px) {
+  .screen-swarm .combat-mode.is-active {
+    padding-bottom: max(.25rem, env(safe-area-inset-bottom)) !important;
+  }
+  .screen-swarm .combat-mode.is-active .combat-touch {
+    margin-top: .15rem;
+    margin-bottom: .15rem;
+  }
+  .screen-swarm .combat-mode.is-active .combat-controls {
+    margin-top: .2rem;
+  }
 }
 
 /* Phone landscape: controls sit beside the playfield instead of shrinking it. */
 @media (max-height: 500px) and (orientation: landscape) and (max-width: 950px) {
+  .screen-swarm,
+  .screen-arcade {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
   .screen-swarm .combat-mode,
   .screen-arcade .arcade-shooter {
     padding: max(.25rem, env(safe-area-inset-top)) max(.4rem, env(safe-area-inset-right)) max(.25rem, env(safe-area-inset-bottom)) max(.4rem, env(safe-area-inset-left)) !important;
@@ -2625,7 +2714,7 @@ summary {
   }
   .combat-mode.is-active .combat-arena-wrap,
   .arcade-shooter.is-active .arcade-range-wrap {
-    width: min(72vw, calc((100dvh - 5.25rem) * 1.769));
+    width: min(72vw, calc((100dvh - 7rem) * 1.769));
   }
   .combat-touch {
     position: fixed;
@@ -2683,49 +2772,48 @@ summary {
     min-height: calc(100dvh - 5.25rem);
   }
   .unified-results {
-    padding: .6rem .8rem;
+    width: min(calc(100vw - .75rem), 48rem);
+    max-height: calc(100dvh - .5rem);
+    gap: .2rem !important;
+    padding: .35rem .65rem;
   }
   .unified-results__badge {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-bottom: .25rem;
-  }
-  .unified-results__badge svg {
-    width: 1.2rem;
+    display: none;
   }
   .unified-results__title,
   .unified-results h2 {
     margin-top: 0;
-    font-size: 1.65rem;
+    font-size: 1.45rem;
   }
   .unified-results > p {
     display: none;
   }
   .unified-results__rewards {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: .3rem;
-    margin-top: .4rem;
+    gap: .25rem;
+    margin-top: .2rem;
   }
   .unified-results__rewards > div {
-    min-height: 3rem;
-    padding: .35rem;
+    min-height: 2.65rem;
+    padding: .25rem .35rem;
   }
   .unified-results__section {
-    margin-top: .35rem;
-    padding: .4rem .55rem;
+    margin-top: .2rem;
+    padding: .3rem .5rem;
   }
   .unified-results__section p {
-    margin-top: .15rem;
+    margin-top: .08rem;
+    line-height: 1.25;
   }
   .unified-results__actions {
     flex-direction: row;
-    margin-top: .4rem;
+    margin-top: .2rem;
   }
   .unified-results__actions button {
     width: auto;
-    min-height: 2.35rem;
+    min-height: 2.2rem;
     flex: 1;
-    padding: .35rem .55rem;
+    padding: .25rem .5rem;
   }
 }
 

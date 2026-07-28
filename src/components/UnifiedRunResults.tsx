@@ -44,7 +44,7 @@ export default function UnifiedRunResults({ result, gameState, onExit, onReplay 
       <div className="unified-results__section"><span>{tr("What improved", "รอบนี้ช่วยอะไร")}</span>{improvements.length ? improvements.map((item) => <p key={item}><CheckCircle2 /> {item}</p>) : <p><Sparkles /> {tr("Captain XP and your upgrade fund increased.", "XP นักบินและคริสตัลสำหรับอัปเกรดเพิ่มขึ้น")}</p>}</div>
       <div className="unified-results__actions">
         <button className="is-primary" onClick={onReplay}><RotateCcw /> {status === "cleared" ? tr("Replay", "เล่นอีกครั้ง") : tr("Try again", "ลองอีกครั้ง")}</button>
-        <button onClick={onExit}><List /> {result.mode === "arcade" ? tr("Assignments", "เลือกภารกิจ") : tr("Modes", "เลือกโหมด")}</button>
+        <button onClick={onExit}><List /> {result.mode === "arcade" ? tr("Assignments", "เลือกภารกิจ") : result.mode === "swarm" ? tr("Swarm briefing", "หน้าฝ่าศัตรู") : tr("Modes", "เลือกโหมด")}</button>
       </div>
     </DialogContent>
   </Dialog>;
