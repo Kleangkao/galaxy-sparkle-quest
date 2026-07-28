@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { ArrowLeft, Check, Crosshair, Gauge, PawPrint, Radar, Shield, UserRound, Zap } from "lucide-react";
-import { GameState } from "@/lib/gameState";
+import { GameState, SHIP_SKINS, SHIP_UPGRADES } from "@/lib/gameState";
 import {
   PILOTS,
   TOOLS,
-  getLoadoutPathLabel,
   getPilotCallsign,
   getPilotEffect,
   getPilotRole,
@@ -16,6 +15,7 @@ import {
 } from "@/lib/loadouts";
 import ShipUpgradeShop from "@/components/ShipUpgradeShop";
 import { useI18n } from "@/lib/i18n";
+import { getPetById } from "@/lib/pets";
 
 interface Props {
   gameState: GameState;
@@ -46,6 +46,12 @@ export default function CrewHangar(props: Props) {
 
   const activePilot = PILOTS.find((pilot) => pilot.id === props.gameState.activePilot) ?? PILOTS[0];
   const activeTool = TOOLS.find((tool) => tool.id === props.gameState.activeTool) ?? TOOLS[0];
+  const activePet = props.gameState.activePet ? getPetById(props.gameState.activePet) : undefined;
+  const activeSkin = SHIP_SKINS.find((skin) => skin.id === props.gameState.activeSkin) ?? SHIP_SKINS[0];
+  const activeShipSystem = [...props.gameState.upgrades]
+    .reverse()
+    .map((id) => SHIP_UPGRADES.find((upgrade) => upgrade.id === id))
+    .find(Boolean);
 
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
@@ -70,8 +76,9 @@ export default function CrewHangar(props: Props) {
 
       <section className="loadout-summary" aria-label={tr("Active expedition loadout", "ชุดที่ใช้อยู่")}>
         <div><UserRound /><span>{tr("Active pilot", "นักบินที่ใช้")}</span><strong>{activePilot.name}</strong><small>{getPilotEffect(activePilot, lang)}</small></div>
-        <div><Radar /><span>{tr("Equipped tool", "อาวุธที่ใช้")}</span><strong>{activeTool.name}</strong><small>{getToolEffect(activeTool, lang)}</small></div>
-        <div><Gauge /><span>{tr("Play style", "สไตล์การเล่น")}</span><strong>{getLoadoutPathLabel(activePilot.id, activeTool.id, lang)}</strong><small>{tr(`${activePilot.callsign} build · change between missions`, `ชุด ${activePilot.callsignTh} · เปลี่ยนได้ระหว่างภารกิจ`)}</small></div>
+        <div><Radar /><span>{tr("Equipped weapon", "อาวุธที่ใช้")}</span><strong>{activeTool.name}</strong><small>{getToolEffect(activeTool, lang)}</small></div>
+        <div><PawPrint /><span>{tr("Active companion", "เพื่อนร่วมทาง")}</span><strong>{activePet?.name ?? tr("None selected", "ยังไม่ได้เลือก")}</strong><small>{activePet ? (lang === "th" ? activePet.ability.descTh : activePet.ability.descEn) : tr("Choose one in Companions.", "เลือกได้ที่หน้าเพื่อนร่วมทาง")}</small></div>
+        <div><Gauge /><span>{tr("Ship systems", "ระบบยาน")}</span><strong>{lang === "th" ? activeSkin.nameTh : activeSkin.name}</strong><small>{activeShipSystem ? (lang === "th" ? activeShipSystem.effectTh : activeShipSystem.effect) : tr("No permanent system installed yet.", "ยังไม่ได้ติดตั้งระบบถาวร")}</small></div>
       </section>
 
       <section className="hangar-section" aria-labelledby="pilot-roster-title">

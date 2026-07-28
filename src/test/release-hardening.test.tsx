@@ -265,7 +265,8 @@ describe("public test release hardening", () => {
 
     expect(screen.getByText("รางวัลผ่านครั้งแรก")).toBeInTheDocument();
     expect(screen.getByText("ข้อมูลเพื่อนร่วมทาง")).toBeInTheDocument();
-    expect(screen.getByText(/เงื่อนไขผ่าน: เก็บคริสตัล 5 ชิ้น/)).toBeInTheDocument();
+    expect(screen.getByText("เป้าหมายภารกิจ")).toBeInTheDocument();
+    expect(screen.getByText(/เก็บคริสตัล 5 ชิ้น แล้วเดินกลับมาที่ช่องยาน/)).toBeInTheDocument();
     expect(screen.queryByText("Choose how to play this chapter")).not.toBeInTheDocument();
   });
 
@@ -417,18 +418,21 @@ describe("public test release hardening", () => {
 
   it("always exits a completed run to a usable mode menu", () => {
     const onExit = vi.fn();
+    const onReplay = vi.fn();
     render(
       <UnifiedRunResults
         result={{ mode: "arcade", title: "Contract cleared", outcome: "Saved", crystals: 10, xp: 8 }}
         gameState={createNewGameState("mud")}
         onExit={onExit}
-        onCrew={() => undefined}
+        onReplay={onReplay}
       />,
     );
 
     expect(screen.queryByText("Stay here")).not.toBeInTheDocument();
     expect(screen.queryByText("Play next")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Back to assignments" }));
+    fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+    expect(onReplay).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Assignments" }));
     expect(onExit).toHaveBeenCalledOnce();
   });
 
@@ -439,7 +443,7 @@ describe("public test release hardening", () => {
         result={{ mode: "arcade", status: "no-reward", title: "Assignment incomplete", outcome: "No target was hit.", crystals: 0, xp: 0 }}
         gameState={createNewGameState("mud")}
         onExit={onExit}
-        onCrew={() => undefined}
+        onReplay={() => undefined}
       />,
     );
 
@@ -549,13 +553,13 @@ describe("public test release hardening", () => {
     try {
       const state = createNewGameState("mud");
       const swarm = render(
-        <SwarmProtocol gameState={state} suspended={false} onBack={() => undefined} onOpenHangar={() => undefined} onComplete={() => undefined} />,
+        <SwarmProtocol gameState={state} suspended={false} onBack={() => undefined} onComplete={() => undefined} />,
       );
       fireEvent.click(screen.getByRole("button", { name: "Begin run" }));
       await act(async () => vi.advanceTimersByTimeAsync(1_100));
       const swarmTime = swarm.container.querySelector(".combat-hud > div:last-child strong")?.textContent;
       swarm.rerender(
-        <SwarmProtocol gameState={state} suspended onBack={() => undefined} onOpenHangar={() => undefined} onComplete={() => undefined} />,
+        <SwarmProtocol gameState={state} suspended onBack={() => undefined} onComplete={() => undefined} />,
       );
       await act(async () => vi.advanceTimersByTimeAsync(2_000));
       expect(swarm.container.querySelector(".combat-hud > div:last-child strong")?.textContent).toBe(swarmTime);

@@ -56,7 +56,7 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             </SettingRow>
           </SettingsGroup>
 
-          <SettingsGroup icon={Volume2} title={tr("Audio & vibration", "เสียงและการสั่น")} description={tr("Control game sounds and controller vibration.", "ปรับเสียงเกมและการสั่นของจอย")}>
+          <SettingsGroup icon={Volume2} title={tr("Audio", "เสียง")} description={tr("Control game sounds and music separately.", "ปรับเสียงเกมและเพลงแยกกัน")}>
             <SettingRow label={tr("Sound effects", "เสียงเอฟเฟกต์")} detail={tr("Shots, pickups, warnings, and menu sounds.", "เสียงยิง เก็บของ คำเตือน และเสียงเมนู")}>
               <SegmentedControl value={settings.sound} options={[
                 { value: "full", label: tr("Full", "เต็ม") },

@@ -16,6 +16,7 @@ import {
 } from "@/lib/selfHealing";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import type { PlayMode } from "@/components/ModeHub";
 import type { ArcadeContract } from "@/lib/arcadeContracts";
 import { profileRepository } from "@/lib/profileRepository";
@@ -53,18 +54,19 @@ function ScreenLoadingFallback({ label, labelTh }: { label: string; labelTh: str
   const { tr } = useI18n();
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center px-6 text-center">
-      <div className="rounded-2xl border border-border/60 bg-card/92 px-5 py-4 text-sm font-bold text-foreground shadow-lg">
-        {tr(label, labelTh)}
+      <div className="screen-loading">
+        <span><Sparkles className="h-5 w-5" /></span>
+        <strong>{tr(label, labelTh)}</strong>
       </div>
     </div>
   );
 }
 
 const screenTransition = {
-  initial: { opacity: 0, y: 10, scale: 0.992 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -8, scale: 0.992 },
-  transition: { duration: 0.2, ease: "easeOut" as const },
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -3 },
+  transition: { duration: 0.16, ease: "easeOut" as const },
 };
 
 export default function Index() {
@@ -78,6 +80,7 @@ export default function Index() {
   const [guidedOpen, setGuidedOpen] = useState(() => !hasSeenGuidedFlight(gameState.faction));
   const [activeArcadeContract, setActiveArcadeContract] = useState("ahr-blitz");
   const [runResult, setRunResult] = useState<RunResultData | null>(null);
+  const [runReplayKey, setRunReplayKey] = useState(0);
   const [petsReturnScreen, setPetsReturnScreen] = useState<"map" | "shop">("map");
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [activeRun, setActiveRun] = useState(false);
@@ -510,6 +513,14 @@ export default function Index() {
     setScreen(completedMode === "arcade" ? "arcade-select" : "hub");
   };
 
+  const replayRun = () => {
+    if (!runResult) return;
+    const completedMode = runResult.mode;
+    setRunResult(null);
+    setRunReplayKey((value) => value + 1);
+    setScreen(completedMode === "arcade" ? "arcade" : "swarm");
+  };
+
   if (!gameState.faction) {
     return (
       <div className="relative">
@@ -541,7 +552,7 @@ export default function Index() {
         <motion.div key="mode-hub" {...screenTransition}>
           <ScreenErrorBoundary screenName="mode-hub" onFallback={() => setScreen("map")}>
             <Suspense fallback={<ScreenLoadingFallback label="Opening activity network..." labelTh="กำลังเปิดหน้าเลือกโหมด..." />}>
-              <ModeHub gameState={gameState} onChoose={handleChooseMode} onOpenProgress={() => setScreen("progress")} onOpenCrew={() => setScreen("shop")} />
+              <ModeHub gameState={gameState} onChoose={handleChooseMode} />
             </Suspense>
           </ScreenErrorBoundary>
         </motion.div>
@@ -645,11 +656,11 @@ export default function Index() {
           <ScreenErrorBoundary screenName="swarm" onFallback={() => setScreen("hub")}>
             <Suspense fallback={<ScreenLoadingFallback label="Loading survival simulation..." labelTh="กำลังเตรียมโหมดฝ่าฝูงศัตรู..." />}>
               <SwarmProtocol
+                key={`swarm-${runReplayKey}`}
                 gameState={gameState}
                 suspended={gameSuspended}
                 onActiveChange={setActiveRun}
                 onBack={() => requestNavigation("hub")}
-                onOpenHangar={() => requestNavigation("shop")}
                 onComplete={handleCombatComplete}
               />
             </Suspense>
@@ -662,6 +673,7 @@ export default function Index() {
           <ScreenErrorBoundary screenName="arcade" onFallback={() => setScreen("arcade-select")}>
             <Suspense fallback={<ScreenLoadingFallback label="Loading shooting range..." labelTh="กำลังเตรียมสนามยิง..." />}>
               <ArcadeShooter
+                key={`arcade-${activeArcadeContract}-${runReplayKey}`}
                 gameState={gameState}
                 contractId={activeArcadeContract}
                 suspended={gameSuspended}
@@ -703,7 +715,7 @@ export default function Index() {
 
       {runResult && (
         <Suspense fallback={null}>
-          <UnifiedRunResults result={runResult} gameState={gameState} onExit={exitRunResults} onCrew={() => { setRunResult(null); setScreen("shop"); }} />
+          <UnifiedRunResults result={runResult} gameState={gameState} onExit={exitRunResults} onReplay={replayRun} />
         </Suspense>
       )}
 

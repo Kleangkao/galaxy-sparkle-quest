@@ -39,6 +39,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
   if (gameState.visitedPlanets.length === 0) recommendations.push({ title: tr("Trace the first signal", "ตามรอยสัญญาณแรก"), detail: tr("Begin Story Chapter 1 and learn the controls.", "เริ่มเนื้อเรื่องบทที่ 1 และเรียนรู้การควบคุม"), mode: "story", icon: Map });
   if (gameState.upgrades.length === 0) recommendations.push({ title: tr("Install a first upgrade", "ติดตั้งอัปเกรดชิ้นแรก"), detail: nextUpgrade ? tr(`${nextUpgrade.name} costs ${nextUpgrade.cost} crystals.`, `${nextUpgrade.nameTh} ใช้ ${nextUpgrade.cost} คริสตัล`) : tr("Visit the Crew Hangar.", "ไปที่หน้าจัดทีม"), mode: "story", icon: Zap, openCrew: true });
   if (recommendations.length < 2) recommendations.push({ title: tr("Raise a mode record", "เพิ่มสถิติโหมดที่ชอบ"), detail: tr("Choose a favorite activity and improve its mastery.", "เลือกโหมดที่ชอบแล้วเพิ่มความชำนาญ"), mode: "swarm", icon: Trophy });
+  const nextRecommendation = recommendations[0];
 
   return (
     <main className="captain-progress relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8">
@@ -57,18 +58,18 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
       <section className="captain-progress__summary" aria-label={tr("Progress summary", "สรุปความคืบหน้า")}>
         <div><Map /><span>{tr("Story", "เนื้อเรื่อง")}<strong>{tr(`${gameState.visitedPlanets.length}/10 chapters`, `${gameState.visitedPlanets.length}/10 บท`)}</strong></span><b>{campaignPercent}%</b></div>
         <div><Medal /><span>{tr("Captain medals", "เหรียญนักบิน")}<strong>{tr(`${earnedMedals}/${medals.length} earned`, `ได้ ${earnedMedals}/${medals.length}`)}</strong></span><b>{earnedMedals}</b></div>
-        <div><PawPrint /><span>{tr("Companions", "เพื่อนร่วมทีม")}<strong>{tr(`${gameState.pets.length} archived`, `มี ${gameState.pets.length} ตัว`)}</strong></span><b>{gameState.modeRecords.puriBond}</b></div>
-        <div><Gem /><span>{tr("Upgrade fund", "คริสตัลอัปเกรด")}<strong>{tr(`${gameState.crystals} crystals ready`, `มี ${gameState.crystals} คริสตัล`)}</strong></span><b>{gameState.upgrades.length}</b></div>
+        <div><PawPrint /><span>{tr("Companions", "เพื่อนร่วมทีม")}<strong>{tr(`${gameState.pets.length} archived`, `มี ${gameState.pets.length} ตัว`)}</strong></span><b>{gameState.pets.length}</b></div>
+        <div><Gem /><span>{tr("Upgrade fund", "คริสตัลอัปเกรด")}<strong>{tr(`${gameState.crystals} crystals ready`, `มี ${gameState.crystals} คริสตัล`)}</strong></span><b>{gameState.crystals}</b></div>
       </section>
 
       <div className="captain-progress__grid">
         <section className="progress-panel progress-panel--next">
           <div className="progress-panel__heading"><Sparkles /><div><span>{tr("Recommended next", "แนะนำให้ทำต่อ")}</span><h2>{tr("Keep momentum", "ไปต่อได้เลย")}</h2></div></div>
           <div className="progress-recommendations">
-            {recommendations.slice(0, 3).map((item) => {
-              const Icon = item.icon;
-              return <button key={item.title} onClick={() => item.openCrew ? onOpenCrew() : onPlay(item.mode)}><Icon /><span><strong>{item.title}</strong><small>{item.detail}</small></span><ArrowRight /></button>;
-            })}
+            {nextRecommendation && (() => {
+              const Icon = nextRecommendation.icon;
+              return <button onClick={() => nextRecommendation.openCrew ? onOpenCrew() : onPlay(nextRecommendation.mode)}><Icon /><span><strong>{nextRecommendation.title}</strong><small>{nextRecommendation.detail}</small></span><ArrowRight /></button>;
+            })()}
           </div>
           <button className="progress-crew-button" onClick={onOpenCrew}><Users /> {tr("Open Crew Hangar", "เปิดหน้าจัดทีม")} <ArrowRight /></button>
         </section>

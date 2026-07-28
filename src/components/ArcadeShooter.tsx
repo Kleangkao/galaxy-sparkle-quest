@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw, Target, Trophy, Zap } from "lucide-react";
+import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
 import { getArcadeContract, getArcadeRunOutcome } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
 import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
+import ModeStartOverlay from "@/components/ModeStartOverlay";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
@@ -297,15 +298,9 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
     <main className={`arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
       <header className="arcade-shooter__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Assignments", "เลือกภารกิจ")}</button>
-        <div><div className="command-kicker">{tr("Arcade Ops · Mouse aim challenge", "ยิงเป้า · เล็งด้วยเมาส์")}</div><h1>{contract.name}</h1><p>{objectiveText}. {tr("Move the reticle, click to fire, and press R to reload.", "ขยับเป้า คลิกเพื่อยิง และกด R เพื่อเติมกระสุน")}</p></div>
+        <div><div className="command-kicker">{tr("Arcade Ops · Mouse aim challenge", "ยิงเป้า · เล็งด้วยเมาส์")}</div><h1>{contract.name}</h1><p>{objectiveText}</p></div>
         <div className="arcade-shooter__loadout"><span>{pilot.name}</span><strong>{tool.name}</strong></div>
       </header>
-
-      <section className="arcade-mission-strip">
-        <div><Target className="h-4 w-4" /><span>{tr("Objective", "เป้าหมาย")}<strong>{objectiveText}</strong></span></div>
-        <div><Trophy className="h-4 w-4" /><span>{tr("Rewards", "รางวัล")}<strong>{tr("Hit at least one target with 3+ shots · clear bonus", "ยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง · มีโบนัสเมื่อผ่าน")}</strong></span></div>
-        <div><Zap className="h-4 w-4" /><span>{tr("Skill", "ทักษะ")}<strong>{tr("Aim · timing · reload", "เล็ง · จังหวะ · เติมกระสุน")}</strong></span></div>
-      </section>
 
       <section className="arcade-shooter__hud">
         <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong></div>
@@ -353,13 +348,21 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
           <span ref={reticleRef} className={`arcade-reticle ${isReloading ? "is-reloading" : ""}`}><Crosshair /></span>
 
           {!running && !ended && (
-            <div className="arcade-overlay">
-              <MousePointer2 className="h-8 w-8 text-cosmic-orange" />
-              <div className="command-kicker">{tr("Manual shooting challenge", "ภารกิจยิงด้วยตัวเอง")}</div>
-              <h2>{tr("You aim. You shoot.", "คุณเป็นคนเล็งและยิง")}</h2>
-              <p>{tr(`Track moving targets with your mouse. Avoid red decoys and manage your ${magazine}-round magazine.`, `เล็งเป้าที่กำลังขยับด้วยเมาส์ หลีกเลี่ยงเป้าหลอกสีแดง และจัดการกระสุน ${magazine} นัด`)}</p>
-              <button onClick={(event) => { event.stopPropagation(); reset(); }}><Play className="h-4 w-4" /> {tr("Start assignment", "เริ่มภารกิจ")}</button>
-            </div>
+            <ModeStartOverlay
+              mode="arcade"
+              icon={<MousePointer2 className="h-7 w-7" />}
+              kicker={tr("Manual shooting challenge", "ภารกิจยิงด้วยตัวเอง")}
+              title={tr("You aim. You shoot.", "คุณเป็นคนเล็งและยิง")}
+              summary={objectiveText}
+              steps={[
+                tr("Move the mouse and click to fire", "ขยับเมาส์แล้วคลิกยิง"),
+                tr("Avoid red decoys", "อย่ายิงเป้าหลอกสีแดง"),
+                tr("Press R when the magazine is empty", "กด R เมื่อกระสุนหมด"),
+              ]}
+              note={tr(`Your current magazine holds ${magazine} rounds. A run counts after 3 shots and at least one hit.`, `แม็กกาซีนตอนนี้มี ${magazine} นัด รอบจะนับเมื่อยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง`)}
+              primaryLabel={tr("Start assignment", "เริ่มภารกิจ")}
+              onStart={reset}
+            />
           )}
           {paused && !suspended && <div className="arcade-overlay"><h2>{tr("Paused", "หยุดชั่วคราว")}</h2><button onClick={(event) => { event.stopPropagation(); setPaused(false); }}><Play className="h-4 w-4" /> {tr("Resume", "เล่นต่อ")}</button></div>}
           {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("CONTRACT CLEARED", "ผ่านภารกิจแล้ว") : tr("ASSIGNMENT COMPLETE", "จบภารกิจแล้ว")}</div>}

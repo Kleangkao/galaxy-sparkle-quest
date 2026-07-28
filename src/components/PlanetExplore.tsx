@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Planet, GameState, getActiveShipEmoji, getCrystalBonus, getGameplayModifiers, getUpgradeTier, PLANETS, getPlanetDisplayName, getSectorLore, SHIP_UPGRADES } from "@/lib/gameState";
-import { ArrowLeft, Clock3, Gem, RotateCcw, Route, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ChevronDown, Clock3, Gem, RotateCcw, Route, ShieldCheck, Sparkles, Target, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PlanetExploration, { ExplorationResult } from "@/components/PlanetExploration";
 import CelebrationScreen from "@/components/CelebrationScreen";
@@ -65,6 +65,7 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   const planetIndex = PLANETS.findIndex(p => p.id === planet.id);
   const displayName = getPlanetDisplayName(planetIndex, gameState.faction);
   const [phase, setPhase] = useState<"landing" | "exploring" | "failed" | "celebration">("landing");
+  const [briefingOpen, setBriefingOpen] = useState(() => !gameState.visitedPlanets.includes(planet.id));
   const [approachId, setApproachId] = useState<"scout" | "steady" | "salvage">("steady");
   const [bonusCrystals, setBonusCrystals] = useState(0);
   const [failureReason, setFailureReason] = useState<ExplorationResult["reason"]>("timeout");
@@ -223,7 +224,6 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-cyan">{tr("Estimated crystals", "คริสตัลที่คาดว่าจะได้")}</div>
                 <div className="mt-1 text-sm font-bold text-white">{estimatedCrystalLabel}</div>
                 <div className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">{tr("Base", "พื้นฐาน")} {baseCrystals} · {factionBonusLabel} · {pilotBonusLabel} · {systemBonusLabel} · {approach.name}</div>
-                <div className="mt-1 text-[10px] leading-relaxed text-cyan-50/50">{tr("Bonuses calculate in order and round down to whole crystals.", "คำนวณโบนัสตามลำดับ และปัดเศษลงเป็นคริสตัลเต็มจำนวน")}</div>
               </div>
               <div className="rounded-xl border border-cosmic-green/15 bg-cosmic-green/5 px-3 py-2">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-cosmic-green">{tr("Companion intel", "ข้อมูลเพื่อนร่วมทาง")}</div>
@@ -232,36 +232,40 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
             </div>
           </div>
           {missionBrief && (
-            <div className="w-full rounded-2xl border border-cosmic-cyan/20 bg-cosmic-cyan/5 px-4 py-3 text-left">
-              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cosmic-cyan sm:text-xs">
-                {tr(missionBrief.title, STORY_LANDING_TH[planet.id]?.title ?? missionBrief.title)}
+            <details className="story-briefing-details" open={briefingOpen} onToggle={(event) => setBriefingOpen(event.currentTarget.open)}>
+              <summary>
+                <Target className="h-4 w-4" />
+                <span>
+                  <strong>{tr("Mission objective", "เป้าหมายภารกิจ")}</strong>
+                  <small>{tr(missionBrief.completion, STORY_LANDING_TH[planet.id]?.completion ?? missionBrief.completion)}</small>
+                </span>
+                <ChevronDown className="story-details-chevron h-4 w-4" />
+              </summary>
+              <div className="story-briefing-details__body">
+                <div className="command-kicker">{tr(missionBrief.title, STORY_LANDING_TH[planet.id]?.title ?? missionBrief.title)}</div>
+                <p><strong>{tr(missionBrief.transmission, STORY_LANDING_TH[planet.id]?.transmission ?? missionBrief.transmission)}</strong></p>
+                <p>{tr(`${lore.mission} ${missionBrief.encounters}`, STORY_LANDING_TH[planet.id]?.encounters ?? `${lore.mission} ${missionBrief.encounters}`)}</p>
+                <p className="is-tip">{tr("Tip", "เคล็ดลับ")}: {tr(missionBrief.tip, STORY_LANDING_TH[planet.id]?.tip ?? missionBrief.tip)}</p>
               </div>
-              <p className="mt-1 text-xs font-semibold text-white/90">{tr(missionBrief.transmission, STORY_LANDING_TH[planet.id]?.transmission ?? missionBrief.transmission)}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-cyan-50/85 sm:text-xs">
-                {tr(`${lore.mission} ${missionBrief.encounters}`, STORY_LANDING_TH[planet.id]?.encounters ?? `${lore.mission} ${missionBrief.encounters}`)}
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-cosmic-green sm:text-xs">
-                {tr("How to play", "วิธีเล่น")}: {tr(missionBrief.tip, STORY_LANDING_TH[planet.id]?.tip ?? missionBrief.tip)}
-              </p>
-              <p className="mt-2 rounded-lg border border-cosmic-yellow/20 bg-cosmic-yellow/5 px-3 py-2 text-[11px] font-bold leading-relaxed text-cosmic-yellow sm:text-xs">
-                {tr("How to finish", "เงื่อนไขผ่าน")}: {tr(missionBrief.completion, STORY_LANDING_TH[planet.id]?.completion ?? missionBrief.completion)}
-              </p>
-            </div>
+            </details>
           )}
           {activeShipSystems.length > 0 && (
-            <div className="story-active-systems" aria-label={tr("Active ship systems", "ระบบยานที่ทำงานอยู่")}>
-              <div className="story-active-systems__title">
-                <span>{tr("Ship systems active", "ระบบยานกำลังทำงาน")}</span>
-                <small>{tr("Applied automatically in this mission", "ใช้กับภารกิจนี้ให้อัตโนมัติ")}</small>
+            <details className="story-system-details">
+              <summary>
+                <span>{tr(`${activeShipSystems.length} ship system${activeShipSystems.length === 1 ? "" : "s"} active`, `ระบบยานทำงาน ${activeShipSystems.length} ระบบ`)}</span>
+                <small>{tr("Applied automatically", "ใช้งานให้อัตโนมัติ")}</small>
+                <ChevronDown className="story-details-chevron h-4 w-4" />
+              </summary>
+              <div className="story-active-systems" aria-label={tr("Active ship systems", "ระบบยานที่ทำงานอยู่")}>
+                {activeShipSystems.map((system) => (
+                  <div key={system.id} className="story-active-system">
+                    <GaliaHangarSprite id={system.id} className="h-8 w-8 shrink-0" />
+                    <span><strong>{system.name}</strong><small>{system.summary}</small></span>
+                    <b>T{system.tier}</b>
+                  </div>
+                ))}
               </div>
-              {activeShipSystems.map((system) => (
-                <div key={system.id} className="story-active-system">
-                  <GaliaHangarSprite id={system.id} className="h-8 w-8 shrink-0" />
-                  <span><strong>{system.name}</strong><small>{system.summary}</small></span>
-                  <b>T{system.tier}</b>
-                </div>
-              ))}
-            </div>
+            </details>
           )}
           <div className="story-approach" aria-label={tr("Choose mission approach", "เลือกเส้นทางภารกิจ")}>
             <div className="story-approach__title"><Route className="h-4 w-4" /><span>{tr("Choose how to play this chapter", "เลือกเส้นทางของบทนี้")}</span></div>
@@ -284,11 +288,6 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
               </p>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
-            <span>⭐ {tr("Final", "รับ")} {totalXP} {t("xp")}</span>
-            <span>💎 {tr("Estimated", "คาดว่าจะได้")} {estimatedCrystalLabel} {t("crystals")}</span>
-            {planet.pet && <span>🐾 {planet.pet.emoji} {planet.pet.name}</span>}
-          </div>
           <Button onClick={() => setPhase("exploring")}
             className="story-mission-launch text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-bold"
             style={{ fontFamily: "var(--font-display)" }}>

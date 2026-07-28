@@ -93,13 +93,11 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
         </div>
       </header>
 
-      {activeScreen !== "hub" && (
-        <nav className="command-dock hide-scrollbar" aria-label={tr("Game modes", "โหมดเกม")}>
-          {DOCK_ITEMS.map((item) => (
-            <DockButton key={item.label} item={item} activeScreen={activeScreen} onNavigate={onNavigate} />
-          ))}
-        </nav>
-      )}
+      <nav className="command-dock hide-scrollbar" aria-label={tr("Main navigation", "เมนูหลัก")}>
+        {DOCK_ITEMS.map((item) => (
+          <DockButton key={item.label} item={item} activeScreen={activeScreen} onNavigate={onNavigate} />
+        ))}
+      </nav>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { ArrowRight, Crosshair, Gamepad2, Map, Sparkles, Swords, Trophy, Users } from "lucide-react";
+import { ArrowRight, Crosshair, Gamepad2, Map, Sparkles, Swords } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { getPilot, getPilotCallsign } from "@/lib/loadouts";
 import PuriBondPanel from "@/components/PuriBondPanel";
@@ -9,8 +9,6 @@ export type PlayMode = "story" | "arcade" | "swarm";
 interface Props {
   gameState: GameState;
   onChoose: (mode: PlayMode) => void;
-  onOpenProgress: () => void;
-  onOpenCrew: () => void;
 }
 
 const MODES: Array<{
@@ -49,7 +47,7 @@ const MODES: Array<{
   },
 ];
 
-export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCrew }: Props) {
+export default function ModeHub({ gameState, onChoose }: Props) {
   const { lang, tr } = useI18n();
   const pilot = getPilot(gameState.activePilot);
   const records = gameState.modeRecords;
@@ -66,10 +64,6 @@ export default function ModeHub({ gameState, onChoose, onOpenProgress, onOpenCre
           <div className="mode-hub__captain">
             <img src={pilot.image} alt="" />
             <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${getPilotCallsign(pilot, lang)}`)}</small></div>
-          </div>
-          <div className="mode-hub__utility">
-            <button onClick={onOpenProgress}><Trophy className="h-4 w-4" /> {tr("Progress", "ความคืบหน้า")}</button>
-            <button onClick={onOpenCrew}><Users className="h-4 w-4" /> {tr("Crew", "จัดทีม")}</button>
           </div>
         </div>
       </header>
