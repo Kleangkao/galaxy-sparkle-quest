@@ -40,10 +40,10 @@ const MODES: Array<{
   },
   {
     id: "arcade", name: "Arcade Ops", label: "Action", icon: Crosshair,
-    description: "Real mouse-aim shooting assignments with moving targets, reload timing, decoys, combos, and boss weak points.",
+    description: "Manual shooting assignments for mouse or touch, with moving targets, reload timing, decoys, combos, and boss weak points.",
     image: "/assets/galia-current/arcade-frontier-gunner-v1.webp", color: "orange", status: "Aim & shoot",
-    play: "Mouse aim · click fire · R reload", progress: "Contract records · crystals · XP",
-    th: { name: "ยิงเป้าอาร์เคด", label: "แอ็กชัน", description: "เล็งด้วยเมาส์ ยิงเป้าที่เคลื่อนที่ หลบเป้าหลอก ต่อคอมโบ และยิงจุดอ่อนของบอส", status: "เล็งและยิง", play: "เล็งเมาส์ · คลิกยิง · กด R เติมกระสุน", progress: "สถิติ · คริสตัล · XP" },
+    play: "Mouse or touch aim · fire · reload", progress: "Contract records · crystals · XP",
+    th: { name: "ยิงเป้าอาร์เคด", label: "แอ็กชัน", description: "เล็งด้วยเมาส์หรือแตะหน้าจอ ยิงเป้าที่เคลื่อนที่ หลบเป้าหลอก ต่อคอมโบ และยิงจุดอ่อนของบอส", status: "เล็งและยิง", play: "เล็งเมาส์หรือแตะ · ยิง · เติมกระสุน", progress: "สถิติ · คริสตัล · XP" },
   },
 ];
 

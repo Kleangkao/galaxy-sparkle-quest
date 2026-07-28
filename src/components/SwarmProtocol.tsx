@@ -308,7 +308,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
             tr("Choose a perk when the action pauses", "เลือกพลังเมื่อเกมหยุด"),
             tr("Defeat Ahr before time runs out", "กำจัด Ahr ก่อนหมดเวลา"),
           ]}
-          note={tr(`Space / controller A: 45-damage Shock Pulse that clears nearby hazards. Rewards count after active movement or ${SWARM_PARTICIPATION.energyCollected} energy.`, `Space / ปุ่ม A: ปล่อยคลื่นดาเมจ 45 และลบลูกพลังรอบตัว รอบจะนับเมื่อขยับจริงจังหรือเก็บพลัง ${SWARM_PARTICIPATION.energyCollected} ชิ้น`)}
+          note={tr(`Space / controller A · Shock Pulse deals 45 damage and clears nearby hazards. Rewards count after active movement or ${SWARM_PARTICIPATION.energyCollected} energy.`, `Space / ปุ่ม A บนจอย · คลื่นกระแทก ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว รอบจะนับเมื่อขยับจริงจังหรือเก็บพลัง ${SWARM_PARTICIPATION.energyCollected} ชิ้น`)}
           primaryLabel={tr("Begin run", "เริ่มเล่น")}
           onStart={reset}
         />

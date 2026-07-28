@@ -533,7 +533,7 @@ export default function Index() {
   }
 
   return (
-    <div className={`space-bg min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""} ${gameState.accessibility.screenShake === "off" ? "no-screen-shake" : ""}`}>
+    <div className={`space-bg screen-${screen} min-h-screen relative ${gameState.accessibility.contrast === "high" ? "contrast-high" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""} ${gameState.accessibility.screenShake === "off" ? "no-screen-shake" : ""}`}>
       <SpaceBackground />
       <HUD
         gameState={gameState}

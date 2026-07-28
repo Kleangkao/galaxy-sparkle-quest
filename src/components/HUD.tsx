@@ -76,17 +76,26 @@ export default function HUD({ gameState, activeScreen, onNavigate, onClaimDaily,
           {controlled > 0 && <span className="status-chip"><Shield className="h-3.5 w-3.5" /> {controlled}/{PLANETS.length}</span>}
           <span className="status-chip status-chip--crystals">◆ {gameState.crystals}</span>
           {dailyAvailable && onClaimDaily && (
-            <motion.button className="daily-chip" onClick={onClaimDaily} animate={{ scale: [1, 1.04, 1] }} transition={{ duration: 1.8, repeat: Infinity }}>
-              {tr("Daily", "รายวัน")} +
+            <motion.button
+              className="daily-chip"
+              onClick={onClaimDaily}
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity }}
+              aria-label={tr("Claim daily reward", "รับรางวัลรายวัน")}
+              title={tr("Claim daily reward", "รับรางวัลรายวัน")}
+            >
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{tr("Daily", "รายวัน")}</span>
+              <b aria-hidden="true">+</b>
             </motion.button>
           )}
-          <button className="status-icon-button" onClick={() => onNavigate("pets")} aria-label={tr(`Companions, ${gameState.pets.length} owned`, `เพื่อนร่วมทาง ${gameState.pets.length} ตัว`)} title={tr("Companions", "เพื่อนร่วมทาง")}>
+          <button className="status-icon-button status-icon-button--companions" onClick={() => onNavigate("pets")} aria-label={tr(`Companions, ${gameState.pets.length} owned`, `เพื่อนร่วมทาง ${gameState.pets.length} ตัว`)} title={tr("Companions", "เพื่อนร่วมทาง")}>
             <PawPrint className="h-4 w-4" /><span>{gameState.pets.length}</span>
           </button>
-          <button className="status-icon-button" onClick={() => onNavigate("info")} aria-label={tr("Game guide", "คู่มือเกม")} title={tr("Game guide", "คู่มือเกม")}>
+          <button className="status-icon-button status-icon-button--info" onClick={() => onNavigate("info")} aria-label={tr("Game guide", "คู่มือเกม")} title={tr("Game guide", "คู่มือเกม")}>
             <Info className="h-4 w-4" />
           </button>
-          <button className="status-icon-button" onClick={onOpenSettings} aria-label={tr("Game settings", "ตั้งค่าเกม")} title={tr("Game settings", "ตั้งค่าเกม")}>
+          <button className="status-icon-button status-icon-button--settings" onClick={onOpenSettings} aria-label={tr("Game settings", "ตั้งค่าเกม")} title={tr("Game settings", "ตั้งค่าเกม")}>
             <Settings className="h-4 w-4" />
           </button>
           <LanguageToggle />
@@ -114,7 +123,7 @@ function DockButton({ item, activeScreen, onNavigate }: { item: DockItem; active
         Story: "เนื้อเรื่อง",
         Swarm: "ฝ่าศัตรู",
         Arcade: "ยิงเป้า",
-        Progress: "ความคืบหน้า",
+        Progress: "คืบหน้า",
         Crew: "จัดทีม",
       }[item.label] ?? item.label)}</span>
     </button>

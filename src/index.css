@@ -2145,10 +2145,605 @@ html[lang="th"] strong {
     margin-top: .45rem;
   }
 }
+@media (max-height: 800px) and (min-width: 851px) {
+  .combat-mode.is-active .combat-arena-wrap {
+    width: min(100%, calc((100dvh - 20rem) * 1.769));
+  }
+  .combat-mode.is-active .combat-controls {
+    margin-top: .3rem;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .screen-loading > span,
   .mode-card {
     animation: none;
     transition: none;
+  }
+}
+
+/* Cross-device release pass
+   The desktop shell remains unchanged. Phones use a bottom navigation dock,
+   while live gameplay becomes an immersive canvas with its own back/pause
+   controls. Safe-area padding protects controls on notched iOS devices. */
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+html {
+  background: hsl(235 45% 5%);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  overscroll-behavior-y: none;
+}
+.space-bg {
+  min-height: 100dvh;
+}
+button,
+[role="button"],
+input,
+select,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+[role="button"],
+summary {
+  touch-action: manipulation;
+}
+.app-status-bar {
+  padding-top: max(.45rem, env(safe-area-inset-top));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-left: max(1rem, env(safe-area-inset-left));
+}
+.command-dock {
+  padding-right: max(.65rem, env(safe-area-inset-right));
+  padding-left: max(.65rem, env(safe-area-inset-left));
+}
+.unified-results-backdrop {
+  padding:
+    max(.5rem, env(safe-area-inset-top))
+    max(.5rem, env(safe-area-inset-right))
+    max(.5rem, env(safe-area-inset-bottom))
+    max(.5rem, env(safe-area-inset-left));
+}
+
+@media (max-width: 850px) {
+  .app-status-bar {
+    min-height: calc(3.55rem + env(safe-area-inset-top));
+    gap: .45rem;
+    padding-right: max(.55rem, env(safe-area-inset-right));
+    padding-left: max(.55rem, env(safe-area-inset-left));
+  }
+  .app-status-bar__actions {
+    min-width: 0;
+    flex: 1;
+    justify-content: flex-end;
+    gap: .32rem;
+  }
+  .faction-switch,
+  .status-chip,
+  .status-icon-button,
+  .daily-chip {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: .45rem .6rem;
+  }
+  .status-icon-button--settings {
+    display: inline-flex;
+  }
+  .language-toggle {
+    min-height: 2.75rem;
+  }
+  .command-dock {
+    min-height: calc(3.85rem + env(safe-area-inset-bottom));
+    padding-bottom: max(.3rem, env(safe-area-inset-bottom));
+    scroll-snap-type: x proximity;
+  }
+  .command-dock button {
+    min-width: 3.35rem;
+    min-height: 3.25rem;
+    flex: 1 1 0;
+    padding-right: .25rem;
+    padding-left: .25rem;
+    scroll-snap-align: center;
+  }
+  .mode-hub,
+  .story-console,
+  .captain-progress,
+  .arcade-contracts,
+  .info-center,
+  .companion-archive,
+  .discovery-mode,
+  .strategy-mode {
+    padding-top: calc(4.45rem + env(safe-area-inset-top)) !important;
+    padding-right: max(.75rem, env(safe-area-inset-right)) !important;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+    padding-left: max(.75rem, env(safe-area-inset-left)) !important;
+  }
+  .mode-records {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mode-records div {
+    min-width: 0;
+    gap: .4rem;
+    padding: .6rem;
+  }
+  .mode-records span {
+    overflow-wrap: anywhere;
+  }
+  .story-console__hero {
+    min-height: 0;
+  }
+  .story-console__hero-copy {
+    width: 100%;
+    min-height: 14rem;
+    padding: 1rem;
+  }
+  .story-console__hero-shade {
+    background:
+      linear-gradient(90deg, hsl(223 38% 6% / .98), hsl(223 38% 7% / .76)),
+      linear-gradient(0deg, hsl(223 38% 6% / .9), transparent 55%);
+  }
+  .story-console__hero-stats {
+    width: auto;
+  }
+  .story-dossier__rewards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .story-landing {
+    width: 100%;
+  }
+  .story-mission-screen {
+    justify-content: flex-start;
+    padding-top: calc(4.55rem + env(safe-area-inset-top)) !important;
+    padding-right: max(.6rem, env(safe-area-inset-right)) !important;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+    padding-left: max(.6rem, env(safe-area-inset-left)) !important;
+  }
+  .story-mission-screen > .story-back-button,
+  .story-mission-screen > button:first-child {
+    top: calc(4.25rem + env(safe-area-inset-top)) !important;
+    left: max(.6rem, env(safe-area-inset-left)) !important;
+  }
+  .combat-arena-wrap,
+  .arcade-range-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+  .combat-header,
+  .arcade-shooter__header {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: .55rem;
+  }
+  .combat-header {
+    display: grid;
+  }
+  .combat-header > div:nth-child(2) {
+    min-width: 0;
+    align-items: flex-start;
+  }
+  .combat-header > div:nth-child(2) strong,
+  .arcade-shooter__header h1 {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .combat-header__loadout,
+  .arcade-shooter__loadout,
+  .arcade-shooter__header p {
+    display: none;
+  }
+  .combat-hud,
+  .arcade-shooter__hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .combat-hud > div,
+  .arcade-shooter__hud > div {
+    min-width: 0;
+  }
+  .combat-hud small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .arcade-shooter__controls,
+  .combat-controls {
+    flex-wrap: wrap;
+  }
+  .arcade-shooter__controls button,
+  .combat-controls button {
+    min-height: 2.75rem;
+  }
+  .arcade-range,
+  .combat-arena {
+    touch-action: none;
+  }
+  .arcade-shooter:not(.is-active) .arcade-range,
+  .combat-mode:not(.is-active) .combat-arena {
+    min-height: min(30rem, 60dvh);
+    aspect-ratio: auto !important;
+  }
+  .mode-start-overlay,
+  .combat-overlay,
+  .arcade-overlay {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .mode-start-overlay {
+    justify-content: center;
+    padding: 1rem;
+  }
+  .combat-overlay {
+    justify-content: flex-start;
+    padding: .8rem;
+  }
+  .combat-upgrades {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .combat-upgrades button {
+    min-width: 0;
+  }
+  .unified-results {
+    width: min(calc(100vw - 1rem), 38rem);
+    max-height: calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .app-status-bar__captain {
+    display: none;
+  }
+  .app-status-bar__actions {
+    justify-content: space-between;
+  }
+  .faction-switch small,
+  .daily-chip span,
+  .status-icon-button--companions,
+  .status-icon-button--info {
+    display: none;
+  }
+  .daily-chip b {
+    font-size: .85rem;
+  }
+  .language-toggle {
+    padding-right: .55rem;
+    padding-left: .55rem;
+  }
+  .language-toggle__label {
+    font-size: .65rem;
+  }
+  .mode-hub__header h1,
+  .story-console__hero h1,
+  .captain-progress__identity h1 {
+    font-size: clamp(2rem, 12vw, 3rem);
+  }
+  .mode-card__body,
+  .mode-card--feature .mode-card__body {
+    grid-template-columns: 1fr;
+  }
+  .mode-card__art {
+    width: 100%;
+  }
+  .mode-card__facts span {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+  }
+  .story-console__hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .story-console__hero-stats div {
+    min-width: 0;
+  }
+  .story-console__hero-stats span {
+    overflow-wrap: anywhere;
+  }
+  .story-dossier__rewards,
+  .captain-progress__summary,
+  .unified-results__rewards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .story-approach__grid,
+  .story-loop,
+  .arcade-mission-strip {
+    grid-template-columns: 1fr;
+  }
+  .story-mission-screen .story-landing__hero {
+    min-height: 19rem;
+  }
+  .story-mission-screen .story-mission-launch {
+    width: 100%;
+    min-width: 0;
+  }
+  .combat-mode,
+  .arcade-shooter {
+    padding-right: .5rem !important;
+    padding-left: .5rem !important;
+  }
+  .combat-objective {
+    display: grid;
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: stretch;
+    justify-items: start;
+  }
+  .combat-objective strong {
+    grid-column: 1 / -1;
+  }
+  .combat-objective small {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .combat-hud > div {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: .42rem;
+  }
+  .arcade-shooter__hud > div {
+    padding: .42rem .5rem;
+  }
+  .combat-hud svg {
+    width: .9rem;
+  }
+  .combat-touch {
+    grid-template-columns: repeat(3, 3.4rem);
+    grid-template-rows: repeat(2, 3.4rem);
+  }
+  .combat-controls > span,
+  .arcade-shooter__controls > span {
+    width: 100%;
+    text-align: center;
+  }
+  .combat-controls button,
+  .arcade-shooter__controls button {
+    flex: 1;
+    justify-content: center;
+  }
+  .unified-results {
+    padding: 1rem;
+  }
+  .unified-results__badge {
+    width: 3rem;
+    height: 3rem;
+  }
+  .unified-results__actions {
+    flex-direction: column;
+  }
+  .unified-results__actions button {
+    width: 100%;
+    min-height: 2.9rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 540px) {
+  .faction-select {
+    justify-content: flex-start;
+    padding-top: calc(5.25rem + env(safe-area-inset-top));
+    padding-right: max(.75rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(.75rem, env(safe-area-inset-left));
+  }
+  .faction-select__language {
+    top: max(.65rem, env(safe-area-inset-top));
+    right: max(.65rem, env(safe-area-inset-right));
+  }
+  .faction-select > div:nth-of-type(2) {
+    padding-top: .35rem;
+  }
+}
+
+/* Live modes own their navigation on small screens. Removing the global bars
+   prevents the arena and Story board from being squeezed between two shells. */
+@media (max-width: 850px) {
+  .screen-planet > .app-status-bar,
+  .screen-planet > .command-dock,
+  .screen-swarm > .app-status-bar,
+  .screen-swarm > .command-dock,
+  .screen-arcade > .app-status-bar,
+  .screen-arcade > .command-dock {
+    display: none;
+  }
+  .screen-planet .story-mission-screen,
+  .screen-swarm .combat-mode,
+  .screen-arcade .arcade-shooter {
+    padding-top: max(.65rem, env(safe-area-inset-top)) !important;
+    padding-bottom: max(.75rem, env(safe-area-inset-bottom)) !important;
+  }
+  .screen-swarm .combat-mode.is-active .combat-touch {
+    display: grid;
+  }
+  .screen-planet .story-mission-screen > .story-back-button,
+  .screen-planet .story-mission-screen > button:first-child {
+    top: max(.55rem, env(safe-area-inset-top)) !important;
+  }
+  .screen-planet .story-mission-screen {
+    padding-top: calc(4.15rem + env(safe-area-inset-top)) !important;
+  }
+}
+
+/* Phone landscape: controls sit beside the playfield instead of shrinking it. */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 950px) {
+  .screen-swarm .combat-mode,
+  .screen-arcade .arcade-shooter {
+    padding: max(.25rem, env(safe-area-inset-top)) max(.4rem, env(safe-area-inset-right)) max(.25rem, env(safe-area-inset-bottom)) max(.4rem, env(safe-area-inset-left)) !important;
+  }
+  .combat-header,
+  .arcade-shooter__header {
+    width: min(38rem, 72vw);
+    margin: 0 auto .2rem;
+  }
+  .combat-header > button,
+  .arcade-shooter__header > button {
+    min-height: 2.25rem;
+    padding: .35rem .55rem;
+  }
+  .combat-header > div:nth-child(2) span,
+  .arcade-shooter__header .command-kicker {
+    display: none;
+  }
+  .combat-objective {
+    display: none;
+  }
+  .combat-hud,
+  .arcade-shooter__hud {
+    width: min(38rem, 72vw);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 auto .2rem;
+    gap: .2rem;
+  }
+  .combat-hud > div,
+  .arcade-shooter__hud > div {
+    min-height: 2.15rem;
+    padding: .25rem .35rem;
+  }
+  .combat-hud svg,
+  .combat-hud small {
+    display: none;
+  }
+  .combat-hud > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .combat-hud span,
+  .arcade-shooter__hud span {
+    overflow: hidden;
+    font-size: .48rem;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .combat-mode.is-active .combat-arena-wrap,
+  .arcade-shooter.is-active .arcade-range-wrap {
+    width: min(72vw, calc((100dvh - 5.25rem) * 1.769));
+  }
+  .combat-touch {
+    position: fixed;
+    bottom: max(.35rem, env(safe-area-inset-bottom));
+    left: max(.35rem, env(safe-area-inset-left));
+    z-index: 35;
+    grid-template-columns: repeat(3, 2.8rem);
+    grid-template-rows: repeat(2, 2.8rem);
+    margin: 0;
+  }
+  .combat-controls,
+  .arcade-shooter__controls {
+    position: fixed;
+    right: max(.35rem, env(safe-area-inset-right));
+    bottom: max(.35rem, env(safe-area-inset-bottom));
+    z-index: 35;
+    width: min(8.5rem, 24vw);
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+  }
+  .combat-controls > span,
+  .arcade-shooter__controls > span {
+    display: none;
+  }
+  .combat-controls button,
+  .arcade-shooter__controls button {
+    width: 100%;
+    min-height: 2.45rem;
+    padding: .35rem;
+  }
+  .combat-pulse-control small {
+    display: none;
+  }
+  .boss-banner {
+    top: .25rem;
+    max-width: 60vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mode-start-overlay {
+    padding: .6rem;
+  }
+  .mode-start-overlay ol,
+  .mode-start-overlay > small,
+  .mode-start-overlay__icon {
+    display: none;
+  }
+  .mode-start-overlay h2 {
+    font-size: 1.6rem;
+  }
+  .arcade-shooter:not(.is-active) .arcade-range,
+  .combat-mode:not(.is-active) .combat-arena {
+    min-height: calc(100dvh - 5.25rem);
+  }
+  .unified-results {
+    padding: .6rem .8rem;
+  }
+  .unified-results__badge {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: .25rem;
+  }
+  .unified-results__badge svg {
+    width: 1.2rem;
+  }
+  .unified-results__title,
+  .unified-results h2 {
+    margin-top: 0;
+    font-size: 1.65rem;
+  }
+  .unified-results > p {
+    display: none;
+  }
+  .unified-results__rewards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .3rem;
+    margin-top: .4rem;
+  }
+  .unified-results__rewards > div {
+    min-height: 3rem;
+    padding: .35rem;
+  }
+  .unified-results__section {
+    margin-top: .35rem;
+    padding: .4rem .55rem;
+  }
+  .unified-results__section p {
+    margin-top: .15rem;
+  }
+  .unified-results__actions {
+    flex-direction: row;
+    margin-top: .4rem;
+  }
+  .unified-results__actions button {
+    width: auto;
+    min-height: 2.35rem;
+    flex: 1;
+    padding: .35rem .55rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .mode-card:hover,
+  .relay-choices button:hover {
+    transform: none;
+  }
+  .combat-touch {
+    opacity: 1;
+    transform: none;
+  }
+  .arcade-range,
+  .arcade-target {
+    cursor: default;
+  }
+  .arcade-target {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 }

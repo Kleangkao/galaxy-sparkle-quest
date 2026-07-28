@@ -17,7 +17,7 @@ export default function ArcadeContracts({ gameState, onBack, onStart }: Props) {
     <main className="arcade-contracts relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-24 lg:px-8">
       <header className="arcade-contracts__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button>
-        <div><div className="command-kicker">{tr("Arcade operations · Aim & shoot", "ภารกิจยิงเป้า · เล็งและยิง")}</div><h1>{tr("Pick your shooting challenge.", "เลือกภารกิจยิงเป้า")}</h1><p>{tr(`Aim with the mouse, click to fire, and build accuracy combos. Your current loadout carries ${magazine} rounds.`, `เล็งด้วยเมาส์ คลิกเพื่อยิง และต่อคอมโบความแม่น ชุดปัจจุบันมีกระสุน ${magazine} นัด`)}</p></div>
+        <div><div className="command-kicker">{tr("Arcade operations · Aim & shoot", "ภารกิจยิงเป้า · เล็งและยิง")}</div><h1>{tr("Pick your shooting challenge.", "เลือกภารกิจยิงเป้า")}</h1><p>{tr(`Aim with a mouse or touch, fire, and build accuracy combos. Your current loadout carries ${magazine} rounds.`, `เล็งด้วยเมาส์หรือแตะหน้าจอ ยิงเป้า และต่อคอมโบความแม่น ชุดปัจจุบันมีกระสุน ${magazine} นัด`)}</p></div>
         <div className="arcade-contracts__bond"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><span>{tr("PURI bond", "ความสนิท PURI")}<strong>{gameState.modeRecords.puriBond}</strong></span></div>
       </header>
 

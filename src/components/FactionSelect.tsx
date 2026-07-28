@@ -40,12 +40,12 @@ export default function FactionSelect({ onSelect }: Props) {
   };
 
   return (
-    <div className="space-bg min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 relative overflow-y-auto">
-      <div className="absolute right-4 top-4 z-20"><LanguageToggle /></div>
+    <div className="faction-select space-bg relative flex min-h-screen flex-col items-center justify-center overflow-y-auto p-3 sm:p-4 md:p-6">
+      <div className="faction-select__language absolute right-4 top-4 z-20"><LanguageToggle /></div>
       <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-slide-up max-w-4xl">
         <div className="command-kicker mb-3">{tr("An original frontier adventure", "การผจญภัยครั้งใหม่ในกาเลีย")}</div>
         <h1
-          className="mx-auto mb-1 whitespace-nowrap text-[clamp(2rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.04em] text-white sm:mb-2"
+          className="mx-auto mb-1 whitespace-normal text-[clamp(2rem,6vw,4.75rem)] font-black leading-[0.95] tracking-[-0.04em] text-white sm:mb-2 sm:whitespace-nowrap"
           style={{
             fontFamily: "var(--font-hero)",
             textShadow: "0 0 18px hsl(330 85% 65% / 0.35), 0 0 36px hsl(280 80% 65% / 0.18)",

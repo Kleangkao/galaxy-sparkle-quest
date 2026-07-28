@@ -298,7 +298,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
     <main className={`arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
       <header className="arcade-shooter__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Assignments", "เลือกภารกิจ")}</button>
-        <div><div className="command-kicker">{tr("Arcade Ops · Mouse aim challenge", "ยิงเป้า · เล็งด้วยเมาส์")}</div><h1>{contract.name}</h1><p>{objectiveText}</p></div>
+        <div><div className="command-kicker">{tr("Arcade Ops · Mouse or touch aim", "ยิงเป้า · ใช้เมาส์หรือแตะจอ")}</div><h1>{contract.name}</h1><p>{objectiveText}</p></div>
         <div className="arcade-shooter__loadout"><span>{pilot.name}</span><strong>{tool.name}</strong></div>
       </header>
 
@@ -355,7 +355,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
               title={tr("You aim. You shoot.", "คุณเป็นคนเล็งและยิง")}
               summary={objectiveText}
               steps={[
-                tr("Move the mouse and click to fire", "ขยับเมาส์แล้วคลิกยิง"),
+                tr("Aim with the mouse or tap a target to fire", "เล็งด้วยเมาส์หรือแตะเป้าหมายเพื่อยิง"),
                 tr("Avoid red decoys", "อย่ายิงเป้าหลอกสีแดง"),
                 tr("Press R when the magazine is empty", "กด R เมื่อกระสุนหมด"),
               ]}
@@ -370,7 +370,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
       </div>
 
       <footer className="arcade-shooter__controls">
-        <span className={isReloading ? "is-reloading" : ""}>{isReloading ? tr(`RELOADING · ${reloadSeconds}s`, `กำลังเติมกระสุน · ${reloadSeconds} วิ`) : tr("Mouse · aim and fire", "เมาส์ · เล็งและยิง")}</span>
+        <span className={isReloading ? "is-reloading" : ""}>{isReloading ? tr(`RELOADING · ${reloadSeconds}s`, `กำลังเติมกระสุน · ${reloadSeconds} วิ`) : tr("Mouse or touch · aim and fire", "เมาส์หรือแตะจอ · เล็งและยิง")}</span>
         <button onClick={reload} disabled={!running || effectivePaused || frame.reloading > 0 || frame.ammo === magazine}><RotateCcw className="h-4 w-4" /> R · {tr("Reload", "เติมกระสุน")}</button>
         <button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button>
       </footer>

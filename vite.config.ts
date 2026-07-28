@@ -18,6 +18,10 @@ export default defineConfig({
     },
   },
   build: {
+    // Keep the browser build compatible with current Android/iOS browsers and
+    // older Safari versions still common on tablets used in schools.
+    target: ["es2020", "safari14"],
+    cssTarget: "safari14",
     // Sites binds static files from dist/client to the production worker.
     // Keep the worker itself in dist/server (written by prepare-sites.mjs).
     outDir: "dist/client",
