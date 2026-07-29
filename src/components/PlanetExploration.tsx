@@ -1239,6 +1239,8 @@ export default function PlanetExploration({
       ref={boardRef}
       tabIndex={0}
       onPointerDown={() => boardRef.current?.focus()}
+      role="region"
+      aria-label={tr("Story mission board", "กระดานภารกิจเนื้อเรื่อง")}
       className="w-full max-w-[95vw] sm:max-w-lg md:max-w-xl mx-auto flex flex-col items-center gap-2 sm:gap-3 outline-none"
     >
       {/* Landing Animation Overlay */}
@@ -1277,7 +1279,7 @@ export default function PlanetExploration({
       </AnimatePresence>
 
       {/* HUD Bar */}
-      <div className="w-full flex flex-col gap-2 px-2 sm:px-3 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-card/90 backdrop-blur-sm border border-border/60 shadow-lg">
+      <section aria-label={tr("Mission status", "สถานะภารกิจ")} className="w-full flex flex-col gap-2 px-2 sm:px-3 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-card/90 backdrop-blur-sm border border-border/60 shadow-lg">
         <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-xs">
           <span className="rounded-full border border-border/50 bg-background/25 px-2.5 py-1">{tr("Live mission", "กำลังทำภารกิจ")}</span>
           <span className={`rounded-full border px-2.5 py-1 ${canReturn ? "border-cosmic-green/30 bg-cosmic-green/10 text-cosmic-green" : "border-cosmic-yellow/25 bg-cosmic-yellow/10 text-cosmic-yellow"}`}>
@@ -1360,7 +1362,7 @@ export default function PlanetExploration({
               : tr("Mission targets complete. Auto extraction in progress.", "ทำเป้าหมายครบแล้ว กำลังพากลับอัตโนมัติ")}
           </p>
         )}
-      </div>
+      </section>
 
       {/* Theme label */}
       <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-semibold" style={{ fontFamily: "var(--font-display)" }}>
@@ -1378,6 +1380,8 @@ export default function PlanetExploration({
 
       {/* Exploration Grid */}
       <div
+        role="group"
+        aria-label={tr("Exploration grid", "ตารางสำรวจ")}
         className={`story-expedition-board story-expedition-board--${planetId} relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 border-border/40 shadow-2xl bg-gradient-to-b ${theme.bgGradient}`}
       >
         {hpHitFlash && (

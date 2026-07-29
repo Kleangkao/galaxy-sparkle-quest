@@ -183,7 +183,8 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
   };
 
   return (
-    <div className="story-mission-screen relative z-10 flex min-h-screen flex-col items-center justify-center overflow-visible px-3 pb-24 pt-28 sm:px-4 sm:pb-28 sm:pt-32">
+    <main className="story-mission-screen relative z-10 flex min-h-screen flex-col items-center justify-center overflow-visible px-3 pb-24 pt-28 sm:px-4 sm:pb-28 sm:pt-32">
+      <h1 className="sr-only">{tr(`Story mission: ${displayName}`, `ภารกิจเนื้อเรื่อง: ${displayName}`)}</h1>
       <button onClick={onBack}
         className="fixed left-4 top-28 z-[60] flex items-center justify-center min-h-[48px] gap-1.5 rounded-2xl border border-border/60 bg-card/92 px-4 py-2 text-foreground shadow-lg transition-all hover:bg-card">
         <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -356,6 +357,6 @@ export default function PlanetExplore({ planet, gameState, onCollect, onFailureC
           onContinue={canContinue ? handleContinue : undefined}
         />
       )}
-    </div>
+    </main>
   );
 }

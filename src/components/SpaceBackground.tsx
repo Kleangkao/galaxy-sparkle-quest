@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { detectLowPerformance } from "@/lib/selfHealing";
 
 export default function SpaceBackground() {
+  const lowPerformance = useMemo(() => detectLowPerformance(), []);
   const stars = useMemo(
     () =>
-      Array.from({ length: 56 }, (_, i) => ({
+      Array.from({ length: lowPerformance ? 24 : 56 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -13,7 +15,7 @@ export default function SpaceBackground() {
         bright: Math.random() < 0.15,
         hue: Math.random() < 0.3 ? (Math.random() < 0.5 ? 190 : 45) : 0,
       })),
-    []
+    [lowPerformance]
   );
 
   return (
@@ -22,7 +24,7 @@ export default function SpaceBackground() {
       {stars.map((s) => (
         <div
           key={s.id}
-          className={`space-background__star absolute rounded-full ${s.bright ? "animate-twinkle-bright" : ""}`}
+          className={`space-background__star absolute rounded-full ${s.bright && !lowPerformance ? "animate-twinkle-bright" : ""}`}
           style={{
             left: `${s.x}%`,
             top: `${s.y}%`,
@@ -50,19 +52,23 @@ export default function SpaceBackground() {
           background: "radial-gradient(circle, hsl(190 90% 55% / 0.08) 0%, transparent 70%)",
         }}
       />
-      <div
-        className="space-background__nebula absolute bottom-[8%] left-[35%] w-96 h-96 rounded-full"
-        style={{
-          background: "radial-gradient(circle, hsl(330 85% 65% / 0.08) 0%, transparent 70%)",
-        }}
-      />
-      {/* Subtle warm nebula */}
-      <div
-        className="space-background__nebula absolute top-[60%] left-[5%] w-64 h-64 rounded-full"
-        style={{
-          background: "radial-gradient(circle, hsl(45 95% 60% / 0.06) 0%, transparent 70%)",
-        }}
-      />
+      {!lowPerformance && (
+        <>
+          <div
+            className="space-background__nebula absolute bottom-[8%] left-[35%] w-96 h-96 rounded-full"
+            style={{
+              background: "radial-gradient(circle, hsl(330 85% 65% / 0.08) 0%, transparent 70%)",
+            }}
+          />
+          {/* Subtle warm nebula */}
+          <div
+            className="space-background__nebula absolute top-[60%] left-[5%] w-64 h-64 rounded-full"
+            style={{
+              background: "radial-gradient(circle, hsl(45 95% 60% / 0.06) 0%, transparent 70%)",
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

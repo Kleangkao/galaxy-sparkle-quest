@@ -7,6 +7,7 @@ const workerSource = resolve(projectRoot, "sites", "worker.js");
 const workerOutput = resolve(projectRoot, "dist", "server", "index.js");
 const clientOutput = resolve(projectRoot, "dist", "client");
 const publicAssets = resolve(clientOutput, "assets");
+const deploymentOnlyLegacyCover = resolve(clientOutput, "og-legacy-plush-v1.png");
 
 await mkdir(dirname(workerOutput), { recursive: true });
 await copyFile(workerSource, workerOutput);
@@ -45,4 +46,5 @@ for (const file of await listFiles(publicAssets)) {
   await rm(file);
   pruned += 1;
 }
+await rm(deploymentOnlyLegacyCover, { force: true });
 console.log(`[sites] Preserved source artwork; omitted ${pruned} unused public assets from this deployment.`);

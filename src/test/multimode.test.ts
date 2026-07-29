@@ -111,7 +111,10 @@ describe("multi-mode progression", () => {
   it("explains exact upgrade tiers and mode-specific weapon relevance", () => {
     expect(getUpgradeEffectAtTier("shield", 1)).toContain("60%");
     expect(getUpgradeEffectAtTier("shield", 3)).toContain("80%");
-    expect(getToolModeSummary(getTool("echo-scanner"), "swarm")).toContain("+8% Swarm fire rate");
+    expect(getToolModeSummary(getTool("echo-scanner"), "swarm")).toBe("+8% fire rate");
+    expect(getToolModeSummary(getTool("echo-scanner"), "arcade")).toBe("+2 rounds · 20% faster reload");
+    expect(getToolModeSummary(getTool("echo-scanner"), "swarm", "th")).toBe("ยิงเร็วขึ้น 8%");
+    expect(getToolModeSummary(getTool("echo-scanner"), "arcade", "th")).toBe("กระสุน +2 นัด · เติมกระสุนเร็วขึ้น 20%");
     expect(getToolModeSummary(getTool("vector-drive"), "swarm")).toContain("+20% weapon damage");
   });
 

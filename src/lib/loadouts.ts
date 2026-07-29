@@ -162,10 +162,16 @@ export function getToolEffect(tool: ToolDefinition, lang: "en" | "th") {
 
 export function getToolModeSummary(tool: ToolDefinition, mode: "story" | "swarm" | "arcade", lang: "en" | "th" = "en") {
   if (mode === "story") return lang === "th" ? "อาวุธไม่มีผลกับการสำรวจในเนื้อเรื่อง" : "Weapons do not modify Story exploration";
-  const applies =
-    (mode === "swarm" && Boolean(tool.combatDamage || tool.combatFireRate || tool.combatHullBonus)) ||
-    (mode === "arcade" && Boolean(tool.combatDamage || tool.combatFireRate || tool.arcadeMagazineBonus || tool.arcadeReloadMultiplier));
-  if (applies) return getToolEffect(tool, lang);
+  const effects: string[] = [];
+  if (tool.combatDamage) effects.push(lang === "th" ? `ความแรงอาวุธ +${Math.round((tool.combatDamage - 1) * 100)}%` : `+${Math.round((tool.combatDamage - 1) * 100)}% weapon damage`);
+  if (mode === "swarm") {
+    if (tool.combatFireRate) effects.push(lang === "th" ? `ยิงเร็วขึ้น ${Math.round((tool.combatFireRate - 1) * 100)}%` : `+${Math.round((tool.combatFireRate - 1) * 100)}% fire rate`);
+    if (tool.combatHullBonus) effects.push(lang === "th" ? `พลังยานเริ่มต้น +${tool.combatHullBonus}` : `+${tool.combatHullBonus} starting hull`);
+  } else {
+    if (tool.arcadeMagazineBonus) effects.push(lang === "th" ? `กระสุน +${tool.arcadeMagazineBonus} นัด` : `+${tool.arcadeMagazineBonus} rounds`);
+    if (tool.arcadeReloadMultiplier) effects.push(lang === "th" ? `เติมกระสุนเร็วขึ้น ${Math.round((1 - tool.arcadeReloadMultiplier) * 100)}%` : `${Math.round((1 - tool.arcadeReloadMultiplier) * 100)}% faster reload`);
+  }
+  if (effects.length > 0) return effects.join(" · ");
   if (lang === "th") return `ไม่มีโบนัสใน${mode === "swarm" ? "ฝ่าฝูงศัตรู" : "ยิงเป้า"} · เปลี่ยนได้ที่หน้าจัดทีม`;
   return `No ${mode === "swarm" ? "Swarm" : "Arcade"} bonus · switch in Crew Hangar`;
 }

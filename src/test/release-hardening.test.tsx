@@ -25,6 +25,7 @@ import ArcadeShooter from "@/components/ArcadeShooter";
 import SwarmProtocol from "@/components/SwarmProtocol";
 import CelebrationScreen from "@/components/CelebrationScreen";
 import DiscoveryRun from "@/components/DiscoveryRun";
+import SettingsPanel from "@/components/SettingsPanel";
 import { I18nProvider } from "@/lib/i18n";
 
 const MUD_SAVE_KEY = "cosmic-explorer-save-v2:mud";
@@ -107,6 +108,40 @@ describe("public test release hardening", () => {
       throw new DOMException("Storage blocked", "QuotaExceededError");
     });
     expect(() => saveGame(createNewGameState("mud"))).not.toThrow();
+  });
+
+  it("shows touch instructions and a safe browser fallback when fullscreen is unavailable", () => {
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    Object.defineProperty(navigator, "maxTouchPoints", { configurable: true, value: 5 });
+    const state = createNewGameState("mud");
+
+    try {
+      render(
+        <SettingsPanel
+          open
+          factionName="MUD"
+          settings={state.accessibility}
+          onOpenChange={() => undefined}
+          onChange={() => undefined}
+          onSwitchFaction={() => undefined}
+          onResetProgress={() => undefined}
+          onReplayOnboarding={() => undefined}
+          onExportSave={() => undefined}
+          onImportSave={() => undefined}
+        />,
+      );
+
+      expect(screen.getByText("Touch controls")).toBeInTheDocument();
+      expect(screen.getByText("On-screen controls for phones and tablets.")).toBeInTheDocument();
+      expect(screen.getByText("Browser controlled")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Toggle fullscreen" })).not.toBeInTheDocument();
+    } finally {
+      delete (navigator as unknown as { maxTouchPoints?: number }).maxTouchPoints;
+    }
   });
 
   it("does not let an idle connected controller cancel keyboard movement", () => {

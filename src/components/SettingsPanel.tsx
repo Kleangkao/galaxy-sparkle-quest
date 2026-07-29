@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { Contrast, Download, Gauge, HardDrive, Keyboard, Languages, Maximize2, RotateCcw, Settings2, Sparkles, Target, Upload, Users, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Contrast, Download, Gauge, HardDrive, Keyboard, Languages, Maximize2, RotateCcw, Settings2, Smartphone, Sparkles, Target, Upload, Users, Volume2 } from "lucide-react";
 import { GameState } from "@/lib/gameState";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LanguageToggle from "@/components/LanguageToggle";
@@ -22,6 +22,36 @@ interface Props {
 export default function SettingsPanel({ open, factionName, settings, onOpenChange, onChange, onSwitchFaction, onResetProgress, onReplayOnboarding, onExportSave, onImportSave }: Props) {
   const { tr } = useI18n();
   const importInput = useRef<HTMLInputElement>(null);
+  const [touchFirst, setTouchFirst] = useState(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState(false);
+
+  useEffect(() => {
+    const touchQuery = window.matchMedia("(hover: none), (pointer: coarse)");
+    const updateCapabilities = () => {
+      setTouchFirst(touchQuery.matches || navigator.maxTouchPoints > 0);
+      setFullscreenSupported(Boolean(
+        document.fullscreenEnabled &&
+        typeof document.documentElement.requestFullscreen === "function" &&
+        typeof document.exitFullscreen === "function",
+      ));
+    };
+    updateCapabilities();
+    touchQuery.addEventListener?.("change", updateCapabilities);
+    return () => touchQuery.removeEventListener?.("change", updateCapabilities);
+  }, [open]);
+
+  const toggleFullscreen = async () => {
+    if (!fullscreenSupported) return;
+    setFullscreenError(false);
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      setFullscreenError(true);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onOpenAutoFocus={(event) => event.preventDefault()} className="game-settings max-h-[88vh] max-w-2xl overflow-y-auto border-border/70 bg-card/95 p-0 text-foreground shadow-2xl backdrop-blur-xl">
@@ -94,18 +124,42 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             </SettingRow>
           </SettingsGroup>
 
-          <SettingsGroup icon={Keyboard} title={tr("Desktop controls", "ปุ่มควบคุมบนคอม")} description={tr("Keyboard, mouse, and display controls.", "ดูปุ่มคีย์บอร์ด เมาส์ และหน้าจอ")}>
-            <SettingRow label={tr("Movement", "เคลื่อนที่")} detail={tr("WASD or arrows · hold Shift and a direction to dash in Story.", "ใช้ WASD หรือปุ่มลูกศร · กด Shift พร้อมทิศทางเพื่อพุ่งใน Story")}>
-              <span className="text-xs font-bold text-cosmic-cyan">WASD</span>
+          <SettingsGroup
+            icon={touchFirst ? Smartphone : Keyboard}
+            title={touchFirst ? tr("Touch controls", "ปุ่มควบคุมแบบสัมผัส") : tr("Keyboard & mouse", "คีย์บอร์ดและเมาส์")}
+            description={touchFirst ? tr("On-screen controls for phones and tablets.", "ปุ่มบนหน้าจอสำหรับมือถือและแท็บเล็ต") : tr("Keyboard, mouse, and display controls.", "ดูปุ่มคีย์บอร์ด เมาส์ และหน้าจอ")}
+          >
+            <SettingRow
+              label={tr("Movement", "เคลื่อนที่")}
+              detail={touchFirst
+                ? tr("Use the on-screen arrows in Story and the direction pad in Swarm.", "ใช้ปุ่มลูกศรในเนื้อเรื่อง และแป้นทิศทางในโหมดฝ่าฝูงศัตรู")
+                : tr("WASD or arrows · hold Shift and a direction to dash in Story.", "ใช้ WASD หรือปุ่มลูกศร · กด Shift พร้อมทิศทางเพื่อพุ่งใน Story")}
+            >
+              <span className="text-xs font-bold text-cosmic-cyan">{touchFirst ? tr("On-screen pad", "แป้นบนหน้าจอ") : "WASD"}</span>
             </SettingRow>
-            <SettingRow label={tr("Combat", "ต่อสู้")} detail={tr("Space/controller A uses Swarm Shock Pulse (45 damage and clears nearby hazard shots) · R reloads Arcade · Escape pauses.", "Space / ปุ่ม A บนจอย ใช้คลื่นกระแทกในโหมดฝ่าฝูงศัตรู (ดาเมจ 45 และลบลูกพลังรอบตัว) · R เติมกระสุนในโหมดยิงเป้า · Escape หยุดเกม")}>
-              <span className="text-xs font-bold text-cosmic-cyan">Space · R · Esc</span>
+            <SettingRow
+              label={tr("Combat", "ต่อสู้")}
+              detail={touchFirst
+                ? tr("Tap Shock Pulse in Swarm · tap targets and Reload in Arcade · use the on-screen Pause button.", "แตะคลื่นกระแทกในโหมดฝ่าฝูงศัตรู · แตะเป้าและปุ่มเติมกระสุนในโหมดยิงเป้า · หยุดเกมด้วยปุ่มบนหน้าจอ")
+                : tr("Space/controller A uses Swarm Shock Pulse (45 damage and clears nearby hazard shots) · R reloads Arcade · Escape pauses.", "Space / ปุ่ม A บนจอย ใช้คลื่นกระแทกในโหมดฝ่าฝูงศัตรู (ดาเมจ 45 และลบลูกพลังรอบตัว) · R เติมกระสุนในโหมดยิงเป้า · Escape หยุดเกม")}
+            >
+              <span className="text-xs font-bold text-cosmic-cyan">{touchFirst ? tr("Tap controls", "แตะปุ่ม") : "Space · R · Esc"}</span>
             </SettingRow>
-            <SettingRow label={tr("Display", "หน้าจอ")} detail={tr("Fullscreen keeps important controls visible.", "เต็มจอช่วยให้เห็นปุ่มสำคัญครบ")}>
-              <button className="rounded-lg border border-border/60 px-3 py-2 text-xs font-bold" onClick={() => {
-                if (document.fullscreenElement) void document.exitFullscreen();
-                else void document.documentElement.requestFullscreen();
-              }}><Maximize2 className="mr-1 inline h-3.5 w-3.5" /> {tr("Toggle fullscreen", "สลับเต็มจอ")}</button>
+            <SettingRow
+              label={tr("Display", "หน้าจอ")}
+              detail={fullscreenSupported
+                ? (fullscreenError
+                  ? tr("Fullscreen was blocked. Use your browser controls instead.", "เบราว์เซอร์ไม่อนุญาตให้เปิดเต็มจอ ให้ใช้เมนูของเบราว์เซอร์แทน")
+                  : tr("Fullscreen keeps important controls visible.", "เต็มจอช่วยให้เห็นปุ่มสำคัญครบ"))
+                : tr("This browser manages fullscreen itself. Use its menu or add the game to your home screen.", "เบราว์เซอร์นี้จัดการเต็มจอเอง ให้ใช้เมนูเบราว์เซอร์หรือเพิ่มเกมไว้ที่หน้าหลัก")}
+            >
+              {fullscreenSupported ? (
+                <button className="rounded-lg border border-border/60 px-3 py-2 text-xs font-bold" onClick={() => void toggleFullscreen()}>
+                  <Maximize2 className="mr-1 inline h-3.5 w-3.5" /> {tr("Toggle fullscreen", "สลับเต็มจอ")}
+                </button>
+              ) : (
+                <span className="text-xs font-bold text-muted-foreground">{tr("Browser controlled", "ใช้เมนูเบราว์เซอร์")}</span>
+              )}
             </SettingRow>
           </SettingsGroup>
 
@@ -126,7 +180,7 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
           </section>
 
           <div className="game-settings__note"><HardDrive className="h-4 w-4" /><span>{tr("Progress saves in this browser on this device. Download a backup before changing devices, clearing browser data, or using private browsing.", "เซฟเกมอยู่ในเบราว์เซอร์ของเครื่องนี้ ควรดาวน์โหลดไฟล์สำรองก่อนเปลี่ยนเครื่อง ล้างข้อมูลเบราว์เซอร์ หรือใช้โหมดไม่ระบุตัวตน")}</span></div>
-          <div className="game-settings__note"><Contrast className="h-4 w-4" /><span>{tr("Settings save automatically and can be changed anytime.", "การตั้งค่าจะบันทึกอัตโนมัติและเปลี่ยนได้ตลอด")} · {RELEASE_CHANNEL} v{GAME_VERSION}</span></div>
+          <div className="game-settings__note"><Contrast className="h-4 w-4" /><span>{tr("Settings save automatically and can be changed anytime.", "การตั้งค่าจะบันทึกอัตโนมัติและเปลี่ยนได้ตลอด")} · {tr(RELEASE_CHANNEL, "เวอร์ชันเต็ม")} v{GAME_VERSION}</span></div>
         </div>
       </DialogContent>
     </Dialog>

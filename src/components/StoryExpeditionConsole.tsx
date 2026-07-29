@@ -209,7 +209,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
       <section className="story-flow" aria-label={tr("Story mission flow", "ขั้นตอนเล่นเนื้อเรื่อง")}>
         <div><strong>1</strong><span>{tr("Choose chapter", "เลือกบท")}<small>{tr("Follow the signal trail", "ตามเส้นทางของสัญญาณ")}</small></span></div>
         <ArrowRight />
-        <div><strong>2</strong><span>{tr("Pick your route", "เลือกเส้นทาง")}<small>{tr("Scout, Steady, or Salvage", "สำรวจ ปกติ หรือเก็บกู้")}</small></span></div>
+        <div><strong>2</strong><span>{tr("Pick your route", "เลือกเส้นทาง")}<small>{tr("Scout, Balanced, or Salvage", "สำรวจ ปกติ หรือเก็บกู้")}</small></span></div>
         <ArrowRight />
         <div><strong>3</strong><span>{tr("Complete objective", "ทำเป้าหมายให้สำเร็จ")}<small>{tr("Earn rewards and influence", "รับรางวัลและคะแนนพื้นที่")}</small></span></div>
       </section>

@@ -197,6 +197,10 @@ export default function Index() {
 
   const handleImportSave = useCallback(async (file: File) => {
     if (!gameState.faction) return;
+    if (file.size > 1_000_000) {
+      toast.error(tr("This save file is too large. Choose a Guardians of Galia save under 1 MB.", "ไฟล์เซฟใหญ่เกินไป กรุณาเลือกไฟล์ Guardians of Galia ที่เล็กกว่า 1 MB"));
+      return;
+    }
     try {
       const parsed = JSON.parse(await file.text()) as Partial<GameState>;
       const repaired = validateAndRepairState({ ...gameState, ...parsed, faction: gameState.faction });

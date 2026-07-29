@@ -225,7 +225,7 @@ test("Thai Swarm keeps its controls visible on a 720p desktop", async ({ page })
   await page.getByRole("button", { name: /EN \/ ไทย/ }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await page.getByRole("button", { name: /ฝ่าฝูงศัตรู/ }).first().click();
-  await expect(page.getByText(/ยิงเร็วขึ้น 8% ในฝ่าฝูงศัตรู/)).toBeVisible();
+  await expect(page.getByText(/Arc Pistol: ยิงเร็วขึ้น 8%/)).toBeVisible();
   await expect(page.getByText(/Space \/ ปุ่ม A บนจอย · คลื่นกระแทก/)).toBeVisible();
   await expect(page.getByText(/ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว/)).toBeVisible();
   await page.getByRole("button", { name: "เริ่มเล่น" }).click();
@@ -299,6 +299,12 @@ test("downloaded saves can be imported through the real Settings interface", asy
   await page.reload();
   await expect(page.locator("body")).toContainText("77");
   await page.getByRole("button", { name: /Game settings/ }).click();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "not-a-real-save.json",
+    mimeType: "application/json",
+    buffer: Buffer.alloc(1_000_001, "x"),
+  });
+  await expect(page.getByText(/save file is too large/)).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles(savePath!);
   await expect(page.getByText("Save imported.")).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("cosmic-explorer-save-v2:mud") ?? "{}").crystals)).toBe(0);

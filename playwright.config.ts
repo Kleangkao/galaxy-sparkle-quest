@@ -19,6 +19,7 @@ export default defineConfig({
   projects: [
     {
       name: "desktop-chromium",
+      testIgnore: /mobile-release\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
@@ -30,6 +31,16 @@ export default defineConfig({
       name: "desktop-webkit-smoke",
       testMatch: /browser-compat\.spec\.ts/,
       use: { ...devices["Desktop Safari"], viewport: { width: 1280, height: 720 } },
+    },
+    {
+      name: "mobile-chromium",
+      testMatch: /mobile-release\.spec\.ts/,
+      use: { ...devices["Pixel 7"] },
+    },
+    {
+      name: "mobile-webkit",
+      testMatch: /mobile-release\.spec\.ts/,
+      use: { ...devices["iPhone 13"] },
     },
   ],
 });
