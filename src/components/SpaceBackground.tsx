@@ -39,7 +39,7 @@ export default function SpaceBackground() {
         />
       ))}
 
-      {/* Nebula blobs — slowly drifting */}
+      {/* Slowly drifting nebula blobs */}
       <div
         className="space-background__nebula absolute top-[8%] left-[12%] w-80 h-80 rounded-full"
         style={{

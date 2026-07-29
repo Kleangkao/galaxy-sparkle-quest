@@ -84,7 +84,7 @@ test("first Story chapter can be cleared and continued without leaving the campa
 });
 
 test("a completed Swarm run produces a closable, mode-correct result", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   const runtimeErrors: string[] = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
   await enterMudGame(page);
@@ -94,8 +94,13 @@ test("a completed Swarm run produces a closable, mode-correct result", async ({ 
   await page.getByRole("button", { name: /Begin run/ }).click();
   const swarmAccessibility = await new AxeBuilder({ page }).analyze();
   expect(swarmAccessibility.violations.filter((issue) => ["landmark-one-main", "page-has-heading-one", "region"].includes(issue.id))).toEqual([]);
-  await page.clock.runFor(70_000);
   const swarmResults = page.locator(".unified-results");
+  for (let elapsed = 0; elapsed < 90_000; elapsed += 5_000) {
+    await page.clock.runFor(5_000);
+    if (await swarmResults.count()) break;
+    const upgradeChoice = page.locator(".combat-upgrades button").first();
+    if (await upgradeChoice.isVisible()) await upgradeChoice.click();
+  }
   await expect(swarmResults).toBeVisible();
   await expect(swarmResults).toContainText(/Ahr defeated|Run not counted|Rewards secured/);
   await page.clock.resume();

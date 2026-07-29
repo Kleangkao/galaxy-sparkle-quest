@@ -127,7 +127,7 @@ function playNotes(notes: { freq: number; delay: number; dur: number; type?: Osc
   });
 }
 
-/** 💎 Crystal collect — bright ascending chime */
+/** 💎 Crystal collect: bright ascending chime */
 export function playCrystalSound() {
   playNotes([
     { freq: 880, delay: 0, dur: 0.1, type: "sine", vol: 0.1 },
@@ -136,7 +136,7 @@ export function playCrystalSound() {
   ]);
 }
 
-/** 🚀 Planet travel — whooshy rising sweep */
+/** 🚀 Planet travel: whooshy rising sweep */
 export function playTravelSound() {
   try {
     const ctx = getCtx();
@@ -156,7 +156,7 @@ export function playTravelSound() {
   }
 }
 
-/** 👽 Alien pet discovery — magical sparkle arpeggio */
+/** 👽 Alien pet discovery: magical sparkle arpeggio */
 export function playPetDiscoverySound() {
   playNotes([
     { freq: 523, delay: 0, dur: 0.15, type: "triangle", vol: 0.12 },
@@ -167,12 +167,12 @@ export function playPetDiscoverySound() {
   ]);
 }
 
-/** 🔘 Button click — soft pop */
+/** 🔘 Button click: soft pop */
 export function playClickSound() {
   playTone(600, 0.08, "sine", 0.08);
 }
 
-/** 🎉 Victory celebration — triumphant fanfare */
+/** 🎉 Victory celebration: triumphant fanfare */
 export function playVictorySound() {
   playNotes([
     { freq: 523, delay: 0, dur: 0.2, type: "square", vol: 0.08 },
@@ -185,7 +185,7 @@ export function playVictorySound() {
   ]);
 }
 
-/** 📦 Chest open — rattle and reveal */
+/** 📦 Chest open: rattle and reveal */
 export function playChestSound() {
   playNotes([
     { freq: 300, delay: 0, dur: 0.08, type: "square", vol: 0.06 },
@@ -204,7 +204,7 @@ export function playRobotSound() {
   ]);
 }
 
-/** ❌ Fail sound — descending */
+/** ❌ Fail sound: descending */
 export function playFailSound() {
   playNotes([
     { freq: 400, delay: 0, dur: 0.2, type: "sawtooth", vol: 0.08 },
@@ -218,7 +218,7 @@ export function playStepSound() {
   playTone(220 + Math.random() * 80, 0.05, "triangle", 0.04);
 }
 
-/** 🔒 Locked sound — soft denied thud */
+/** 🔒 Locked sound: soft denied thud */
 export function playLockedSound() {
   playNotes([
     { freq: 200, delay: 0, dur: 0.12, type: "square", vol: 0.06 },

@@ -74,7 +74,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                   if (canAfford && levelOk) setConfirmAction({
                     title: tr(`Add ${skin.name} to the hangar?`, `เพิ่ม ${skin.nameTh} เข้าโรงจอดไหม?`),
                     description: tr(`Cost: ${skin.cost} crystals\nCosmetic only · no gameplay-stat change.`, `ใช้ ${skin.cost} คริสตัล\nเปลี่ยนรูปลักษณ์เท่านั้น ไม่เพิ่มค่าสถานะ`),
-                    confirmLabel: tr(`Buy for ${skin.cost}`, `ซื้อ ${skin.cost}`),
+                    confirmLabel: tr(`Buy for ${skin.cost}`, `ซื้อด้วย ${skin.cost} คริสตัล`),
                     onConfirm: () => onBuySkin(skin.id, skin.cost),
                   });
                 }}
@@ -88,7 +88,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 <div className="text-[11px] sm:text-xs font-bold text-foreground mt-1">{lang === "th" ? skin.nameTh : skin.name}</div>
                 {active && <span className="text-[10px] sm:text-[11px] text-cosmic-green font-bold">{t("equipped")}</span>}
                 {!owned && <span className="text-[10px] sm:text-[11px] text-cosmic-cyan font-bold">💎 {skin.cost}</span>}
-                {!owned && !levelOk && <span className="text-[10px] sm:text-[11px] text-cosmic-yellow block">🔒 {tr("Level", "เลเวล")} {skin.requiredLevel}</span>}
+                {!owned && !levelOk && <span className="text-[10px] sm:text-[11px] text-cosmic-yellow block">🔒 {tr("Level", "ระดับ")} {skin.requiredLevel}</span>}
               </button>
             );
           })}
@@ -123,7 +123,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                     return <button className="mt-2 w-full rounded-lg border border-cosmic-cyan/30 bg-cosmic-cyan/10 px-3 py-2 text-xs font-bold text-cosmic-cyan disabled:opacity-40" disabled={!available} onClick={() => available && setConfirmAction({
                       title: tr(`Upgrade ${upgrade.name} to Tier ${tier + 1}?`, `อัปเกรด ${upgrade.nameTh} เป็นขั้น ${tier + 1} ไหม?`),
                       description: tr(`Cost: ${cost} crystals\nNew effect: ${getUpgradeEffectAtTier(upgrade.id, tier + 1)}`, `ใช้ ${cost} คริสตัล\nผลใหม่: ${getUpgradeEffectAtTier(upgrade.id, tier + 1, "th")}`),
-                      confirmLabel: tr(`Upgrade for ${cost}`, `อัปเกรด ${cost}`),
+                      confirmLabel: tr(`Upgrade for ${cost}`, `อัปเกรดด้วย ${cost} คริสตัล`),
                       onConfirm: () => onBuyUpgrade(upgrade.id, cost),
                     })}>{tr("Tier", "ขั้น")} {tier + 1}: {getUpgradeEffectAtTier(upgrade.id, tier + 1, lang)} · 💎 {cost}</button>;
                   })()}
@@ -145,7 +145,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
                 if (available) setConfirmAction({
                   title: tr(`Install ${up.name}?`, `ติดตั้ง ${up.nameTh} ไหม?`),
                   description: tr(`Cost: ${cost} crystals\n${getUpgradeEffectAtTier(up.id, 1)}`, `ใช้ ${cost} คริสตัล\n${getUpgradeEffectAtTier(up.id, 1, "th")}`),
-                  confirmLabel: tr(`Install for ${cost}`, `ติดตั้ง ${cost}`),
+                  confirmLabel: tr(`Install for ${cost}`, `ติดตั้งด้วย ${cost} คริสตัล`),
                   onConfirm: () => onBuyUpgrade(up.id, cost),
                 });
               }}
@@ -172,7 +172,7 @@ export default function ShipUpgradeShop({ gameState, onBuyUpgrade, onBuySkin, on
         </div>
         {availableUpgrades.length === 0 && (
           <div className="mt-3 rounded-xl border border-cosmic-green/20 bg-cosmic-green/5 px-4 py-3 text-center text-xs text-cosmic-green sm:text-sm">
-            {tr("Every ship system is installed. Raise each one to Tier 3 to complete the hangar.", "ติดตั้งระบบยานครบแล้ว อัปเกรดทุกระบบให้ถึงขั้น 3 เพื่อทำโรงจอดให้สมบูรณ์")}
+            {tr("Every ship system is installed. Raise each one to Tier 3 to complete the hangar.", "ติดตั้งระบบยานครบแล้ว ขั้นต่อไปคืออัปเกรดทุกระบบให้ถึงขั้น 3")}
           </div>
         )}
       </div>

@@ -23,7 +23,7 @@ export default function InfoScreen() {
         <div className="command-kicker"><Sparkles className="h-4 w-4" /> {tr("Player & parent information", "ข้อมูลสำหรับผู้เล่นและผู้ปกครอง")}</div>
         <h1>{tr("About Guardians of Galia", "เกี่ยวกับ Guardians of Galia")}</h1>
         <p>{tr("A free, cozy sci-fi game played directly on this website. No installation or account is needed.", "เกมไซไฟเล่นสบาย ๆ เล่นฟรีบนเว็บไซต์นี้ ไม่ต้องติดตั้งและไม่ต้องสมัครบัญชี")}</p>
-        <span>{RELEASE_CHANNEL} · v{GAME_VERSION}</span>
+        <span>{lang === "th" ? `เวอร์ชัน ${GAME_VERSION}` : `${RELEASE_CHANNEL} · v${GAME_VERSION}`}</span>
       </header>
 
       <section className="info-center__panel">
@@ -40,11 +40,11 @@ export default function InfoScreen() {
       <section className="info-center__grid">
         <article className="info-center__panel">
           <div className="info-center__heading"><HeartHandshake /><div><span>{tr("Safety & support", "ความปลอดภัยและการช่วยเหลือ")}</span><h2>{tr("No public communication", "ไม่มีการคุยกับคนแปลกหน้า")}</h2></div></div>
-          <p>{tr("There is no chat, public profile, player-to-player messaging, purchasing, advertising, or user-generated content. For help, contact the person or Alice Arcade channel that shared the game. Children should not send names, school details, addresses, or other personal information.", "เกมไม่มีแชต โปรไฟล์สาธารณะ ข้อความระหว่างผู้เล่น การซื้อของ โฆษณา หรือเนื้อหาจากผู้เล่น หากต้องการความช่วยเหลือ ให้ติดต่อคนหรือช่อง Alice Arcade ที่ส่งเกมนี้มา เด็ก ๆ ไม่ควรส่งชื่อ โรงเรียน ที่อยู่ หรือข้อมูลส่วนตัว")}</p>
+          <p>{tr("There is no chat, public profile, player-to-player messaging, purchasing, advertising, or user-generated content. For help, contact the person or Alice Arcade channel that shared the game. Children should not send names, school details, addresses, or other personal information.", "เกมไม่มีแชต โปรไฟล์สาธารณะ ข้อความระหว่างผู้เล่น การซื้อของ โฆษณา หรือเนื้อหาจากผู้เล่น หากต้องการความช่วยเหลือ ให้บอกผู้ปกครองหรือติดต่อทีม Alice Arcade ที่ส่งลิงก์เกมนี้มา เด็ก ๆ ไม่ควรส่งชื่อ โรงเรียน ที่อยู่ หรือข้อมูลส่วนตัว")}</p>
         </article>
         <article className="info-center__panel">
           <div className="info-center__heading"><Scale /><div><span>{tr("Credits & rights", "เครดิตและสิทธิ์การใช้งาน")}</span><h2>{tr("Original Galia game project", "โปรเจกต์เกม Galia")}</h2></div></div>
-          <p>{tr("Guardians of Galia is an independent browser game by Alice Arcade. Selected sci-fi concept references are used with permission. Star Atlas and related marks belong to their respective owners; this game is not an official Star Atlas product. Source references and artist names are preserved in the project asset catalog.", "Guardians of Galia เป็นเกมบนเว็บของ Alice Arcade มีการใช้ภาพอ้างอิงไซไฟบางส่วนโดยได้รับอนุญาต ชื่อและเครื่องหมาย Star Atlas เป็นของเจ้าของสิทธิ์ เกมนี้ไม่ใช่ผลิตภัณฑ์ทางการของ Star Atlas และเก็บที่มาของภาพกับชื่อศิลปินไว้ในรายการแอสเซตของโปรเจกต์")}</p>
+          <p>{tr("Guardians of Galia is an independent browser game by Alice Arcade. Selected sci-fi concept references are used with permission. Star Atlas and related marks belong to their respective owners; this game is not an official Star Atlas product. Source references and artist names are preserved in the project asset catalog.", "Guardians of Galia เป็นเกมบนเว็บของ Alice Arcade มีการใช้ภาพอ้างอิงไซไฟบางส่วนโดยได้รับอนุญาต ชื่อและเครื่องหมาย Star Atlas เป็นของเจ้าของสิทธิ์ เกมนี้ไม่ใช่ผลิตภัณฑ์ทางการของ Star Atlas และเก็บข้อมูลที่มาของภาพกับชื่อศิลปินไว้ในเอกสารประกอบเกม")}</p>
         </article>
       </section>
 

@@ -10,10 +10,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:copy": "node scripts/check-copy.mjs",
     "test:watch": "vitest",
     "test:types": "tsc -b",
     "test:e2e": "playwright test --workers=1",
-    "test:release": "npm run test:types && npm run test && npm run lint && npm run build && npm audit --omit=dev && npm run test:e2e"
+    "test:release": "npm run test:types && npm run test:copy && npm run test && npm run lint && npm run build && npm audit --omit=dev && npm run test:e2e"
   },
   "dependencies": {
     "@fontsource-variable/baloo-2": "^5.3.0",

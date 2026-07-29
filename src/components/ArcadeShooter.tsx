@@ -298,14 +298,14 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
     <main className={`arcade-shooter relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-24 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
       <header className="arcade-shooter__header">
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Assignments", "เลือกภารกิจ")}</button>
-        <div><div className="command-kicker">{tr("Arcade Ops · Mouse or touch aim", "ยิงเป้า · ใช้เมาส์หรือแตะจอ")}</div><h1>{contract.name}</h1><p>{objectiveText}</p></div>
+        <div><div className="command-kicker">{tr("Arcade Ops · Mouse or touch aim", "ยิงเป้า · ใช้เมาส์หรือแตะหน้าจอ")}</div><h1>{lang === "th" ? contract.nameTh : contract.name}</h1><p>{objectiveText}</p></div>
         <div className="arcade-shooter__loadout"><span>{pilot.name}</span><strong>{tool.name}</strong></div>
       </header>
 
       <section className="arcade-shooter__hud">
         <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong></div>
         <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
-        <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "—"}</strong></div>
+        <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "-"}</strong></div>
         <div className={isReloading ? "arcade-ammo-card is-reloading" : "arcade-ammo-card"}>
           <span>{tr("Ammo", "กระสุน")}</span>
           <strong>{frame.ammo}/{magazine}</strong>
@@ -352,14 +352,14 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
               mode="arcade"
               icon={<MousePointer2 className="h-7 w-7" />}
               kicker={tr("Manual shooting challenge", "ภารกิจยิงด้วยตัวเอง")}
-              title={tr("You aim. You shoot.", "คุณเป็นคนเล็งและยิง")}
+              title={tr("You aim. You shoot.", "เล็งเอง ยิงเอง")}
               summary={objectiveText}
               steps={[
                 tr("Aim with the mouse or tap a target to fire", "เล็งด้วยเมาส์หรือแตะเป้าหมายเพื่อยิง"),
                 tr("Avoid red decoys", "อย่ายิงเป้าหลอกสีแดง"),
                 tr("Press R when the magazine is empty", "กด R เมื่อกระสุนหมด"),
               ]}
-              note={tr(`Your current magazine holds ${magazine} rounds. A run counts after 3 shots and at least one hit.`, `แม็กกาซีนตอนนี้มี ${magazine} นัด รอบจะนับเมื่อยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง`)}
+              note={tr(`Your current magazine holds ${magazine} rounds. A run counts after 3 shots and at least one hit.`, `ซองกระสุนบรรจุได้ ${magazine} นัด รอบนี้จะนับเมื่อยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง`)}
               primaryLabel={tr("Start assignment", "เริ่มภารกิจ")}
               onStart={reset}
             />

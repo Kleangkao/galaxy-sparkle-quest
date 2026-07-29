@@ -346,7 +346,7 @@ export default function Index() {
   const handleSetTool = (id: string) => {
     playClickSound();
     updateState((prev) => ({ ...prev, activeTool: id }));
-    toast(tr("Expedition tool equipped.", "ติดตั้งอุปกรณ์ภารกิจแล้ว"));
+    toast(tr("Expedition tool equipped.", "เลือกอาวุธแล้ว"));
   };
 
   const handleSetActivePet = (petId: string) => {
@@ -435,7 +435,7 @@ export default function Index() {
           ? tr("No reward was issued because no target was hit with meaningful participation.", "ยังไม่ได้รางวัล เพราะต้องยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง")
           : tr(`${Math.round(result.accuracy * 100)}% accuracy · ${result.won ? "contract record banked." : "partial rewards banked; try again when ready."}`, `ยิงแม่น ${Math.round(result.accuracy * 100)}% · ${result.won ? "บันทึกสถิติภารกิจแล้ว" : "ได้รับรางวัลบางส่วน พร้อมแล้วค่อยลองใหม่"}`)
         : isSwarm && result.participated === false
-          ? tr("Move actively or collect at least 3 energy so the run counts toward rewards and mastery.", "ขยับหลบอย่างจริงจัง หรือเก็บพลังอย่างน้อย 3 ชิ้น เพื่อให้รอบนี้นับรางวัลและความชำนาญ")
+          ? tr("Move actively or collect at least 3 energy so the run counts toward rewards and mastery.", "ขยับอย่างต่อเนื่องหรือเก็บพลังอย่างน้อย 3 ชิ้น รอบนี้จึงจะนับรางวัลและความชำนาญ")
         : result.won ? tr("Full clear rewards and mastery were banked.", "ได้รับรางวัลชนะและความชำนาญครบแล้ว") : tr("Partial rewards were banked. Upgrade or try a different build.", "ได้รับรางวัลบางส่วน ลองอัปเกรดหรือเลือกพลังแบบใหม่ได้"),
       crystals: result.crystals,
       xp: result.xp,
@@ -451,8 +451,8 @@ export default function Index() {
           : ["Arcade record and PURI bond increased", result.won ? "This contract clear was saved" : "Accuracy practice and upgrade fund increased"],
       improvementsTh: isSwarm
         ? result.participated === false
-          ? ["ไม่ได้รับคริสตัล ความชำนาญ หรือความสนิทกับ PURI", "ครั้งหน้าขยับหลบอย่างจริงจัง หรือเก็บพลัง 3 ชิ้น"]
-          : ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "การกำจัด Ahr เพิ่มความชำนาญการต่อสู้" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
+          ? ["ไม่ได้รับคริสตัล ความชำนาญ หรือความสนิทกับ PURI", "ครั้งหน้าขยับอย่างต่อเนื่อง หรือเก็บพลังอย่างน้อย 3 ชิ้น"]
+          : ["สถิติโหมดฝ่าฝูงศัตรูและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "ความชำนาญโหมดฝ่าฝูงศัตรูเพิ่มขึ้น" : "มีคริสตัลสำหรับอัปเกรดเพิ่มขึ้น"]
         : result.participated === false
           ? ["ไม่ได้รับคริสตัลหรือความสนิทกับ PURI", "ครั้งหน้าลองยิงอย่างน้อย 3 นัดและโดนเป้า 1 ครั้ง"]
           : ["สถิติโหมดยิงเป้าและความสนิทกับ PURI เพิ่มขึ้น", result.won ? "บันทึกการผ่านภารกิจนี้แล้ว" : "ได้ฝึกความแม่นและมีคริสตัลอัปเกรดเพิ่มขึ้น"],

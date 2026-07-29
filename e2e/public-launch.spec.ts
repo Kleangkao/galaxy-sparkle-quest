@@ -226,8 +226,8 @@ test("Thai Swarm keeps its controls visible on a 720p desktop", async ({ page })
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await page.getByRole("button", { name: /ฝ่าฝูงศัตรู/ }).first().click();
   await expect(page.getByText(/Arc Pistol: ยิงเร็วขึ้น 8%/)).toBeVisible();
-  await expect(page.getByText(/Space \/ ปุ่ม A บนจอย · คลื่นกระแทก/)).toBeVisible();
-  await expect(page.getByText(/ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว/)).toBeVisible();
+  await expect(page.getByText(/กด Space หรือปุ่ม A บนจอยเพื่อใช้คลื่นกระแทก/)).toBeVisible();
+  await expect(page.getByText(/สร้างความเสียหาย 45 และทำลายกระสุนอันตรายรอบตัว/)).toBeVisible();
   await page.getByRole("button", { name: "เริ่มเล่น" }).click();
 
   const controlsBounds = await page.locator(".combat-controls").boundingBox();

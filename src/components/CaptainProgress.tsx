@@ -47,7 +47,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
         <button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("All modes", "ทุกโหมด")}</button>
         <div className="captain-progress__identity">
           <img src={pilot.image} alt={pilot.name} />
-          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้านักบิน")}</div><h1>{pilot.name}</h1><p>{rankName} · {getPilotCallsign(pilot, lang)} · {tool.name}</p></div>
+          <div><div className="command-kicker">{tr("Captain progression network", "ความคืบหน้าของกัปตัน")}</div><h1>{pilot.name}</h1><p>{rankName} · {getPilotCallsign(pilot, lang)} · {tool.name}</p></div>
         </div>
         <div className="captain-progress__rank">
           <span>{tr(`Rank ${gameState.level}`, `แรงก์ ${gameState.level}`)}</span><strong>{rankName}</strong><small>{gameState.xp}/{xp.next} XP</small>
@@ -64,7 +64,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
 
       <div className="captain-progress__grid">
         <section className="progress-panel progress-panel--next">
-          <div className="progress-panel__heading"><Sparkles /><div><span>{tr("Recommended next", "แนะนำให้ทำต่อ")}</span><h2>{tr("Keep momentum", "ไปต่อได้เลย")}</h2></div></div>
+          <div className="progress-panel__heading"><Sparkles /><div><span>{tr("Recommended next", "เล่นอะไรต่อดี")}</span><h2>{tr("Keep momentum", "เป้าหมายถัดไป")}</h2></div></div>
           <div className="progress-recommendations">
             {nextRecommendation && (() => {
               const Icon = nextRecommendation.icon;
@@ -90,7 +90,7 @@ export default function CaptainProgress({ gameState, onBack, onOpenCrew, onPlay 
 
         <section className="progress-panel progress-panel--puri">
           <div className="progress-panel__heading"><PawPrint /><div><span>{tr("Adventure companion", "คู่หูผจญภัย")}</span><h2>PURI · {lang === "th" ? puri.current.nameTh : puri.current.name}</h2></div></div>
-          <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{lang === "th" ? puri.current.abilityTh : puri.current.ability}</strong><p>{lang === "th" ? puri.current.descriptionTh : puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? tr(`${puri.next.bond - puri.bond} bond until ${puri.next.ability}`, `อีก ${puri.next.bond - puri.bond} แต้ม จะได้ ${puri.next.abilityTh}`) : tr("Every PURI ability is unlocked", "ปลดล็อกความสามารถ PURI ครบแล้ว")}</small></div></div>
+          <div className="progress-puri"><img src="/assets/galia-plush-tech/canonical/pink-companion-master-v1.jpg" alt="PURI" /><div><strong>{lang === "th" ? puri.current.abilityTh : puri.current.ability}</strong><p>{lang === "th" ? puri.current.descriptionTh : puri.current.description}</p><i><b style={{ width: `${puri.bond}%` }} /></i><small>{puri.next ? tr(`${puri.next.bond - puri.bond} bond until ${puri.next.ability}`, `อีก ${puri.next.bond - puri.bond} แต้ม ปลดล็อก${puri.next.abilityTh}`) : tr("Every PURI ability is unlocked", "ปลดล็อกความสามารถ PURI ครบแล้ว")}</small></div></div>
         </section>
 
         <section className="progress-panel">

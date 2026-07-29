@@ -29,21 +29,21 @@ const MODES: Array<{
     description: "Trace the lost signal across ten connected chapters. Explore, upgrade, and shape the frontier.",
     image: "/assets/galia-current/nova-reyes-mud-pilot-v2.webp", color: "cyan", status: "10 chapters",
     play: "Choose route · complete short missions", progress: "XP · crystals · pets · sector control",
-    th: { name: "ผจญภัยตามเนื้อเรื่อง", label: "เนื้อเรื่อง", description: "ตามหาต้นตอของสัญญาณลึกลับผ่าน 10 บท ออกสำรวจ อัปเกรดทีม และช่วยเปลี่ยนอนาคตของกาเลีย", status: "10 บท", play: "เลือกเส้นทาง · ทำภารกิจสั้น ๆ", progress: "XP · คริสตัล · เพื่อนใหม่ · คะแนนพื้นที่" },
+    th: { name: "ผจญภัยตามเนื้อเรื่อง", label: "เนื้อเรื่อง", description: "ตามหาต้นตอของสัญญาณลึกลับตลอด 10 บท แต่ละบทมีแผนที่ เป้าหมาย และอันตรายต่างกัน", status: "มี 10 บท", play: "เลือกเส้นทาง แล้วทำภารกิจ", progress: "XP คริสตัล เพื่อนใหม่ และคะแนนพื้นที่" },
   },
   {
     id: "swarm", name: "Swarm Protocol", label: "Survival", icon: Swords,
     description: "A gentler survival run of about a minute, adjusted by your loadout. Dodge, auto-fire, collect energy, and choose perks before the Ahr boss.",
     image: "/assets/galia-current/ahr-boss-master-v3.webp", color: "pink", status: "Run perks",
     play: "Move · auto-fire · build perks", progress: "Crystals · XP · PURI bond every run",
-    th: { name: "ฝ่าฝูงศัตรู", label: "เอาตัวรอด", description: "เอาตัวรอดประมาณ 1 นาที เวลาจะเปลี่ยนตามอุปกรณ์ ขยับหลบ ยิงอัตโนมัติ เก็บพลัง และเลือกความสามารถ ก่อนสู้กับ Ahr", status: "เลือกพลังระหว่างเล่น", play: "ขยับ · ยิงอัตโนมัติ · เลือกพลัง", progress: "คริสตัล · XP · ความสนิทกับ PURI" },
+    th: { name: "ฝ่าฝูงศัตรู", label: "เอาตัวรอด", description: "เล่นรอบละประมาณ 1 นาที ขยับหลบ เก็บพลัง และเลือกความสามารถ ปืนจะยิงอัตโนมัติ ก่อนจบรอบต้องกำจัด Ahr ให้ได้", status: "เลือกพลังระหว่างเล่น", play: "ขยับหลบ ยิงอัตโนมัติ และเลือกพลัง", progress: "คริสตัล XP และความสนิทกับ PURI" },
   },
   {
     id: "arcade", name: "Arcade Ops", label: "Action", icon: Crosshair,
     description: "Manual shooting assignments for mouse or touch, with moving targets, reload timing, decoys, combos, and boss weak points.",
     image: "/assets/galia-current/arcade-frontier-gunner-v1.webp", color: "orange", status: "Aim & shoot",
     play: "Mouse or touch aim · fire · reload", progress: "Contract records · crystals · XP",
-    th: { name: "ยิงเป้าอาร์เคด", label: "แอ็กชัน", description: "เล็งด้วยเมาส์หรือแตะหน้าจอ ยิงเป้าที่เคลื่อนที่ หลบเป้าหลอก ต่อคอมโบ และยิงจุดอ่อนของบอส", status: "เล็งและยิง", play: "เล็งเมาส์หรือแตะ · ยิง · เติมกระสุน", progress: "สถิติ · คริสตัล · XP" },
+    th: { name: "ภารกิจยิงเป้า", label: "ยิงแม่น", description: "ใช้เมาส์หรือแตะหน้าจอเพื่อยิงเป้าที่เคลื่อนที่ อย่ายิงเป้าหลอก รักษาคอมโบ และเล็งจุดอ่อนของบอส", status: "เล็งเอง ยิงเอง", play: "เล็ง ยิง และเติมกระสุน", progress: "สถิติ คริสตัล และ XP" },
   },
 ];
 
@@ -58,12 +58,12 @@ export default function ModeHub({ gameState, onChoose }: Props) {
         <div>
           <div className="command-kicker"><Sparkles className="h-3.5 w-3.5" /> {tr("Galia operations network", "ศูนย์ภารกิจแห่งกาเลีย")}</div>
           <h1>{tr("Choose today’s", "วันนี้อยากออกไป")}<br /><span>{tr("frontier operation.", "ผจญภัยแบบไหน?")}</span></h1>
-          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Story, Swarm, and Arcade all strengthen the same crew.", "รวมทีม Guardian ออกตามหาที่มาของสัญญาณปริศนา และเตรียมพร้อมก่อนเดินทางสู่ Aurora Crown ทั้งเนื้อเรื่อง ฝ่าฝูง และยิงเป้า จะช่วยให้ทีมเดียวกันแข็งแกร่งขึ้น")}</p>
+          <p>{tr("Build your Guardian crew, trace the living signal, and prepare for the Aurora Crown. Story, Swarm, and Arcade all strengthen the same crew.", "รวมทีมผู้พิทักษ์แล้วออกตามหาต้นตอของสัญญาณปริศนา ทั้งเนื้อเรื่อง ฝ่าฝูงศัตรู และยิงเป้าจะช่วยพัฒนาทีมเดียวกัน ก่อนเดินทางสู่ Aurora Crown")}</p>
         </div>
         <div className="mode-hub__aside">
           <div className="mode-hub__captain">
             <img src={pilot.image} alt="" />
-            <div><span>{tr("Ready pilot", "นักบินพร้อมลุย")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `ชุดประจำตัว ${getPilotCallsign(pilot, lang)}`)}</small></div>
+            <div><span>{tr("Ready pilot", "นักบินที่เลือกไว้")}</span><strong>{pilot.name}</strong><small>{tr(`${pilot.callsign} loadout`, `สาย${getPilotCallsign(pilot, lang)}`)}</small></div>
           </div>
         </div>
       </header>
@@ -84,7 +84,7 @@ export default function ModeHub({ gameState, onChoose }: Props) {
                   <p>{copy.description}</p>
                   <div className="mode-card__facts">
                     <span><b>{tr("Play", "วิธีเล่น")}</b>{copy.play}</span>
-                    <span><b>{tr("Earn", "รางวัล")}</b>{copy.progress}</span>
+                    <span><b>{tr("Earn", "ได้อะไร")}</b>{copy.progress}</span>
                   </div>
                   <strong>{tr("Deploy", "เริ่มเล่น")} <ArrowRight className="h-4 w-4" /></strong>
                 </div>

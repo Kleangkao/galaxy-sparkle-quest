@@ -9,7 +9,7 @@ const BRIEFING_TH: Record<string, { chapter: string; story: string; threat: stri
   "frosty-star": { chapter: "บท 3 · รอยทางเยือกแข็ง", story: "แกนนำทางที่หายไปเก็บแผนที่ซึ่งถูกลบจากทุกคลังข้อมูล", threat: "ธารน้ำแข็งความเร็วสูง", mission: "ผ่านทางน้ำแข็งและนำแกนนำทางกลับมา" },
   "jungle-world": { chapter: "บท 4 · ผู้เฝ้ามอง", story: "มีใครบางคนปกป้องเส้นทางนี้มาก่อนที่ทั้งสามฝ่ายจะมาถึง", threat: "โดรนผู้พิทักษ์", mission: "หลบหน่วยลาดตระเวนใต้ป่าโบราณ" },
   "rainbow-nebula": { chapter: "บท 5 · ฟ้าที่แตกสลาย", story: "ทีมคู่แข่งกำลังแข่งกับเราเพื่อชิงกุญแจดวงดาว", threat: "พายุไอออน", mission: "เปิดโหนดบนเกาะลอยฟ้าก่อนพายุปิดทาง" },
-  "bubbly-bay": { chapter: "บท 6 · ใต้หมู่ดาว", story: "หอดูดาวใต้น้ำกำลังชี้ไปยังพื้นที่นอกแผนที่", threat: "คลื่นแรงดัน", mission: "ส่งพลังให้หอดูดาวใต้มหาสมุทรต่างดาว" },
+  "bubbly-bay": { chapter: "บท 6 · ใต้หมู่ดาว", story: "หอดูดาวใต้น้ำกำลังชี้ไปยังพื้นที่ซึ่งไม่มีในแผนที่", threat: "คลื่นแรงดัน", mission: "ส่งพลังให้หอดูดาวใต้มหาสมุทรต่างดาว" },
   "cookie-crater": { chapter: "บท 7 · ฝนเพลิง", story: "กุญแจดวงดาวปลุกเครื่องจักรใต้พื้นผิวขึ้นมา", threat: "ฝูงอุกกาบาต", mission: "เก็บตัวปรับเสถียรและกลับยานก่อนพื้นถล่ม" },
   "starlight-shore": { chapter: "บท 8 · เส้นทางเมล็ดดาว", story: "เมล็ดดาวช่วยชายแดนได้ หรืออาจเปิดประตูสุดท้าย", threat: "กระแสแสง", mission: "ช่วยสัญญาณเพื่อนและเปิดโหนดทางออก" },
   "crystal-cave": { chapter: "บท 9 · สามคู่แข่ง", story: "ทั้งสามฝ่ายต้องเลือกว่าจะแข่งขันหรือร่วมกันเปิดประตู", threat: "ผู้พิทักษ์แห่งความว่าง", mission: "ชาร์จประตูแนวหน้าและยึดแกนคริสตัล" },
@@ -53,7 +53,7 @@ export default function CommandBriefing({ gameState, controlledCount, activeInte
 
       <div className="command-briefing__copy">
         <div className="command-kicker"><Radio className="inline h-3 w-3" /> {leader.name} · {lang === "th" ? loreTh?.chapter : lore.chapter}</div>
-        <h2 id="command-briefing-title">{tr("Captain, the frontier is calling.", "กัปตัน แนวหน้ากำลังเรียกหาเรา")}</h2>
+        <h2 id="command-briefing-title">{tr("Captain, the frontier is calling.", "กัปตัน เราได้รับสัญญาณจากแนวหน้า")}</h2>
         <p>{lang === "th" ? loreTh?.story : lore.story}</p>
         <div className="command-briefing__chips">
           <span><Crosshair className="h-3.5 w-3.5" /> {lang === "th" ? loreTh?.threat : lore.threat}</span>

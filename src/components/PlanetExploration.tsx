@@ -673,10 +673,10 @@ export default function PlanetExploration({
   }), [planetId, theme.timeLimit]);
   const missionTimeLimit = mission.duration + missionTimeBonus;
   const routeStatus = routeMode === "scout"
-    ? tr("Scout · hidden items revealed, fewer hazards", "สำรวจ · เห็นของซ่อนและลดพื้นที่อันตราย")
+    ? tr("Scout · hidden items revealed, fewer hazards", "เส้นทางปลอดภัย มองเห็นของที่ซ่อนอยู่และมีจุดอันตรายน้อยลง")
     : routeMode === "salvage"
-      ? tr("Salvage · extra objective and patrol pressure where present", "เก็บกู้ · มีของให้เก็บ และมีศัตรูเพิ่มในบทที่มีศัตรู")
-      : tr("Balanced · standard objective and pressure", "ปกติ · เป้าหมายและความยากมาตรฐาน");
+      ? tr("Salvage · extra objective and patrol pressure where present", "เส้นทางเก็บกู้ มีกล่องสินค้าให้เก็บเพิ่มและมีศัตรูมากขึ้น")
+      : tr("Balanced · standard objective and pressure", "เส้นทางปกติ ใช้เป้าหมายและความยากตามเดิม");
   const [mapData] = useState(() => generateMap(theme, mission));
   const [items, setItems] = useState<ExplorationItem[]>(() => addStoryRouteItems(mapData.items, mission, routeMode));
   const [playerPos, setPlayerPos] = useState({ row: GRID_ROWS - 1, col: Math.floor(GRID_COLS / 2) });
@@ -898,7 +898,7 @@ export default function PlanetExploration({
     if (isTrailItem) {
       const nextTrailItem = items.find((candidate) => !candidate.collected && candidate.type === (mission.goalItemType ?? "crystal"));
       if (nextTrailItem && nextTrailItem.id !== item.id) {
-        setRobotMessage(tr("Wrong signal. Collect the glowing TRACK marker first.", "ยังไม่ใช่จุดนี้ ให้เก็บจุด TRACK ที่กำลังเรืองแสงก่อน"));
+        setRobotMessage(tr("Wrong signal. Collect the glowing TRACK marker first.", "ยังไม่ใช่จุดนี้ ให้เก็บรอยที่กำลังเรืองแสงก่อน"));
         setTimeout(() => setRobotMessage(null), 1600);
         return false;
       }
@@ -1206,11 +1206,11 @@ export default function PlanetExploration({
   const goalBits = [
     mission.crystalGoal ? mission.trailSequence
       ? tr(`Signal crystals ${crystalCollected}/${effectiveCrystalGoal}`, `คริสตัลสัญญาณ ${crystalCollected}/${effectiveCrystalGoal}`)
-      : tr(`Mission items ${crystalCollected}/${effectiveCrystalGoal}`, `ของภารกิจ ${crystalCollected}/${effectiveCrystalGoal}`)
+      : tr(`Mission items ${crystalCollected}/${effectiveCrystalGoal}`, `ของที่ต้องเก็บ ${crystalCollected}/${effectiveCrystalGoal}`)
       : null,
     mission.petGoal ? tr(`Companion ${petCollected}/${mission.petGoal}`, `เพื่อน ${petCollected}/${mission.petGoal}`) : null,
     mission.deliveryGoal ? tr(`Deliveries ${deliveryDone}/${mission.deliveryGoal}`, `จุดส่งของ ${deliveryDone}/${mission.deliveryGoal}`) : null,
-    mission.nodeGoal ? tr(`Glow nodes ${nodesDone}/${mission.nodeGoal}`, `โหนดแสง ${nodesDone}/${mission.nodeGoal}`) : null,
+    mission.nodeGoal ? tr(`Glow nodes ${nodesDone}/${mission.nodeGoal}`, `จุดเรืองแสง ${nodesDone}/${mission.nodeGoal}`) : null,
   ].filter(Boolean).join("  •  ");
   const bossShield = mission.nodeGoal ? Math.max(0, Math.round((1 - nodesDone / mission.nodeGoal) * 100)) : 0;
 
@@ -1283,7 +1283,7 @@ export default function PlanetExploration({
         <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground sm:text-xs">
           <span className="rounded-full border border-border/50 bg-background/25 px-2.5 py-1">{tr("Live mission", "กำลังทำภารกิจ")}</span>
           <span className={`rounded-full border px-2.5 py-1 ${canReturn ? "border-cosmic-green/30 bg-cosmic-green/10 text-cosmic-green" : "border-cosmic-yellow/25 bg-cosmic-yellow/10 text-cosmic-yellow"}`}>
-            {canReturn ? (mission.requireReturn ? tr("Return route open", "กลับยานได้แล้ว") : tr("Extraction ready", "พร้อมกลับอัตโนมัติ")) : tr("Objective in progress", "กำลังทำเป้าหมาย")}
+            {canReturn ? (mission.requireReturn ? tr("Return route open", "กลับยานได้แล้ว") : tr("Extraction ready", "พร้อมพากลับอัตโนมัติ")) : tr("Objective in progress", "กำลังทำภารกิจ")}
           </span>
           <span className="rounded-full border border-cosmic-cyan/25 bg-cosmic-cyan/10 px-2.5 py-1 text-cosmic-cyan">{routeStatus}</span>
         </div>
@@ -1327,7 +1327,7 @@ export default function PlanetExploration({
           </div>
         )}
         {(mission.enemyCount ?? 0) > 0 && (
-          <div className="text-center text-[10px] sm:text-xs font-bold text-destructive">HP {hp}/{maxHp}</div>
+          <div className="text-center text-[10px] sm:text-xs font-bold text-destructive">{tr("HP", "พลังยาน")} {hp}/{maxHp}</div>
         )}
         {/* Timer progress bar */}
         <div className="w-full h-2 sm:h-2.5 rounded-full bg-muted overflow-hidden">
@@ -1373,9 +1373,9 @@ export default function PlanetExploration({
         <span className="rounded-full border border-border/40 bg-background/20 px-2.5 py-1">
           {tr("One tile per move · WASD / arrows", "เดินครั้งละ 1 ช่อง · ใช้ WASD หรือปุ่มลูกศร")} · {dashReady ? tr("Hold Shift + direction for a 2-tile dash", "กด Shift พร้อมทิศทางเพื่อพุ่ง 2 ช่อง") : tr("cross a glow node to charge a dash", "เดินผ่านโหนดแสงเพื่อชาร์จพุ่ง")}
         </span>
-        <span className="story-board-legend"><Navigation /> {tr("Pilot = you", "นักบิน = ตัวคุณ")}</span>
-        <span className="story-board-legend"><Rocket /> {tr("Rocket = extraction", "ยาน = จุดกลับ")}</span>
-        <span className="story-board-legend"><Gem /> {tr("Glowing badges = objectives", "สัญลักษณ์เรืองแสง = เป้าหมาย")}</span>
+        <span className="story-board-legend"><Navigation /> {tr("Pilot = you", "นักบินคือตัวคุณ")}</span>
+        <span className="story-board-legend"><Rocket /> {tr("Rocket = extraction", "กลับมาที่ยานเพื่อออกจากพื้นที่")}</span>
+        <span className="story-board-legend"><Gem /> {tr("Glowing badges = objectives", "สัญลักษณ์เรืองแสงคือของที่ต้องเก็บ")}</span>
       </div>
 
       {/* Exploration Grid */}

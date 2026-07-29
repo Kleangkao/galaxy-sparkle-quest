@@ -3,8 +3,11 @@ export type ArcadeObjective = "boss" | "energy" | "score";
 export interface ArcadeContract {
   id: string;
   name: string;
+  nameTh: string;
   subtitle: string;
+  subtitleTh: string;
   briefing: string;
+  briefingTh: string;
   objective: ArcadeObjective;
   target: number;
   duration: number;
@@ -18,8 +21,11 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
   {
     id: "ahr-blitz",
     name: "Ahr Blitz",
+    nameTh: "บุกแกน Ahr",
     subtitle: "Boss assault",
+    subtitleTh: "สู้กับบอส",
     briefing: "Track the moving Ahr core with your mouse, manage reload timing, and break its armor before extraction.",
+    briefingTh: "เล็งแกนพลัง Ahr ที่กำลังขยับ เติมกระสุนให้ทัน และทำลายเกราะก่อนหมดเวลา",
     objective: "boss",
     target: 1,
     duration: 50,
@@ -31,8 +37,11 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
   {
     id: "crystal-rush",
     name: "Crystal Rush",
+    nameTh: "ล่าคริสตัล",
     subtitle: "Collection sprint",
+    subtitleTh: "เก็บสัญญาณ",
     briefing: "Aim at drifting crystal signals, ignore the red decoys, and build a clean accuracy streak.",
+    briefingTh: "ยิงสัญญาณคริสตัลที่ลอยอยู่ อย่ายิงเป้าหลอกสีแดง และรักษาความแม่นให้ต่อเนื่อง",
     objective: "energy",
     target: 14,
     duration: 45,
@@ -44,8 +53,11 @@ export const ARCADE_CONTRACTS: ArcadeContract[] = [
   {
     id: "score-breaker",
     name: "Score Breaker",
+    nameTh: "ทุบสถิติ",
     subtitle: "High-score attack",
+    subtitleTh: "ทำคะแนนสูง",
     briefing: "Hit fast drones without clipping decoys. Combos and smart reload timing build the score.",
+    briefingTh: "ยิงโดรนให้เร็ว อย่ายิงโดนเป้าหลอก รักษาคอมโบและเติมกระสุนให้ถูกจังหวะ",
     objective: "score",
     target: 1800,
     duration: 50,

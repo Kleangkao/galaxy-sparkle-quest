@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { I18nProvider } from "@/lib/i18n";
+import { I18nProvider, useI18n } from "@/lib/i18n";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { installGlobalErrorHandlers } from "@/lib/selfHealing";
 import { useEffect, useState } from "react";
@@ -35,32 +35,34 @@ const App = () => {
             <Toaster />
             <Sonner />
             {isGameRoute ? <Index /> : <NotFound />}
-            {updateReady && (
-              <AlertDialogPrimitive.Root open>
-                <AlertDialogPrimitive.Portal>
-                  <AlertDialogPrimitive.Overlay className="version-update" />
-                  <AlertDialogPrimitive.Content className="version-update__panel">
-                    <AlertDialogPrimitive.Title asChild>
-                      <strong>Game updated · เกมมีเวอร์ชันใหม่</strong>
-                    </AlertDialogPrimitive.Title>
-                    <AlertDialogPrimitive.Description asChild>
-                      <div>
-                        <p>Your progress is safe. Reload once to continue with the newest version.</p>
-                        <p>เซฟของคุณยังอยู่ กดโหลดใหม่หนึ่งครั้งเพื่อเล่นเวอร์ชันล่าสุด</p>
-                      </div>
-                    </AlertDialogPrimitive.Description>
-                    <AlertDialogPrimitive.Action asChild>
-                      <button onClick={() => window.location.reload()}>Reload game · โหลดเกมใหม่</button>
-                    </AlertDialogPrimitive.Action>
-                  </AlertDialogPrimitive.Content>
-                </AlertDialogPrimitive.Portal>
-              </AlertDialogPrimitive.Root>
-            )}
+            {updateReady && <VersionUpdateDialog />}
           </TooltipProvider>
         </I18nProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
 };
+
+function VersionUpdateDialog() {
+  const { tr } = useI18n();
+  return (
+    <AlertDialogPrimitive.Root open>
+      <AlertDialogPrimitive.Portal>
+        <AlertDialogPrimitive.Overlay className="version-update" />
+        <AlertDialogPrimitive.Content className="version-update__panel">
+          <AlertDialogPrimitive.Title asChild>
+            <strong>{tr("A new game version is ready", "เกมมีเวอร์ชันใหม่แล้ว")}</strong>
+          </AlertDialogPrimitive.Title>
+          <AlertDialogPrimitive.Description asChild>
+            <p>{tr("Your progress is safe. Reload once to continue with the newest version.", "เซฟของคุณยังอยู่ โหลดหน้าใหม่หนึ่งครั้งเพื่อเล่นเวอร์ชันล่าสุด")}</p>
+          </AlertDialogPrimitive.Description>
+          <AlertDialogPrimitive.Action asChild>
+            <button onClick={() => window.location.reload()}>{tr("Reload game", "โหลดเกมใหม่")}</button>
+          </AlertDialogPrimitive.Action>
+        </AlertDialogPrimitive.Content>
+      </AlertDialogPrimitive.Portal>
+    </AlertDialogPrimitive.Root>
+  );
+}
 
 export default App;

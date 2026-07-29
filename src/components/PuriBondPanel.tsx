@@ -21,7 +21,7 @@ export default function PuriBondPanel({ bond }: { bond: number }) {
         <div>
           <span>{tr("Bond", "ความสนิท")} {progress.bond}/100</span>
           <strong>{progress.next
-            ? tr(`${progress.next.bond - progress.bond} until ${progress.next.ability}`, `อีก ${progress.next.bond - progress.bond} แต้ม จะได้ ${progress.next.abilityTh}`)
+            ? tr(`${progress.next.bond - progress.bond} until ${progress.next.ability}`, `อีก ${progress.next.bond - progress.bond} แต้ม ปลดล็อก${progress.next.abilityTh}`)
             : tr("All abilities unlocked", "ปลดล็อกครบแล้ว")}</strong>
         </div>
         <i><b style={{ width: `${progress.bond}%` }} /></i>

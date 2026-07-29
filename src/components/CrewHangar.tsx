@@ -61,8 +61,8 @@ export default function CrewHangar(props: Props) {
 
       <header className="hangar-header">
         <div>
-          <div className="command-kicker">{tr("Crew deck · Loadout online", "จัดทีม · ชุดพร้อมใช้งาน")}</div>
-          <h1>{tr("Crew & Hangar", "จัดทีมและโรงเก็บยาน")}</h1>
+          <div className="command-kicker">{tr("Crew deck · Loadout online", "ทีมและอุปกรณ์พร้อมใช้งาน")}</div>
+          <h1>{tr("Crew & Hangar", "จัดทีมและอุปกรณ์")}</h1>
           <p>{tr("Choose one pilot for your overall play style and one weapon for combat. Every effect names the modes where it works.", "เลือกนักบิน 1 คนตามสไตล์ที่ชอบ และเลือกอาวุธ 1 ชิ้นสำหรับโหมดต่อสู้ แต่ละความสามารถจะบอกชัดว่าใช้กับโหมดไหน")}</p>
         </div>
         <div className="hangar-header__actions">
@@ -84,7 +84,7 @@ export default function CrewHangar(props: Props) {
       <section className="hangar-section" aria-labelledby="pilot-roster-title">
         <div className="hangar-section__heading">
           <div><span>01</span><div><h2 id="pilot-roster-title">{tr("Pilot roster", "รายชื่อนักบิน")}</h2><p>{tr("Your pilot sets the expedition's main strength.", "นักบินกำหนดความสามารถหลักของทีม")}</p></div></div>
-          <small>{tr("Earn pilots through Story and mastery challenges", "ปลดล็อกนักบินจากเนื้อเรื่องและภารกิจความชำนาญ")}</small>
+          <small>{tr("Earn pilots through Story and mastery challenges", "ปลดล็อกนักบินได้จากเนื้อเรื่องและการทำสถิติ")}</small>
         </div>
         <div className="pilot-grid">
           {PILOTS.map((pilot) => {
@@ -99,7 +99,7 @@ export default function CrewHangar(props: Props) {
                   {active && <span className="pilot-card__check"><Check className="h-4 w-4" /> {tr("Active", "กำลังใช้")}</span>}
                   <p>{getPilotTagline(pilot, lang)}</p>
                   <strong>{getPilotEffect(pilot, lang)}</strong>
-                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirementTh}`)}</small>}
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ปลดล็อกเมื่อ${unlock.requirementTh}`)}</small>}
                 </div>
               </button>
             );
@@ -122,7 +122,7 @@ export default function CrewHangar(props: Props) {
                 <div className="tool-card__image"><img src={tool.image} alt={tool.name} /></div>
                 <div className="tool-card__copy">
                   <span>{getToolFamily(tool, lang)}</span><h3>{tool.name}</h3><p><Icon className="h-4 w-4" />{getToolEffect(tool, lang)}</p>
-                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ยังล็อก · ${unlock.requirementTh}`)}</small>}
+                  {!unlock.unlocked && <small>{tr(`Locked · ${unlock.requirement}`, `ปลดล็อกเมื่อ${unlock.requirementTh}`)}</small>}
                 </div>
                 {active && <Check className="tool-card__check h-5 w-5" />}
               </button>

@@ -65,13 +65,13 @@ const BIOME_LABELS_TH: Record<Planet["biome"], string> = {
 const STORY_LORE_TH: Record<string, SectorLore> = {
   "sparkle-moon": { name: "Luma Outpost", chapter: "01 · แสงแรก", threat: "คริสตัลปะทุ", story: "สัญญาณขอความช่วยเหลือเก่าแก่กำลังส่งรหัสประจำตัวของกัปตันซ้ำไปมา", mission: "เปิดเครื่องส่งสัญญาณในอุโมงค์คริสตัลของดวงจันทร์ให้กลับมาทำงาน" },
   "candy-planet": { name: "Kora Wilds", chapter: "02 · สัญญาณที่มีชีวิต", threat: "สปอร์จำแลง", story: "สัญญาณนี้มีชีวิต และกำลังชวนให้คุณตามไป", mission: "ตามรอยสิ่งมีชีวิตจอมซนผ่านป่าปะการังเรืองแสง" },
-  "frosty-star": { name: "Vesper Drift", chapter: "03 · ร่องรอยเยือกแข็ง", threat: "ธารน้ำแข็งลื่นไหล", story: "แกนนำทางที่สูญหายเก็บแผนที่ซึ่งถูกลบออกจากทุกคลังข้อมูล", mission: "ฝ่าธารน้ำแข็งที่แปรปรวนและนำแกนนำทางกลับมา" },
+  "frosty-star": { name: "Vesper Drift", chapter: "03 · ร่องรอยเยือกแข็ง", threat: "พื้นน้ำแข็งเคลื่อนตัว", story: "แกนนำทางที่หายไปเก็บแผนที่ซึ่งถูกลบออกจากทุกคลังข้อมูล", mission: "ฝ่าพื้นน้ำแข็งที่เปลี่ยนตำแหน่งและนำแกนนำทางกลับมา" },
   "jungle-world": { name: "Verdant Vault", chapter: "04 · ผู้เฝ้ามอง", threat: "โดรนพิทักษ์", story: "มีใครบางคนคุ้มครองเส้นทางนี้มาตั้งแต่ก่อนสามฝ่ายจะมาถึง", mission: "หลบหลีกผู้พิทักษ์ที่ลาดตระเวนอยู่ใต้พงไพรโบราณ" },
   "rainbow-nebula": { name: "Prism Reach", chapter: "05 · ฟ้าที่แตกสลาย", threat: "พายุไอออน", story: "หน่วยสำรวจคู่แข่งกำลังแย่งชิงกุญแจดวงดาวชิ้นเดียวกัน", mission: "พุ่งข้ามเกาะที่แตกกระจายก่อนพายุจะปิดเส้นทาง" },
-  "bubbly-bay": { name: "Pelagos Deep", chapter: "06 · ใต้หมู่ดาว", threat: "แรงดันใต้สมุทร", story: "หอดูดาวที่จมอยู่ชี้ไปยังพื้นที่นอกแผนที่จักรวาล", mission: "จ่ายพลังให้หอดูดาวใต้มหาสมุทรต่างดาว" },
+  "bubbly-bay": { name: "Pelagos Deep", chapter: "06 · ใต้หมู่ดาว", threat: "แรงดันใต้สมุทร", story: "หอดูดาวที่จมอยู่กำลังชี้ไปยังพื้นที่ซึ่งไม่มีในแผนที่", mission: "ส่งพลังให้หอดูดาวใต้มหาสมุทรต่างดาว" },
   "cookie-crater": { name: "Cinder Hollow", chapter: "07 · เพลิงจากฟ้า", threat: "ฝนดาวตก", story: "กุญแจดวงดาวปลุกเครื่องจักรที่ซ่อนอยู่ภายในดวงจันทร์", mission: "เก็บเซลล์พลังงานขณะที่พื้นปล่องภูเขาไฟกำลังแตกออก" },
   "starlight-shore": { name: "Astra Shoals", chapter: "08 · ส่งเมล็ดดวงดาว", threat: "กระแสแสง", story: "เมล็ดเหล่านี้อาจรักษาพรมแดน หรือเปิดประตูสุดท้าย", mission: "นำเมล็ดดวงดาวสองชิ้นข้ามทุ่งแสงที่ไม่หยุดนิ่ง" },
-  "crystal-cave": { name: "Nullspire", chapter: "09 · สามคู่แข่ง", threat: "ผู้พิทักษ์แห่งความว่างเปล่า", story: "ทั้งสามฝ่ายต้องเลือกว่าจะแย่งประตู หรือร่วมมือกันเปิดมัน", mission: "ผ่านป้อมปราการที่เปลี่ยนรูปและถูกแย่งชิงโดยทุกฝ่าย" },
+  "crystal-cave": { name: "Nullspire", chapter: "09 · สามคู่แข่ง", threat: "ผู้พิทักษ์แห่งความว่างเปล่า", story: "ทั้งสามฝ่ายต้องเลือกว่าจะแย่งประตู หรือร่วมมือกันเปิดมัน", mission: "ฝ่าป้อมปราการที่เปลี่ยนรูป ซึ่งทั้งสามฝ่ายกำลังแย่งชิง" },
   "golden-galaxy": { name: "The Aurora Crown", chapter: "10 · เหนือขอบแผนที่", threat: "ผู้พิทักษ์มงกุฎ", story: "สัญญาณที่สูญหายเฝ้ารอ Guardian คนใหม่มาตลอด", mission: "เข้าสู่ Aurora Crown และค้นหาคำตอบใจกลางกาเลีย" },
 };
 
@@ -104,7 +104,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
   );
 
   const status = useMemo(() => {
-    if (!selectedUnlocked) return { label: tr(`Clear Chapter ${selectedIndex}`, `ผ่านบท ${selectedIndex} ก่อน`), tone: "locked" };
+    if (!selectedUnlocked) return { label: tr(`Clear Chapter ${selectedIndex}`, `ผ่านบทที่ ${selectedIndex} ก่อน`), tone: "locked" };
     if (selectedVisited) return { label: tr("Chapter cleared", "ผ่านบทนี้แล้ว"), tone: "complete" };
     return { label: tr("Ready to deploy", "พร้อมออกเดินทาง"), tone: "ready" };
   }, [selectedIndex, selectedUnlocked, selectedVisited, tr]);
@@ -116,7 +116,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
         <div className="story-console__hero-shade" />
         <div className="story-console__hero-copy">
           <button className="story-console__back" onClick={onHome}><ArrowLeft className="h-4 w-4" /> {tr("All modes", "กลับไปเลือกโหมด")}</button>
-          <div className="command-kicker"><Radio className="h-3.5 w-3.5" /> {tr("Campaign signal online", "เชื่อมต่อสัญญาณเนื้อเรื่องแล้ว")}</div>
+          <div className="command-kicker"><Radio className="h-3.5 w-3.5" /> {tr("Campaign signal online", "รับสัญญาณได้แล้ว")}</div>
           <h1>{tr("Story Expeditions", "ผจญภัยตามเนื้อเรื่อง")}</h1>
           <p>{tr("Trace one living signal across ten chapters. Choose a route, complete a short mission, and change who controls the frontier.", "ตามหาความจริงของสัญญาณลึกลับผ่าน 10 บท เลือกเส้นทาง ทำภารกิจ และช่วยฝ่ายของเราดูแลพื้นที่")}</p>
           <button className="story-console__continue" onClick={() => onLaunch(recommended)}>
@@ -125,13 +125,13 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
         </div>
         <div className="story-console__hero-stats" aria-label={tr("Campaign progress", "ความคืบหน้าของเนื้อเรื่อง")}>
           <div><strong>{gameState.visitedPlanets.length}/10</strong><span>{tr("chapters cleared", "บทที่ผ่านแล้ว")}</span></div>
-          <div><strong>{campaignProgress}%</strong><span>{tr("signal traced", "ตามรอยสัญญาณ")}</span></div>
-          <div><strong>{controlledCount}</strong><span>{tr("sectors secured", "พื้นที่ที่ดูแล")}</span></div>
+          <div><strong>{campaignProgress}%</strong><span>{tr("signal traced", "ตามสัญญาณแล้ว")}</span></div>
+          <div><strong>{controlledCount}</strong><span>{tr("sectors secured", "พื้นที่ที่ฝ่ายคุมอยู่")}</span></div>
         </div>
       </header>
 
       <section className="story-console__workspace">
-        <aside className="story-chapters" aria-label={tr("Campaign chapters", "บทของเนื้อเรื่อง")}>
+        <aside className="story-chapters" aria-label={tr("Campaign chapters", "รายชื่อบท")}>
           <div className="story-chapters__header">
             <div><span>{tr("Signal trail", "เส้นทางสัญญาณ")}</span><strong>{tr("Select a chapter", "เลือกบทที่ต้องการเล่น")}</strong></div>
             <Map className="h-5 w-5" />
@@ -151,7 +151,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
                 >
                   <span className="story-chapters__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="story-chapters__node">{visited ? <CheckCircle2 /> : chapterUnlocked ? <span>{planet.emoji}</span> : <LockKeyhole />}</span>
-                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").slice(-1)[0]?.trim() : tr(`Clear Chapter ${index}`, `ผ่านบท ${index} ก่อน`)}</small></span>
+                  <span className="story-chapters__copy"><strong>{planetLore.name}</strong><small>{chapterUnlocked ? planetLore.chapter.split("·").slice(-1)[0]?.trim() : tr(`Clear Chapter ${index}`, `ผ่านบทที่ ${index} ก่อน`)}</small></span>
                   <ArrowRight className="story-chapters__arrow h-4 w-4" />
                 </button>
               );
@@ -159,7 +159,7 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
           <div className="story-chapters__footer">
             <Sparkles className="h-4 w-4" />
-            <span>{nextUnlock ? tr(`Clear the current chapter to open ${getSectorLore(nextUnlock.id).name}`, `ผ่านบทปัจจุบันเพื่อเปิด ${getSectorLore(nextUnlock.id).name}`) : tr("Every chapter is open", "เปิดครบทุกบทแล้ว")}</span>
+            <span>{nextUnlock ? tr(`Clear the current chapter to open ${getSectorLore(nextUnlock.id).name}`, `ผ่านบทนี้เพื่อเปิด ${getSectorLore(nextUnlock.id).name}`) : tr("Every chapter is open", "เปิดครบทุกบทแล้ว")}</span>
           </div>
         </aside>
 
@@ -175,23 +175,23 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
 
           <div className="story-dossier__narrative">
-            <div><Radio className="h-4 w-4" /><span>{tr("Signal fragment", "ข้อมูลจากสัญญาณ")}</span></div>
+            <div><Radio className="h-4 w-4" /><span>{tr("Signal fragment", "ข้อความที่ได้รับ")}</span></div>
             <p>{lore.story}</p>
           </div>
 
           <div className="story-dossier__objective">
             <Target className="h-5 w-5" />
-            <div><span>{tr("How to clear this chapter", "วิธีผ่านบทนี้")}</span><strong>{missionObjective}</strong><small>{tr("Story goal", "เป้าหมายในเรื่อง")}: {lore.mission} · {tr("Threat", "ระวัง")}: {lore.threat}</small></div>
+            <div><span>{tr("How to clear this chapter", "วิธีผ่านบทนี้")}</span><strong>{missionObjective}</strong><small>{tr("Story goal", "สิ่งที่ต้องทำ")}: {lore.mission} · {tr("Threat", "อันตราย")}: {lore.threat}</small></div>
           </div>
 
           <div className="story-dossier__rewards" aria-label={tr("Mission rewards", "รางวัลภารกิจ")}>
-            <div><Gem className="h-4 w-4" /><span>{tr("Estimated crystals", "คริสตัลที่คาดว่าจะได้")}<strong>{estimatedCrystals}</strong><small>{tr("Balanced route · current bonuses", "เส้นทางปกติ · รวมโบนัสปัจจุบัน")}</small></span></div>
+            <div><Gem className="h-4 w-4" /><span>{tr("Estimated crystals", "คริสตัลที่จะได้รับ")}<strong>{estimatedCrystals}</strong><small>{tr("Balanced route · current bonuses", "เส้นทางปกติ รวมโบนัสที่ใช้อยู่")}</small></span></div>
             <div><Sparkles className="h-4 w-4" /><span>{tr("Captain XP", "XP กัปตัน")}<strong>{selectedVisited ? Math.floor(selected.xp / 2) : selected.xp}</strong></span></div>
-            <div><PawPrint className="h-4 w-4" /><span>{tr("Companion intel", "ข้อมูลเพื่อนร่วมทาง")}<strong>{selected.pet?.name ?? tr("None", "ไม่มี")}</strong></span></div>
+            <div><PawPrint className="h-4 w-4" /><span>{tr("Companion intel", "เพื่อนที่อาจพบ")}<strong>{selected.pet?.name ?? tr("None", "ไม่มี")}</strong></span></div>
           </div>
 
           <div className="story-dossier__influence">
-            <div><span><Shield className="h-4 w-4" /> {tr("Sector influence", "คะแนนพื้นที่")}</span><strong>{controller ? tr(`${controller.toUpperCase()} controlled`, `${controller.toUpperCase()} ดูแลอยู่`) : tr("Contested frontier", "พื้นที่กำลังแข่งขัน")}</strong></div>
+            <div><span><Shield className="h-4 w-4" /> {tr("Sector influence", "คะแนนฝ่ายในพื้นที่")}</span><strong>{controller ? tr(`${controller.toUpperCase()} controlled`, `ฝ่าย ${controller.toUpperCase()} คุมอยู่`) : tr("Contested frontier", "ยังไม่มีฝ่ายคุม")}</strong></div>
             <i role="img" aria-label={`MUD ${influence.mud}, ONI ${influence.oni}, USTUR ${influence.ustur}`}>
               <b className="is-mud" style={{ width: `${influence.mud / totalInfluence * 100}%` }} />
               <b className="is-oni" style={{ width: `${influence.oni / totalInfluence * 100}%` }} />
@@ -201,17 +201,17 @@ export default function StoryExpeditionConsole({ gameState, onHome, onLaunch }: 
           </div>
 
           <button className="story-dossier__launch" disabled={!selectedUnlocked} onClick={() => onLaunch(selected)}>
-            {selectedUnlocked ? <><Compass className="h-4 w-4" /> {selectedVisited ? tr("Replay survey", "เล่นบทนี้อีกครั้ง") : tr("Choose route and deploy", "เลือกเส้นทางแล้วออกเดินทาง")} <ArrowRight className="h-4 w-4" /></> : <><LockKeyhole className="h-4 w-4" /> {tr(`Clear Chapter ${selectedIndex}`, `ผ่านบท ${selectedIndex} ก่อน`)}</>}
+            {selectedUnlocked ? <><Compass className="h-4 w-4" /> {selectedVisited ? tr("Replay survey", "เล่นบทนี้อีกครั้ง") : tr("Choose route and deploy", "เลือกเส้นทางแล้วออกเดินทาง")} <ArrowRight className="h-4 w-4" /></> : <><LockKeyhole className="h-4 w-4" /> {tr(`Clear Chapter ${selectedIndex}`, `ผ่านบทที่ ${selectedIndex} ก่อน`)}</>}
           </button>
         </article>
       </section>
 
       <section className="story-flow" aria-label={tr("Story mission flow", "ขั้นตอนเล่นเนื้อเรื่อง")}>
-        <div><strong>1</strong><span>{tr("Choose chapter", "เลือกบท")}<small>{tr("Follow the signal trail", "ตามเส้นทางของสัญญาณ")}</small></span></div>
+        <div><strong>1</strong><span>{tr("Choose chapter", "เลือกบท")}<small>{tr("Follow the signal trail", "ตามรอยสัญญาณ")}</small></span></div>
         <ArrowRight />
-        <div><strong>2</strong><span>{tr("Pick your route", "เลือกเส้นทาง")}<small>{tr("Scout, Balanced, or Salvage", "สำรวจ ปกติ หรือเก็บกู้")}</small></span></div>
+        <div><strong>2</strong><span>{tr("Pick your route", "เลือกเส้นทาง")}<small>{tr("Scout, Balanced, or Salvage", "ปลอดภัย ปกติ หรือเก็บกู้")}</small></span></div>
         <ArrowRight />
-        <div><strong>3</strong><span>{tr("Complete objective", "ทำเป้าหมายให้สำเร็จ")}<small>{tr("Earn rewards and influence", "รับรางวัลและคะแนนพื้นที่")}</small></span></div>
+        <div><strong>3</strong><span>{tr("Complete objective", "ทำภารกิจให้สำเร็จ")}<small>{tr("Earn rewards and influence", "รับรางวัลและเพิ่มคะแนนให้ฝ่าย")}</small></span></div>
       </section>
     </main>
   );

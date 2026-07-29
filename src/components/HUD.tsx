@@ -121,9 +121,9 @@ function DockButton({ item, activeScreen, onNavigate }: { item: DockItem; active
       <span>{tr(item.label, {
         Modes: "โหมด",
         Story: "เนื้อเรื่อง",
-        Swarm: "ฝ่าศัตรู",
+        Swarm: "ฝ่าฝูง",
         Arcade: "ยิงเป้า",
-        Progress: "คืบหน้า",
+        Progress: "ความคืบหน้า",
         Crew: "จัดทีม",
       }[item.label] ?? item.label)}</span>
     </button>

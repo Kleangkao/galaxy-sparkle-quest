@@ -299,7 +299,7 @@ describe("public test release hardening", () => {
     );
 
     expect(screen.getByText("รางวัลผ่านครั้งแรก")).toBeInTheDocument();
-    expect(screen.getByText("ข้อมูลเพื่อนร่วมทาง")).toBeInTheDocument();
+    expect(screen.getByText("เพื่อนที่อาจพบ")).toBeInTheDocument();
     expect(screen.getByText("เป้าหมายภารกิจ")).toBeInTheDocument();
     expect(screen.getByText(/เก็บคริสตัล 5 ชิ้น แล้วเดินกลับมาที่ช่องยาน/)).toBeInTheDocument();
     expect(screen.queryByText("Choose how to play this chapter")).not.toBeInTheDocument();
@@ -378,8 +378,8 @@ describe("public test release hardening", () => {
 
     expect(screen.getByText("นักสำรวจ")).toBeInTheDocument();
     expect(screen.getAllByText("รับคริสตัลเพิ่ม 10% จากทุกโหมด").length).toBeGreaterThan(0);
-    expect(screen.getByText("ความแรงอาวุธ +20% ในฝ่าฝูงศัตรูและยิงเป้า")).toBeInTheDocument();
-    expect(screen.getByText(/ผ่านเนื้อเรื่องบท 2 หรือภารกิจยิงเป้า 1 ภารกิจ/)).toBeInTheDocument();
+    expect(screen.getByText("อาวุธแรงขึ้น 20% ในโหมดฝ่าฝูงศัตรูและยิงเป้า")).toBeInTheDocument();
+    expect(screen.getByText(/ผ่านเนื้อเรื่องบทที่ 2 หรือผ่านภารกิจยิงเป้า 1 ภารกิจ/)).toBeInTheDocument();
     expect(screen.queryByText("+6 seconds in Story, Swarm, and Arcade")).not.toBeInTheDocument();
   });
 

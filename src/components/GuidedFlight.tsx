@@ -30,12 +30,12 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
         </DialogPrimitive.Close>
         <div className="guided-flight__visual"><img src={pilot.image} alt={pilot.name} /><span><PawPrint /> {tr("PURI online", "PURI พร้อมแล้ว")}</span></div>
         <div className="guided-flight__copy">
-          <div className="command-kicker"><Rocket className="h-3.5 w-3.5" /> {tr("First flight · about 3 minutes", "เที่ยวบินแรก · ประมาณ 3 นาที")}</div>
+          <div className="command-kicker"><Rocket className="h-3.5 w-3.5" /> {tr("First flight · about 3 minutes", "เริ่มเล่นครั้งแรก ใช้เวลาประมาณ 3 นาที")}</div>
           <DialogPrimitive.Title asChild>
             <h1>{tr(`Welcome to ${faction?.name}, Captain.`, `ยินดีต้อนรับสู่ฝ่าย ${faction?.name}`)}</h1>
           </DialogPrimitive.Title>
           <DialogPrimitive.Description asChild>
-            <p>{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณคือ ${pilot.name} และ PURI จะเดินทางไปด้วยกัน พร้อมปลดล็อกความสามารถใหม่ในทุกโหมด`)}</p>
+            <p>{tr(`You are ${pilot.name}. PURI will travel with you and unlock helpful abilities across every mode.`, `คุณจะเล่นเป็น ${pilot.name} ส่วน PURI จะเดินทางไปด้วยและค่อย ๆ ปลดล็อกความสามารถที่ใช้ได้ในหลายโหมด`)}</p>
           </DialogPrimitive.Description>
           <p className="guided-flight__save-note">{tr("Progress saves in this browser on this device. Download a backup from Settings before changing devices or clearing browser data.", "เซฟเกมจะอยู่ในเบราว์เซอร์ของเครื่องนี้ ควรดาวน์โหลดไฟล์สำรองจากหน้าตั้งค่าก่อนเปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์")}</p>
           <div className="guided-flight__steps">
@@ -43,10 +43,10 @@ export default function GuidedFlight({ gameState, onStartStory, onOpenCrew, onDi
             <Step done label={tr("Meet your crew", "พบกับทีมของคุณ")} detail={tr(`${pilot.name} and PURI are ready.`, `${pilot.name} และ PURI พร้อมแล้ว`)} />
             <Step done={storyDone} label={tr("Clear Story Chapter 1", "ผ่านเนื้อเรื่องบทที่ 1")} detail={tr("Learn movement, collect crystals, and trace the first signal.", "เรียนรู้การขยับ เก็บคริสตัล และตามรอยสัญญาณแรก")} />
             <Step done={upgradeDone} label={tr("Install one Crew upgrade", "ติดตั้งอัปเกรด 1 ชิ้น")} detail={tr("Use mission crystals for a permanent improvement.", "ใช้คริสตัลจากภารกิจเพื่อเพิ่มความสามารถถาวร")} />
-            <Step done={upgradeDone && storyDone} label={tr("Choose what to play next", "เลือกโหมดต่อไป")} detail={tr("Every mode contributes to the same progression.", "ทุกโหมดช่วยเพิ่มความคืบหน้าร่วมกัน")} />
+            <Step done={upgradeDone && storyDone} label={tr("Choose what to play next", "เลือกโหมดต่อไป")} detail={tr("Every mode contributes to the same progression.", "ไม่ว่าจะเล่นโหมดไหน ทีมนี้ก็เก่งขึ้น")} />
           </div>
           <button className="guided-flight__primary" onClick={primary.action}><PrimaryIcon /> {primary.label} <ArrowRight /></button>
-          <button className="guided-flight__skip" onClick={onDismiss}>{tr("Skip for now · replay anytime in Settings", "ข้ามก่อน · เปิดดูใหม่ได้ทุกเมื่อในหน้าตั้งค่า")}</button>
+          <button className="guided-flight__skip" onClick={onDismiss}>{tr("Skip for now · replay anytime in Settings", "ข้ามไปก่อน เปิดดูใหม่ได้ที่หน้าตั้งค่า")}</button>
         </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

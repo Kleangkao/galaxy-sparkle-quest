@@ -52,7 +52,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
   const duration = SWARM_BALANCE.duration + modifiers.missionTimeBonus;
   const bossTime = SWARM_BALANCE.bossTime;
   const runVariant = getSwarmRunVariant(gameState.modeRecords.swarmRuns);
-  const objectiveText = tr(`Build perks and defeat Ahr · ${runVariant.name}`, `เลือกพลังและกำจัด Ahr · ${runVariant.nameTh}`);
+  const objectiveText = tr(`Build perks and defeat Ahr · ${runVariant.name}`, `เลือกพลังระหว่างทาง แล้วกำจัด Ahr ใน${runVariant.nameTh}`);
   const aimBonus = gameState.accessibility.aimHelp === "wide" ? 9 : 0;
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -242,7 +242,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
     pulseGamepad(70, 0.3);
   };
   const boss = frame.enemies.find((enemy) => enemy.kind === "boss");
-  const bossStatus = frame.bossSpawned ? tr("Boss active", "บอสมาแล้ว") : tr(`Boss in ${Math.max(0, Math.ceil(bossTime - frame.elapsed))}s`, `บอสมาใน ${Math.max(0, Math.ceil(bossTime - frame.elapsed))} วิ`);
+  const bossStatus = frame.bossSpawned ? tr("Boss active", "บอสมาแล้ว") : tr(`Boss in ${Math.max(0, Math.ceil(bossTime - frame.elapsed))}s`, `บอสจะมาใน ${Math.max(0, Math.ceil(bossTime - frame.elapsed))} วิ`);
 
   const nextPerkAt = [5, 13, 24, 38, 56].find((threshold) => threshold > frame.energy);
   const perkChoices = [
@@ -250,48 +250,48 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       kind: "damage" as const,
       name: tr("Heavy Shots", "กระสุนหนัก"),
       effect: tr("Damage +30%", "โจมตีแรงขึ้น 30%"),
-      pair: tr("Pair with Rapid Fire → Overdrive", "จับคู่กับ ยิงถี่ → โอเวอร์ไดรฟ์"),
+      pair: tr("Pair with Rapid Fire → Overdrive", "ใช้คู่กับยิงถี่เพื่อปลดล็อกโอเวอร์ไดรฟ์"),
     },
     {
       kind: "fireRate" as const,
       name: tr("Rapid Fire", "ยิงถี่"),
       effect: tr("Fire 20% faster", "ยิงเร็วขึ้น 20%"),
-      pair: tr("Pair with Heavy Shots → Overdrive", "จับคู่กับ กระสุนหนัก → โอเวอร์ไดรฟ์"),
+      pair: tr("Pair with Heavy Shots → Overdrive", "ใช้คู่กับกระสุนหนักเพื่อปลดล็อกโอเวอร์ไดรฟ์"),
     },
     {
       kind: "speed" as const,
       name: tr("Thrusters", "เครื่องยนต์เร่ง"),
       effect: tr("Move 22% faster", "เคลื่อนที่เร็วขึ้น 22%"),
-      pair: tr("Pair with Energy Pull → Phase Drive", "จับคู่กับ แรงดูดพลัง → เฟสไดรฟ์"),
+      pair: tr("Pair with Energy Pull → Phase Drive", "ใช้คู่กับแรงดูดพลังเพื่อปลดล็อกเฟสไดรฟ์"),
     },
     {
       kind: "magnet" as const,
       name: tr("Energy Pull", "แรงดูดพลัง"),
       effect: tr("Pickup radius +22%", "ระยะเก็บพลังเพิ่ม 22%"),
-      pair: tr("Pair with Thrusters → Phase Drive", "จับคู่กับ เครื่องยนต์เร่ง → เฟสไดรฟ์"),
+      pair: tr("Pair with Thrusters → Phase Drive", "ใช้คู่กับเครื่องยนต์เร่งเพื่อปลดล็อกเฟสไดรฟ์"),
     },
     {
       kind: "pulse" as const,
       name: tr("Pulse Recharge", "ชาร์จคลื่นไว"),
       effect: tr("Pulse cooldown 9s → 7.4s", "รอใช้คลื่นจาก 9 วิ เหลือ 7.4 วิ"),
-      pair: tr("Pair with Field Repair → Guardian Core", "จับคู่กับ ซ่อมฉุกเฉิน → แกนพิทักษ์"),
+      pair: tr("Pair with Field Repair → Guardian Core", "ใช้คู่กับซ่อมฉุกเฉินเพื่อปลดล็อกแกนพิทักษ์"),
     },
     {
       kind: "repair" as const,
       name: tr("Field Repair", "ซ่อมฉุกเฉิน"),
       effect: tr("Recover 32 hull now", "ฟื้นพลังยาน 32 หน่วยทันที"),
-      pair: tr("Pair with Pulse Recharge → Guardian Core", "จับคู่กับ ชาร์จคลื่นไว → แกนพิทักษ์"),
+      pair: tr("Pair with Pulse Recharge → Guardian Core", "ใช้คู่กับชาร์จคลื่นไวเพื่อปลดล็อกแกนพิทักษ์"),
     },
   ];
 
   return <main className={`combat-mode relative z-10 mx-auto min-h-screen max-w-7xl px-5 pb-28 pt-28 lg:px-8 ${running || ended ? "is-active" : ""} ${gameState.accessibility.effects === "reduced" ? "effects-reduced" : ""}`}>
     <h1 className="sr-only">{tr("Swarm Protocol survival mission", "ภารกิจฝ่าฝูงศัตรู")}</h1>
-    <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "โหมด")}</button><div><span>{tr("Swarm Protocol · Survival", "ฝ่าฝูงศัตรู · เอาตัวรอด")}</span><strong>AHR INCURSION</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
+    <header className="combat-header"><button onClick={onBack}><ArrowLeft className="h-4 w-4" /> {tr("Modes", "กลับไปเลือกโหมด")}</button><div><span>{tr("Swarm Protocol · Survival", "ฝ่าฝูงศัตรู · เอาตัวรอด")}</span><strong>{tr("AHR INCURSION", "AHR บุกโจมตี")}</strong></div><div className="combat-header__loadout"><span>{pilot.name}</span><span>{tool.name}</span></div></header>
     <div className="combat-objective"><Crosshair className="h-4 w-4" /><span>{tr("Mission objective", "เป้าหมายภารกิจ")}</span><strong>{objectiveText}</strong><small>{tool.name}: {getToolModeSummary(tool, "swarm", lang)}</small>{startingHullBonus > 20 && <small>{tr(`Total loadout hull +${startingHullBonus}`, `พลังยานจากชุด +${startingHullBonus}`)}</small>}{aimBonus > 0 && <small>{tr("Wide aim active", "เปิดช่วยเล็งแบบกว้าง")}</small>}</div>
-    <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>{tr("Hull", "พลังยาน")}</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>{tr("Perk level", "ระดับพลัง")}</span><strong>{frame.level}</strong><small>{nextPerkAt ? tr(`${frame.energy}/${nextPerkAt} to next perk`, `${frame.energy}/${nextPerkAt} ถึงพลังถัดไป`) : tr("All perks reached", "ได้พลังครบแล้ว")}</small></div><div><Crosshair className="h-4 w-4" /><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong><small>{tr(`${frame.enemies.length} contacts`, `ศัตรู ${frame.enemies.length} ตัว`)}</small></div><div><Zap className="h-4 w-4" /><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong><small>{bossStatus}</small></div></section>
+    <section className="combat-hud"><div><Heart className="h-4 w-4" /><span>{tr("Hull", "พลังยาน")}</span><strong>{Math.max(0, Math.ceil(frame.hp))}</strong><i><b style={{ width: `${Math.max(0, Math.min(100, frame.hp / frame.maxHp * 100))}%` }} /></i></div><div><Sparkles className="h-4 w-4" /><span>{tr("Perk level", "ระดับพลัง")}</span><strong>{frame.level}</strong><small>{nextPerkAt ? tr(`${frame.energy}/${nextPerkAt} to next perk`, `เก็บพลัง ${frame.energy}/${nextPerkAt} เพื่อเลือกความสามารถครั้งต่อไป`) : tr("All perks reached", "ได้ความสามารถครบแล้ว")}</small></div><div><Crosshair className="h-4 w-4" /><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong><small>{tr(`${frame.enemies.length} contacts`, `ศัตรู ${frame.enemies.length} ตัว`)}</small></div><div><Zap className="h-4 w-4" /><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong><small>{bossStatus}</small></div></section>
     <div className="combat-arena-wrap"><div className={`combat-arena ${frame.invulnerable > 0 ? "is-hit" : ""} ${frame.bossWarning > 0 ? "boss-warning" : ""} ${frame.bossIntro > 0 ? "boss-arrival" : ""}`} style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}><div className="combat-grid" />
       {frame.bossWarning > 0 && <div className="boss-message is-warning">{tr("AHR WAVE INCOMING", "คลื่นโจมตี AHR กำลังมา")}</div>}
-      {frame.bossIntro > 0 && <div className="boss-message is-arrival">{tr("AHR CORE ENTERING · FOCUS FIRE", "แกน AHR เข้าสนาม · ยิงที่บอส")}</div>}
+      {frame.bossIntro > 0 && <div className="boss-message is-arrival">{tr("AHR CORE ENTERING · FOCUS FIRE", "แกน AHR เข้ามาแล้ว เล็งยิงที่บอส")}</div>}
       {frame.drops.map((drop) => <span key={drop.id} className="combat-drop" style={{ left: `${drop.x / WIDTH * 100}%`, top: `${drop.y / HEIGHT * 100}%` }}>◆</span>)}
       {frame.shots.map((shot) => <span key={shot.id} className="combat-shot" style={{ left: `${shot.x / WIDTH * 100}%`, top: `${shot.y / HEIGHT * 100}%` }} />)}
       {frame.hazards.map((hazard) => <span key={hazard.id} className="combat-hazard" style={{ left: `${hazard.x / WIDTH * 100}%`, top: `${hazard.y / HEIGHT * 100}%` }} />)}
@@ -301,7 +301,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
         <ModeStartOverlay
           mode="swarm"
           icon={<Sparkles className="h-7 w-7" />}
-          kicker={tr(`${duration}-second survival · ${runVariant.name}`, `เอาตัวรอด ${duration} วินาที · ${runVariant.nameTh}`)}
+          kicker={tr(`${duration}-second survival · ${runVariant.name}`, `${runVariant.nameTh} ใช้เวลา ${duration} วินาที`)}
           title={tr("Swarm Protocol", "ฝ่าฝูงศัตรู")}
           summary={objectiveText}
           steps={[
@@ -309,16 +309,16 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
             tr("Choose a perk when the action pauses", "เลือกพลังเมื่อเกมหยุด"),
             tr("Defeat Ahr before time runs out", "กำจัด Ahr ก่อนหมดเวลา"),
           ]}
-          note={tr(`Space / controller A · Shock Pulse deals 45 damage and clears nearby hazards. Rewards count after active movement or ${SWARM_PARTICIPATION.energyCollected} energy.`, `Space / ปุ่ม A บนจอย · คลื่นกระแทก ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว รอบจะนับเมื่อขยับจริงจังหรือเก็บพลัง ${SWARM_PARTICIPATION.energyCollected} ชิ้น`)}
+          note={tr(`Space / controller A · Shock Pulse deals 45 damage and clears nearby hazards. Rewards count after active movement or ${SWARM_PARTICIPATION.energyCollected} energy.`, `กด Space หรือปุ่ม A บนจอยเพื่อใช้คลื่นกระแทก สร้างความเสียหาย 45 และทำลายกระสุนอันตรายรอบตัว ต้องขยับหลบหรือเก็บพลัง ${SWARM_PARTICIPATION.energyCollected} ชิ้นขึ้นไป รอบนี้จึงจะนับรางวัล`)}
           primaryLabel={tr("Begin run", "เริ่มเล่น")}
           onStart={reset}
         />
       )}
-      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `ความสามารถระดับ ${upgradeLevel}`)}</div><h2>{tr("Choose one upgrade", "เลือกอัปเกรด 1 อย่าง")}</h2><p>{tr("Green text is the immediate effect. The smaller line shows which second perk creates an evolution.", "ตัวหนังสือสีเขียวคือผลที่ได้ทันที บรรทัดเล็กบอกว่าต้องจับคู่กับอะไรเพื่อปลดพลังผสม")}</p><div className="combat-upgrades">{perkChoices.map((perk) => <button key={perk.kind} onClick={() => chooseUpgrade(perk.kind)}><span>{perk.name}</span><strong>{perk.effect}</strong><small>{perk.pair}</small></button>)}</div></div>}
+      {upgradeLevel !== null && <div className="combat-overlay"><div className="command-kicker">{tr(`Perk level ${upgradeLevel}`, `เลือกรอบที่ ${upgradeLevel}`)}</div><h2>{tr("Choose one upgrade", "เลือกความสามารถ 1 อย่าง")}</h2><p>{tr("Green text is the immediate effect. The smaller line shows which second perk creates an evolution.", "ข้อความสีเขียวคือผลที่ได้ทันที ส่วนบรรทัดล่างบอกว่าต้องใช้คู่กับความสามารถไหนจึงจะปลดล็อกพลังผสม")}</p><div className="combat-upgrades">{perkChoices.map((perk) => <button key={perk.kind} onClick={() => chooseUpgrade(perk.kind)}><span>{perk.name}</span><strong>{perk.effect}</strong><small>{perk.pair}</small></button>)}</div></div>}
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("AHR CORE CLEARED", "ทำลายแกน AHR แล้ว") : tr("RUN COMPLETE", "จบรอบแล้ว")}</div>}
     </div></div>
     <div className="combat-touch" aria-label={tr("Movement controls", "ปุ่มเคลื่อนที่")}><button {...combatInput.directionHandlers("up")} aria-label={tr("Move up", "ขึ้น")}>▲</button><button {...combatInput.directionHandlers("left")} aria-label={tr("Move left", "ซ้าย")}>◀</button><button {...combatInput.directionHandlers("down")} aria-label={tr("Move down", "ลง")}>▼</button><button {...combatInput.directionHandlers("right")} aria-label={tr("Move right", "ขวา")}>▶</button></div>
-    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว · ใช้อนาล็อกซ้าย") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มสัมผัสอยู่") : tr("WASD / arrows · Move", "WASD / ปุ่มลูกศร · เคลื่อนที่")}</span><button className="combat-pulse-control" onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0} title={tr("45 damage and clears nearby hazard shots", "ทำดาเมจ 45 และลบลูกพลังอันตรายรอบตัว")}><strong>Space / A · {tr("Shock Pulse", "คลื่นกระแทก")}</strong><small>{frame.pulseCooldown > 0 ? tr(`Ready in ${Math.ceil(frame.pulseCooldown)}s`, `พร้อมอีกครั้งใน ${Math.ceil(frame.pulseCooldown)} วิ`) : tr("45 damage · clears nearby hazards", "ดาเมจ 45 · ลบลูกพลังรอบตัว")}</small></button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
+    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว ใช้อนาล็อกซ้ายเพื่อขยับ") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มบนหน้าจอเพื่อขยับ") : tr("WASD / arrows · Move", "ใช้ WASD หรือปุ่มลูกศรเพื่อขยับ")}</span><button className="combat-pulse-control" onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0} title={tr("45 damage and clears nearby hazard shots", "สร้างความเสียหาย 45 และทำลายกระสุนอันตรายรอบตัว")}><strong>Space / A · {tr("Shock Pulse", "คลื่นกระแทก")}</strong><small>{frame.pulseCooldown > 0 ? tr(`Ready in ${Math.ceil(frame.pulseCooldown)}s`, `ใช้อีกครั้งได้ใน ${Math.ceil(frame.pulseCooldown)} วิ`) : tr("45 damage · clears nearby hazards", "ความเสียหาย 45 ทำลายกระสุนรอบตัว")}</small></button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
     {boss && <div className="boss-banner">AHR · {tr(runVariant.bossPattern === "aimed-fan" ? "FAN BURST" : "NOVA RING", runVariant.bossPattern === "aimed-fan" ? "ยิงพัดกว้าง" : "คลื่นวงแหวน")} · {tr(`${Math.ceil(boss.hp)} integrity`, `พลัง ${Math.ceil(boss.hp)}`)}{boss.hp <= boss.maxHp * 0.5 ? tr(" · PHASE 2", " · ช่วงที่ 2") : ""}{frame.bossWarning > 0 ? tr(" · ATTACK INCOMING", " · กำลังโจมตี") : ""}</div>}
   </main>;
 }

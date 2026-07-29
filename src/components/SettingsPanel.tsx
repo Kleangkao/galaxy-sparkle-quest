@@ -70,15 +70,15 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
             </SettingRow>
           </SettingsGroup>
 
-          <SettingsGroup icon={Gauge} title={tr("Gameplay", "การเล่น")} description={tr("Set a comfortable pace for action modes.", "ปรับความเร็วของโหมดแอ็กชันให้เล่นสบาย")}>
-            <SettingRow label={tr("Combat pace", "ความเร็วการต่อสู้")} detail={tr("Changes the speed of Swarm and Arcade.", "ปรับความเร็วของโหมด Swarm และ Arcade")}>
+          <SettingsGroup icon={Gauge} title={tr("Gameplay", "การเล่น")} description={tr("Set a comfortable pace for action modes.", "เลือกความเร็วที่เล่นแล้วสบาย")}>
+            <SettingRow label={tr("Combat pace", "ความเร็วการต่อสู้")} detail={tr("Changes the speed of Swarm and Arcade.", "ใช้กับโหมดฝ่าฝูงศัตรูและยิงเป้า")}>
               <SegmentedControl value={String(settings.combatSpeed)} options={[
                 { value: "0.75", label: tr("Calm", "ช้า") },
                 { value: "1", label: tr("Standard", "ปกติ") },
                 { value: "1.15", label: tr("Fast", "เร็ว") },
               ]} onChange={(value) => onChange({ ...settings, combatSpeed: Number(value) as GameState["accessibility"]["combatSpeed"] })} />
             </SettingRow>
-            <SettingRow label={tr("Aim help", "ช่วยเล็ง")} detail={tr("Wide makes Arcade targets easier to click.", "แบบกว้างจะกดโดนเป้าใน Arcade ง่ายขึ้น")}>
+            <SettingRow label={tr("Aim help", "ช่วยเล็ง")} detail={tr("Wide makes Arcade targets easier to click.", "แบบกว้างจะช่วยให้กดโดนเป้าในโหมดยิงเป้าง่ายขึ้น")}>
               <SegmentedControl value={settings.aimHelp} options={[
                 { value: "standard", label: tr("Standard", "ปกติ") },
                 { value: "wide", label: tr("Wide", "กว้าง") },
@@ -127,21 +127,21 @@ export default function SettingsPanel({ open, factionName, settings, onOpenChang
           <SettingsGroup
             icon={touchFirst ? Smartphone : Keyboard}
             title={touchFirst ? tr("Touch controls", "ปุ่มควบคุมแบบสัมผัส") : tr("Keyboard & mouse", "คีย์บอร์ดและเมาส์")}
-            description={touchFirst ? tr("On-screen controls for phones and tablets.", "ปุ่มบนหน้าจอสำหรับมือถือและแท็บเล็ต") : tr("Keyboard, mouse, and display controls.", "ดูปุ่มคีย์บอร์ด เมาส์ และหน้าจอ")}
+            description={touchFirst ? tr("On-screen controls for phones and tablets.", "ปุ่มบนหน้าจอสำหรับมือถือและแท็บเล็ต") : tr("Keyboard, mouse, and display controls.", "ดูวิธีใช้คีย์บอร์ด เมาส์ และโหมดเต็มจอ")}
           >
             <SettingRow
               label={tr("Movement", "เคลื่อนที่")}
               detail={touchFirst
                 ? tr("Use the on-screen arrows in Story and the direction pad in Swarm.", "ใช้ปุ่มลูกศรในเนื้อเรื่อง และแป้นทิศทางในโหมดฝ่าฝูงศัตรู")
-                : tr("WASD or arrows · hold Shift and a direction to dash in Story.", "ใช้ WASD หรือปุ่มลูกศร · กด Shift พร้อมทิศทางเพื่อพุ่งใน Story")}
+                : tr("WASD or arrows · hold Shift and a direction to dash in Story.", "ใช้ WASD หรือปุ่มลูกศร ในโหมดเนื้อเรื่องให้กด Shift พร้อมปุ่มทิศทางเพื่อพุ่ง")}
             >
               <span className="text-xs font-bold text-cosmic-cyan">{touchFirst ? tr("On-screen pad", "แป้นบนหน้าจอ") : "WASD"}</span>
             </SettingRow>
             <SettingRow
               label={tr("Combat", "ต่อสู้")}
               detail={touchFirst
-                ? tr("Tap Shock Pulse in Swarm · tap targets and Reload in Arcade · use the on-screen Pause button.", "แตะคลื่นกระแทกในโหมดฝ่าฝูงศัตรู · แตะเป้าและปุ่มเติมกระสุนในโหมดยิงเป้า · หยุดเกมด้วยปุ่มบนหน้าจอ")
-                : tr("Space/controller A uses Swarm Shock Pulse (45 damage and clears nearby hazard shots) · R reloads Arcade · Escape pauses.", "Space / ปุ่ม A บนจอย ใช้คลื่นกระแทกในโหมดฝ่าฝูงศัตรู (ดาเมจ 45 และลบลูกพลังรอบตัว) · R เติมกระสุนในโหมดยิงเป้า · Escape หยุดเกม")}
+                ? tr("Tap Shock Pulse in Swarm · tap targets and Reload in Arcade · use the on-screen Pause button.", "ในโหมดฝ่าฝูงศัตรู ให้แตะปุ่มคลื่นกระแทก ส่วนโหมดยิงเป้าให้แตะเป้าหรือปุ่มเติมกระสุน หยุดเกมได้ด้วยปุ่มบนหน้าจอ")
+                : tr("Space/controller A uses Swarm Shock Pulse (45 damage and clears nearby hazard shots) · R reloads Arcade · Escape pauses.", "Space หรือปุ่ม A บนจอยใช้คลื่นกระแทกในโหมดฝ่าฝูงศัตรู สร้างความเสียหาย 45 และทำลายกระสุนอันตรายรอบตัว กด R เพื่อเติมกระสุนในโหมดยิงเป้า และกด Escape เพื่อหยุดเกม")}
             >
               <span className="text-xs font-bold text-cosmic-cyan">{touchFirst ? tr("Tap controls", "แตะปุ่ม") : "Space · R · Esc"}</span>
             </SettingRow>

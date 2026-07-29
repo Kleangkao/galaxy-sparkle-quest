@@ -36,14 +36,14 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
             {featured?.image && <img src={featured.image} alt={featured.name} />}
           </div>
           <div className="companion-archive__copy">
-            <div className="command-kicker"><Radio className="h-4 w-4" /> {tr("Companion Archive", "คลังเพื่อนร่วมทาง")}</div>
-            <h1>{tr("Find a friend. Build a bond.", "ออกตามหา แล้วเติบโตไปด้วยกัน")}</h1>
+            <div className="command-kicker"><Radio className="h-4 w-4" /> {tr("Companion Archive", "เพื่อนร่วมทาง")}</div>
+            <h1>{tr("Find a friend. Build a bond.", "เลือกเพื่อนร่วมทีม")}</h1>
             <p>{tr(
               "Companions are practical crew partners, not a separate sticker collection. Equip one ability for every activity and recover new signals through Story expeditions.",
               "เพื่อนร่วมทางช่วยทีมได้จริง เลือกใช้ความสามารถได้ 1 อย่างในทุกโหมด และออกตามหาสัญญาณใหม่จากการเล่นเนื้อเรื่อง",
             )}</p>
             <div className="companion-archive__stats">
-              <div><span>{tr("Archive records", "บันทึกที่พบ")}</span><strong>{ownedCount}/{ALIEN_PETS.length}</strong></div>
+              <div><span>{tr("Archive records", "พบแล้ว")}</span><strong>{ownedCount}/{ALIEN_PETS.length}</strong></div>
               <div><span>{tr("Egg signals", "ไข่ที่รอฟัก")}</span><strong>{eggs.length}</strong></div>
               <div><span>{tr("On your team", "กำลังร่วมทีม")}</span><strong>{active ? active.name : tr("Not selected", "ยังไม่ได้เลือก")}</strong></div>
             </div>
@@ -66,8 +66,8 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
                     <article className={`companion-record ${!isOwned ? "opacity-55" : ""}`} key={pet.id}>
                       <img src={pet.image} alt={isOwned ? pet.name : tr("Unknown companion signal", "สัญญาณเพื่อนที่ยังไม่รู้จัก")} className={!isOwned ? "grayscale" : ""} />
                       <div className="companion-record__copy">
-                        <div className="command-kicker">{isActive ? tr("Active companion", "กำลังร่วมทีม") : isOwned ? tr("Archive confirmed", "บันทึกแล้ว") : tr("Signal not recovered", "ยังไม่พบสัญญาณ")}</div>
-                        <h3>{isOwned ? pet.name : tr("UNKNOWN SIGNAL", "สัญญาณที่ยังไม่รู้จัก")}</h3>
+                        <div className="command-kicker">{isActive ? tr("Active companion", "กำลังร่วมทีม") : isOwned ? tr("Archive confirmed", "พบแล้ว") : tr("Signal not recovered", "ยังไม่พบ")}</div>
+                        <h3>{isOwned ? pet.name : tr("UNKNOWN SIGNAL", "เพื่อนที่ยังไม่พบ")}</h3>
                         <p>{isOwned ? (lang === "th" ? pet.ability.descTh : pet.ability.descEn) : tr("Find this companion during Story expeditions.", "ตามหาเพื่อนตัวนี้ได้จากการเล่นเนื้อเรื่อง")}</p>
                         {isOwned && !isActive && <button onClick={() => onSetActivePet(pet.id)}>{tr("Add to active crew", "เลือกเข้าร่วมทีม")}</button>}
                         {isActive && <p className="!text-cosmic-green"><ShieldCheck className="mr-1 inline h-4 w-4" />{tr("Ability is active in supported modes", "ความสามารถพร้อมใช้ในโหมดที่รองรับ")}</p>}
@@ -77,7 +77,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
                 })}
               </div>
               <div className="companion-signals">
-                <div className="flex items-center gap-2 text-sm font-black text-white"><Sparkles className="h-4 w-4 text-cosmic-cyan" />{tr("Uncharted companion signals", "สัญญาณเพื่อนที่ยังไม่ค้นพบ")}</div>
+                <div className="flex items-center gap-2 text-sm font-black text-white"><Sparkles className="h-4 w-4 text-cosmic-cyan" />{tr("Uncharted companion signals", "เพื่อนที่ยังไม่พบ")}</div>
                 <p className="mt-1 text-xs text-muted-foreground">{tr(
                   "The remaining companions stay encrypted until their final artwork and field record are ready. Their gameplay unlocks remain saved.",
                   "เพื่อนที่เหลือจะยังเป็นสัญญาณลับจนกว่าภาพและข้อมูลจะพร้อม ความคืบหน้าที่ปลดล็อกไว้ยังอยู่ครบ",
@@ -93,7 +93,7 @@ export default function PetCollection({ ownedPets, activePet, eggs, backTarget =
                 const colors = EGG_COLORS[egg.rarity];
                 return <article key={egg.id} className={`rounded-2xl border-2 ${colors.border} ${colors.bg} p-5`}>
                   <Egg className="h-12 w-12 text-cosmic-pink" />
-                  <h2 className="mt-3 font-black text-white">{tr(`${egg.rarity} signal egg`, `ไข่สัญญาณระดับ ${egg.rarity}`)}</h2>
+                  <h2 className="mt-3 font-black text-white">{tr(`${egg.rarity} signal egg`, `ไข่ระดับ ${egg.rarity === "common" ? "ธรรมดา" : egg.rarity === "rare" ? "หายาก" : "ตำนาน"}`)}</h2>
                   <p className="mt-1 text-xs text-muted-foreground">{tr("Hatch to identify the companion inside.", "ฟักเพื่อดูว่าเพื่อนตัวไหนอยู่ข้างใน")}</p>
                   <button onClick={() => onHatchEgg(egg)} className="mt-4 w-full rounded-xl bg-primary p-3 text-sm font-black text-primary-foreground">{tr("Begin hatching", "เริ่มฟักไข่")}</button>
                 </article>;

@@ -40,7 +40,7 @@ export const MISSION_BRIEFS: Record<string, MissionBrief> = {
     encounters: "A named boss guards five shield nodes while a patrol closes in.",
     tip: "Break the nodes before committing to the Warden's center lane.",
     transmission: "PURI: That is not a storm. Something inside it just looked back.",
-    completion: "Step on all 5 glowing swirl nodes. At 0% shield, extraction is automatic—do not return to the ship.",
+    completion: "Step on all 5 glowing swirl nodes. At 0% shield, extraction is automatic. Do not return to the ship.",
   },
   "bubbly-bay": {
     title: "Pressure Payload",
