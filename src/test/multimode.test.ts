@@ -7,7 +7,7 @@ import { evaluateRelayRoute, getRelayMission, getStrategyActionValues, getStrate
 import { LocalProfileRepository } from "@/lib/profileRepository";
 import { getProgressGoal, getStoryReplayMultiplier } from "@/lib/progressionGuidance";
 import { getBossFightWindow, getSwarmRunVariant, getSwarmSpawnDelay, hasMeaningfulSwarmParticipation, SWARM_BALANCE } from "@/lib/swarmBalance";
-import { getArcadeGrade, getArcadeRunOutcome } from "@/lib/arcadeContracts";
+import { getArcadeGrade, getArcadeRunOutcome, shouldFinishArcadeContract } from "@/lib/arcadeContracts";
 import { getEconomyProjection } from "@/lib/economyBalance";
 
 describe("multi-mode progression", () => {
@@ -41,6 +41,14 @@ describe("multi-mode progression", () => {
       bestCombo: 1,
       cleared: false,
     })).toMatchObject({ participated: false, crystals: 0, xp: 0 });
+  });
+
+  it("keeps score challenges running after the clear goal until time expires", () => {
+    expect(shouldFinishArcadeContract("energy", true, 20, 45)).toBe(false);
+    expect(shouldFinishArcadeContract("score", true, 30, 50)).toBe(false);
+    expect(shouldFinishArcadeContract("energy", true, 45, 45)).toBe(true);
+    expect(shouldFinishArcadeContract("score", false, 50, 50)).toBe(true);
+    expect(shouldFinishArcadeContract("boss", true, 12, 50)).toBe(true);
   });
 
   it("recommends the next unlocked campaign chapter before optional grinding", () => {

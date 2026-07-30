@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Crosshair, MousePointer2, Pause, Play, RotateCcw } from "lucide-react";
 import { GameState, getGameplayModifiers } from "@/lib/gameState";
-import { getArcadeContract, getArcadeRunOutcome } from "@/lib/arcadeContracts";
+import { getArcadeContract, getArcadeRunOutcome, shouldFinishArcadeContract } from "@/lib/arcadeContracts";
 import { getPilot, getTool } from "@/lib/loadouts";
 import { getPuriBonuses } from "@/lib/puriBond";
-import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
+import { playEnemyBreakSound, playFailSound, playImpactSound, playLaserSound, playPerkSound, playPickupSound, playReloadSound, playVictorySound, pulseGamepad } from "@/lib/sounds";
 import { useI18n } from "@/lib/i18n";
 import ModeStartOverlay from "@/components/ModeStartOverlay";
 
 type TargetKind = "drone" | "crystal" | "decoy" | "boss";
 type ShooterTarget = { id: number; x: number; y: number; vx: number; vy: number; size: number; hp: number; maxHp: number; life: number; kind: TargetKind };
-type ShooterState = { elapsed: number; score: number; combo: number; bestCombo: number; shotsFired: number; hits: number; energy: number; ammo: number; reloading: number; targets: ShooterTarget[]; nextId: number; spawnTimer: number; bossDefeated: boolean };
+type ShooterState = { elapsed: number; score: number; combo: number; bestCombo: number; shotsFired: number; hits: number; energy: number; ammo: number; reloading: number; targets: ShooterTarget[]; nextId: number; spawnTimer: number; bossDefeated: boolean; goalAnnounced: boolean; goalFlash: number };
 type ShotFeedback = { id: number; x: number; y: number; text: string; tone: "hit" | "miss" | "bonus" | "danger" };
 
 interface Props {
@@ -40,6 +40,8 @@ const makeState = (magazine = BASE_MAGAZINE): ShooterState => ({
   nextId: 1,
   spawnTimer: 0,
   bossDefeated: false,
+  goalAnnounced: false,
+  goalFlash: 0,
 });
 
 export default function ArcadeShooter({ gameState, contractId, suspended = false, onActiveChange, onBack, onComplete }: Props) {
@@ -76,8 +78,8 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
   const objectiveText = contract.objective === "boss"
     ? tr("Break the Ahr core", "ทำลายแกนพลัง Ahr")
     : contract.objective === "energy"
-      ? tr(`Tag ${contract.target} crystal signals`, `ยิงสัญญาณคริสตัล ${contract.target} จุด`)
-      : tr(`Score ${contract.target.toLocaleString()} points`, `ทำคะแนน ${contract.target.toLocaleString()}`);
+      ? tr(`Collect as many signals as possible · clear goal ${contract.target}`, `เก็บสัญญาณให้ได้มากที่สุด ผ่านด่านเมื่อได้ ${contract.target} จุด`)
+      : tr(`Score as high as possible · clear goal ${contract.target.toLocaleString()}`, `ทำคะแนนให้ได้มากที่สุด ผ่านด่านเมื่อได้ ${contract.target.toLocaleString()} คะแนน`);
 
   const finish = useCallback((success: boolean) => {
     if (completedRef.current) return;
@@ -203,6 +205,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
       state.elapsed += dt;
       state.spawnTimer -= dt;
       state.reloading -= dt;
+      state.goalFlash -= dt;
       if (state.reloading <= 0 && state.ammo === 0) state.ammo = magazine;
 
       for (const target of state.targets) {
@@ -225,10 +228,13 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
 
       if (state.spawnTimer <= 0) {
         const roll = Math.random();
+        const goalReached = contract.objective === "energy"
+          ? state.energy >= contract.target
+          : contract.objective === "score" && state.score >= contract.target;
         const kind: TargetKind = contract.objective === "energy"
-          ? (roll < 0.68 ? "crystal" : roll < 0.86 ? "drone" : "decoy")
-          : (roll < 0.78 ? "drone" : "decoy");
-        const speed = kind === "crystal" ? 42 : 60 + state.elapsed * 0.5;
+          ? (roll < (goalReached ? 0.62 : 0.68) ? "crystal" : roll < 0.84 ? "drone" : "decoy")
+          : (roll < (goalReached ? 0.7 : 0.78) ? "drone" : "decoy");
+        const speed = kind === "crystal" ? 42 + state.elapsed * 0.35 : 60 + state.elapsed * 0.6;
         state.targets.push({
           id: state.nextId++,
           x: 80 + Math.random() * (WIDTH - 160),
@@ -242,17 +248,23 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
           kind,
         });
         const baseSpawnDelay = contract.objective === "score" ? 0.72 : 0.9;
-        state.spawnTimer = baseSpawnDelay / contract.spawnMultiplier;
+        const pressure = 1 + Math.min(0.3, state.elapsed * 0.006);
+        state.spawnTimer = baseSpawnDelay / (contract.spawnMultiplier * pressure);
       }
 
-      const success = contract.objective === "boss"
+      const goalCleared = contract.objective === "boss"
         ? state.bossDefeated
         : contract.objective === "energy"
           ? state.energy >= contract.target
           : state.score >= contract.target;
+      if (contract.objective !== "boss" && goalCleared && !state.goalAnnounced) {
+        state.goalAnnounced = true;
+        state.goalFlash = 1.8;
+        playPerkSound();
+        pulseGamepad(100, 0.55);
+      }
       setFrame({ ...state, targets: [...state.targets] });
-      if (success) finish(true);
-      else if (state.elapsed >= duration) finish(false);
+      if (shouldFinishArcadeContract(contract.objective, goalCleared, state.elapsed, duration)) finish(goalCleared);
     }, 33);
     return () => window.clearInterval(timer);
   }, [contract.objective, contract.spawnMultiplier, contract.target, duration, effectivePaused, finish, gameState.accessibility.combatSpeed, magazine, running]);
@@ -302,14 +314,14 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
         <div className="arcade-shooter__loadout"><span>{pilot.name}</span><strong>{tool.name}</strong></div>
       </header>
 
-      <section className="arcade-shooter__hud">
+      <section className={`arcade-shooter__hud ${frame.goalAnnounced ? "is-goal-cleared" : ""}`}>
         <div><span>{tr("Time", "เวลา")}</span><strong>{Math.max(0, Math.ceil(duration - frame.elapsed))}{lang === "th" ? " วิ" : "s"}</strong></div>
         <div><span>{tr("Score", "คะแนน")}</span><strong>{frame.score.toLocaleString()}</strong></div>
         <div><span>{tr("Accuracy", "ความแม่น")}</span><strong>{frame.shotsFired ? `${Math.round(frame.hits / frame.shotsFired * 100)}%` : "-"}</strong></div>
         <div className={isReloading ? "arcade-ammo-card is-reloading" : "arcade-ammo-card"}>
           <span>{tr("Ammo", "กระสุน")}</span>
           <strong>{frame.ammo}/{magazine}</strong>
-          {contract.objective === "energy" && <small>{tr("Signals", "สัญญาณ")} {frame.energy}/{contract.target}</small>}
+          {contract.objective === "energy" && <small>{tr(`Signals ${frame.energy} · Goal ${contract.target}`, `สัญญาณ ${frame.energy} จุด · ผ่านที่ ${contract.target}`)}</small>}
         </div>
         <i><b style={{ width: `${progress * 100}%` }} /></i>
       </section>
@@ -322,6 +334,7 @@ export default function ArcadeShooter({ gameState, contractId, suspended = false
           style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}
         >
           <div className="arcade-range__grid" />
+          {frame.goalFlash > 0 && <div className="arcade-goal-banner" role="status" aria-live="polite">{tr("CLEAR GOAL REACHED · KEEP SCORING!", "ผ่านเป้าหมายแล้ว ทำคะแนนต่อได้เลย!")}</div>}
           {isReloading && running && !effectivePaused && (
             <div className="arcade-reload-banner" role="status" aria-live="assertive">
               <RotateCcw className="h-5 w-5" />

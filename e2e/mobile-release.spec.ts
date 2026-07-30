@@ -83,7 +83,8 @@ test("Swarm and Arcade expose working touch combat controls", async ({ page }) =
   await moveRight.dispatchEvent("pointerup", { pointerId: 1, pointerType: "touch", isPrimary: true });
   await expect.poll(() => swarmPlayer.evaluate((node) => (node as HTMLElement).style.left)).not.toBe(beforeLeft);
   await page.getByRole("button", { name: /Shock Pulse/ }).click();
-  await expect(page.getByRole("button", { name: /Shock Pulse/ })).toContainText(/Ready in|พร้อมอีกครั้ง/);
+  await expect(page.getByRole("button", { name: /Shock Pulse/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Shock Pulse/ })).toContainText(/Charging|กำลังชาร์จ/);
 
   await page.getByRole("main").getByRole("button", { name: "Modes" }).click();
   await page.getByRole("button", { name: "Leave run" }).click();

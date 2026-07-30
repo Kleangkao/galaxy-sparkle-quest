@@ -72,6 +72,10 @@ export function getArcadeContract(id: string | null | undefined) {
   return ARCADE_CONTRACTS.find((contract) => contract.id === id) ?? ARCADE_CONTRACTS[0];
 }
 
+export function shouldFinishArcadeContract(objective: ArcadeObjective, goalCleared: boolean, elapsed: number, duration: number) {
+  return objective === "boss" ? goalCleared : elapsed >= duration;
+}
+
 export function getArcadeGrade(accuracy: number, cleared: boolean, bestCombo: number) {
   if (cleared && accuracy >= 0.85 && bestCombo >= 8) return "S";
   if (cleared && accuracy >= 0.7) return "A";

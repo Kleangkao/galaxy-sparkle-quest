@@ -187,8 +187,9 @@ html[lang="th"] .story-dossier__title h2 {
 .arcade-contract__objective { display:flex; align-items:center; gap:.6rem; padding:.75rem; border-radius:.8rem; background:hsl(var(--background)/.38); }
 .arcade-contract__objective span { display:grid; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:hsl(var(--muted-foreground)); }
 .arcade-contract__objective strong { color:hsl(var(--foreground)); font-size:.88rem; text-transform:none; letter-spacing:0; }
-.arcade-contract__stats { display:flex; gap:.9rem; margin:.9rem 0; color:hsl(var(--muted-foreground)); font-size:.76rem; }
-.arcade-contract__stats span { display:flex; align-items:center; gap:.25rem; }
+.arcade-contract__stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; margin:.9rem 0; color:hsl(var(--muted-foreground)); font-size:.72rem; }
+.arcade-contract__stats span { display:flex; min-width:0; align-items:center; gap:.25rem; white-space:nowrap; }
+.arcade-contract__stats svg { flex:0 0 auto; }
 .arcade-contract__copy button { width:100%; background:hsl(var(--primary)); color:hsl(var(--primary-foreground)); }
 .play-assists { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem 1.25rem; margin:0 0 1rem; padding:.75rem 1rem; border:1px solid hsl(var(--border)/.7); border-radius:1rem; background:hsl(var(--card)/.48); }
 .play-assists > div { display:flex; align-items:center; gap:.35rem; }
@@ -229,7 +230,11 @@ html[lang="th"] .story-dossier__title h2 {
 .effects-reduced .discovery-point.is-wrong,
 .effects-reduced .relay-flight__jump svg { animation:none !important; }
 .no-screen-shake .combat-arena.is-hit { animation:none !important; }
-@media (max-width: 800px) { .arcade-contracts__header { grid-template-columns:1fr; } .arcade-contracts__header > button { justify-self:start; } .arcade-contracts__bond { justify-self:start; } .arcade-contract-grid { grid-template-columns:1fr; } .play-assists small { width:100%; margin-left:0; } }
+@media (max-width: 1050px) {
+  .arcade-contract-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .arcade-contract:last-child { width:min(100%,calc(50% - .5rem)); grid-column:1/-1; justify-self:center; }
+}
+@media (max-width: 800px) { .arcade-contracts__header { grid-template-columns:1fr; } .arcade-contracts__header > button { justify-self:start; } .arcade-contracts__bond { justify-self:start; } .arcade-contract-grid { grid-template-columns:1fr; } .arcade-contract:last-child { width:100%; grid-column:auto; } .play-assists small { width:100%; margin-left:0; } }
 
 /* Story Expeditions: unified command-console presentation */
 .story-console { --story-accent: var(--cosmic-cyan); }
@@ -529,13 +534,13 @@ html[lang="th"] .story-dossier__title h2 {
   .combat-overlay h1, .combat-overlay h2 { margin-top: 0.3rem; font-family: var(--font-hero); font-size: clamp(2rem, 5vw, 4rem); font-weight: 950; color: white; }
   .combat-overlay p { margin-top: 0.5rem; max-width: 36rem; color: hsl(var(--foreground) / 0.7); font-size: 0.78rem; }
   .combat-overlay > button, .combat-actions button { display: inline-flex; min-height: 2.8rem; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 1rem; padding: 0.7rem 1.1rem; border-radius: 0.75rem; background: hsl(var(--cosmic-pink)); color: white; font-family: var(--font-display); font-weight: 900; }
-  .combat-upgrades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem; margin-top: 1rem; }
-.combat-upgrades button { min-width: 7.5rem; padding: 0.75rem; border: 1px solid hsl(var(--cosmic-cyan) / 0.3); border-radius: 0.75rem; background: hsl(var(--card) / 0.8); color: white; font-size: 0.75rem; text-align:left; }
+  .combat-upgrades { display: grid; width:min(54rem,100%); grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; margin-top: 1rem; }
+.combat-upgrades button { display:flex; min-width:0; min-height:6.2rem; flex-direction:column; padding:0.8rem; border: 1px solid hsl(var(--cosmic-cyan) / 0.3); border-radius: 0.75rem; background: hsl(var(--card) / 0.8); color: white; font-size: 0.75rem; text-align:left; }
 .combat-upgrades strong { display: block; margin-top: 0.2rem; color: hsl(var(--cosmic-green)); font-size: 0.62rem; line-height:1.35; }
-.combat-upgrades small { display:block; margin-top:.35rem; color:hsl(var(--muted-foreground)); font-size:.53rem; line-height:1.35; }
+.combat-upgrades small { display:block; margin-top:auto; padding-top:.45rem; color:hsl(var(--muted-foreground)); font-size:.53rem; line-height:1.35; }
   .combat-actions { display: flex; gap: 0.5rem; } .combat-actions button:last-child { background: hsl(var(--card)); }
   .combat-controls { display: flex; align-items: center; justify-content: center; gap: 0.55rem; margin-top: 0.55rem; }
-  .combat-controls span, .combat-controls button { padding: 0.45rem 0.65rem; border: 1px solid hsl(var(--border) / 0.5); border-radius: 0.65rem; background: hsl(var(--card) / 0.5); color: hsl(var(--foreground) / 0.75); font-size: 0.61rem; font-weight: 800; }
+  .combat-controls > span, .combat-controls > button { padding: 0.45rem 0.65rem; border: 1px solid hsl(var(--border) / 0.5); border-radius: 0.65rem; background: hsl(var(--card) / 0.5); color: hsl(var(--foreground) / 0.75); font-size: 0.61rem; font-weight: 800; }
   .combat-controls button { display: inline-flex; align-items: center; gap: 0.35rem; } .combat-controls button:disabled { opacity: 0.45; }
   .boss-banner { position: fixed; z-index: 60; top: 4.5rem; left: 50%; transform: translateX(-50%); padding: 0.45rem 0.8rem; border: 1px solid hsl(var(--cosmic-yellow) / 0.4); border-radius: 999px; background: hsl(var(--background) / 0.85); color: hsl(var(--cosmic-yellow)); font-size: 0.65rem; font-weight: 900; }
 
@@ -794,13 +799,21 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .swarm-pulse-guide div { display:flex; min-width:0; flex-direction:column; }
 .swarm-pulse-guide strong { color:white; font-size:.68rem; }
 .swarm-pulse-guide span { color:hsl(var(--foreground)/.7); font-size:.58rem; line-height:1.4; }
-.combat-pulse-control { flex-direction:column; justify-content:center; line-height:1.15; }
+.combat-pulse-control { position:relative; flex-direction:row; justify-content:center; overflow:hidden; line-height:1.15; }
+.combat-pulse-control > span { display:flex; flex-direction:column; align-items:flex-start; }
 .combat-pulse-control strong { color:white; font-size:.62rem; }
 .combat-pulse-control small { color:hsl(var(--cosmic-cyan)); font-size:.52rem; }
+.combat-pulse-control.is-ready { border-color:hsl(var(--cosmic-cyan)/.72); background:hsl(var(--cosmic-cyan)/.14); box-shadow:0 0 18px hsl(var(--cosmic-cyan)/.14); }
+.combat-pulse-control.is-ready > svg { color:hsl(var(--cosmic-cyan)); }
+.combat-pulse-control.is-cooling small { color:hsl(var(--muted-foreground)); }
+.combat-pulse-control.is-cooling:disabled { opacity:.8; }
 .swarm-start-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: .45rem; width: min(32rem,100%); margin-top: .8rem; }
 .swarm-start-summary span { display: grid; gap: .2rem; padding: .55rem; border-radius: .7rem; background: hsl(var(--card) / .72); font-size: .65rem; }
 .swarm-start-summary strong { color: hsl(var(--cosmic-cyan)); font-size: 1rem; }.combat-overlay > small { margin-top: .65rem; color: hsl(var(--cosmic-green)); font-size: .65rem; }
-.combat-upgrades { grid-template-columns: repeat(5,minmax(0,1fr)); }
+.combat-pulse-wave { position:absolute; z-index:6; width:19rem; height:19rem; translate:-50% -50%; border:3px solid hsl(var(--cosmic-cyan)/.9); border-radius:999px; background:radial-gradient(circle,hsl(var(--cosmic-cyan)/.18),transparent 64%); box-shadow:0 0 34px hsl(var(--cosmic-cyan)/.4),inset 0 0 34px hsl(var(--cosmic-cyan)/.25); pointer-events:none; animation:combat-pulse-expand .7s ease-out forwards; }
+.combat-pulse-feedback { position:absolute; z-index:12; top:10%; left:50%; translate:-50% 0; max-width:calc(100% - 2rem); padding:.5rem .8rem; border:1px solid hsl(var(--cosmic-cyan)/.62); border-radius:999px; background:hsl(var(--background)/.88); color:white; font-size:.65rem; font-weight:900; text-align:center; box-shadow:0 0 20px hsl(var(--cosmic-cyan)/.2); }
+.combat-enemy.is-pulse-hit { filter:brightness(2) drop-shadow(0 0 12px hsl(var(--cosmic-cyan))); }
+@keyframes combat-pulse-expand { from { opacity:1; scale:.12; } to { opacity:0; scale:1; } }
 
 .arcade-shooter__header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; margin-bottom: .7rem; }
 .arcade-shooter__header > button, .arcade-shooter__controls button { display: inline-flex; min-height: 2.6rem; align-items: center; justify-content: center; gap: .4rem; padding: .55rem .75rem; border: 1px solid hsl(var(--border) / .65); border-radius: .75rem; background: hsl(var(--card) / .7); font-size: .68rem; font-weight: 850; }
@@ -819,6 +832,7 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .arcade-ammo-card.is-reloading { border-color:hsl(var(--cosmic-yellow)/.72); background:hsl(var(--cosmic-yellow)/.12); box-shadow:inset 0 0 18px hsl(var(--cosmic-yellow)/.08); }
 .arcade-ammo-card.is-reloading strong { color:hsl(var(--cosmic-yellow)); }
 .arcade-shooter__hud > i { position: absolute; right: 0; bottom: 0; left: 0; height: .25rem; overflow: hidden; border-radius: 999px; background: hsl(var(--muted)); }.arcade-shooter__hud > i b { display: block; height: 100%; background: linear-gradient(90deg,hsl(var(--cosmic-orange)),hsl(var(--cosmic-yellow))); }
+.arcade-shooter__hud.is-goal-cleared > i b { background:linear-gradient(90deg,hsl(var(--cosmic-green)),hsl(var(--cosmic-cyan))); }
 .arcade-range-wrap { width: min(100%, calc((100vh - 17rem) * 1.769)); min-width: 42rem; margin-inline: auto; padding: .45rem; border: 1px solid hsl(var(--cosmic-orange) / .28); border-radius: 1.15rem; background: hsl(var(--card) / .46); }
 .arcade-shooter.is-active { padding-top:6.25rem; }
 .arcade-shooter.is-active .arcade-shooter__header { margin-bottom:.35rem; }
@@ -852,6 +866,9 @@ button:focus-visible { outline:3px solid hsl(var(--cosmic-yellow)); outline-offs
 .arcade-reload-banner span { color:white; font-size:.7rem; font-weight:900; }
 .arcade-reload-banner i { grid-column:1/-1; display:block; height:.3rem; overflow:hidden; border-radius:999px; background:hsl(var(--muted)); }
 .arcade-reload-banner i b { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,hsl(var(--cosmic-orange)),hsl(var(--cosmic-yellow))); transition:width 80ms linear; }
+.arcade-goal-banner { position:absolute; z-index:10; top:1rem; left:50%; translate:-50% 0; min-width:min(26rem,calc(100% - 2rem)); padding:.65rem 1rem; border:1px solid hsl(var(--cosmic-green)/.7); border-radius:999px; background:hsl(var(--background)/.9); color:hsl(var(--cosmic-green)); font-size:.72rem; font-weight:950; letter-spacing:.06em; text-align:center; box-shadow:0 0 26px hsl(var(--cosmic-green)/.22); animation:arcade-goal-pop .28s ease-out; pointer-events:none; }
+@keyframes arcade-goal-pop { from { opacity:0; transform:translateY(-10px) scale(.94); } to { opacity:1; transform:none; } }
+.effects-reduced .combat-pulse-wave,.effects-reduced .arcade-goal-banner { animation:none !important; }
 .arcade-target { position: absolute; z-index: 3; display: grid; place-items: center; translate: -50% -50%; border: 3px solid hsl(var(--cosmic-cyan)); border-radius: 999px; background: hsl(var(--cosmic-cyan) / .18); box-shadow: 0 0 18px hsl(var(--cosmic-cyan) / .35); color: white; font-weight: 950; cursor: none; }
 .arcade-target.is-crystal { border-color: hsl(var(--cosmic-yellow)); color: hsl(var(--cosmic-yellow)); }.arcade-target.is-decoy { border-color: hsl(var(--cosmic-red)); background: hsl(var(--cosmic-red) / .2); color: hsl(var(--cosmic-red)); }.arcade-target.is-boss { overflow: visible; border-color: hsl(var(--cosmic-orange)); }
 .arcade-target.is-boss img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }.arcade-target i { position: absolute; top: -.55rem; width: 130%; height: .25rem; overflow: hidden; border-radius: 999px; background: black; }.arcade-target i b { display: block; height: 100%; background: hsl(var(--cosmic-orange)); }

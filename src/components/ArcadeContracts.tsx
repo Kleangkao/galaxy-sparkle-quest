@@ -24,7 +24,7 @@ export default function ArcadeContracts({ gameState, onBack, onStart }: Props) {
       <section className="arcade-contract-grid">
         {ARCADE_CONTRACTS.map((contract) => {
           const record = gameState.modeRecords.arcadeContracts[contract.id] ?? { bestScore: 0, clears: 0 };
-          const objective = contract.objective === "boss" ? tr("Break the Ahr core", "ทำลายแกนพลัง Ahr") : contract.objective === "energy" ? tr(`Tag ${contract.target} crystal signals`, `ยิงสัญญาณคริสตัล ${contract.target} จุด`) : tr(`Reach ${contract.target.toLocaleString()} points`, `ทำคะแนนให้ถึง ${contract.target.toLocaleString()}`);
+          const objective = contract.objective === "boss" ? tr("Break the Ahr core", "ทำลายแกนพลัง Ahr") : contract.objective === "energy" ? tr(`Collect as many as possible · clear goal ${contract.target}`, `เก็บให้ได้มากที่สุด ผ่านด่านเมื่อได้ ${contract.target} จุด`) : tr(`Score as high as possible · clear goal ${contract.target.toLocaleString()}`, `ทำคะแนนให้ได้มากที่สุด ผ่านด่านเมื่อได้ ${contract.target.toLocaleString()} คะแนน`);
           const effectiveDuration = contract.duration + modifiers.missionTimeBonus;
           return (
             <article key={contract.id} className={`arcade-contract arcade-contract--${contract.accent}`}>
@@ -32,7 +32,7 @@ export default function ArcadeContracts({ gameState, onBack, onStart }: Props) {
               <div className="arcade-contract__copy">
                 <h2>{lang === "th" ? contract.nameTh : contract.name}</h2><p>{tr(contract.briefing, contract.briefingTh)}</p>
                 <div className="arcade-contract__objective"><Crosshair className="h-4 w-4" /><span>{tr("Objective", "เป้าหมาย")}<strong>{objective}</strong></span></div>
-                <div className="arcade-contract__stats"><span><Clock className="h-3.5 w-3.5" />{tr(`Your time ${effectiveDuration}s`, `เวลาของคุณ ${effectiveDuration} วิ`)}</span><span><Trophy className="h-3.5 w-3.5" />{tr(`Best ${record.bestScore.toLocaleString()}`, `สูงสุด ${record.bestScore.toLocaleString()}`)}</span><span><Sparkles className="h-3.5 w-3.5" />{tr(`${record.clears} clears`, `ผ่าน ${record.clears} ครั้ง`)}</span></div>
+                <div className="arcade-contract__stats"><span><Clock className="h-3.5 w-3.5" />{tr(`Time ${effectiveDuration}s`, `เวลา ${effectiveDuration} วิ`)}</span><span><Trophy className="h-3.5 w-3.5" />{tr(`Best ${record.bestScore.toLocaleString()}`, `สูงสุด ${record.bestScore.toLocaleString()}`)}</span><span><Sparkles className="h-3.5 w-3.5" />{tr(`${record.clears} clears`, `ผ่าน ${record.clears} ครั้ง`)}</span></div>
                 <button onClick={() => onStart(contract)}>{tr("Start challenge", "เริ่มภารกิจ")} <ArrowRight className="h-4 w-4" /></button>
               </div>
             </article>

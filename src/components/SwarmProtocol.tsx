@@ -11,7 +11,7 @@ import ModeStartOverlay from "@/components/ModeStartOverlay";
 
 type Point = { x: number; y: number };
 type EnemyKind = "chaser" | "dasher" | "orbiter" | "elite" | "boss";
-type Enemy = Point & { id: number; hp: number; maxHp: number; speed: number; size: number; kind: EnemyKind; timer: number; phase: number };
+type Enemy = Point & { id: number; hp: number; maxHp: number; speed: number; size: number; kind: EnemyKind; timer: number; phase: number; pulseHit?: number };
 type Shot = Point & { id: number; vx: number; vy: number; damage: number };
 type Hazard = Point & { id: number; vx: number; vy: number; size: number; life: number };
 type Drop = Point & { id: number; value: number };
@@ -27,7 +27,7 @@ interface Props {
 interface ArenaState {
   player: Point; hp: number; maxHp: number; enemies: Enemy[]; shots: Shot[]; hazards: Hazard[]; drops: Drop[];
   score: number; energy: number; level: number; elapsed: number; movementDistance: number; nextId: number; fireTimer: number; spawnTimer: number;
-  invulnerable: number; pulseCooldown: number; bossSpawned: boolean; bossDefeated: boolean; bossWarning: number; bossIntro: number;
+  invulnerable: number; pulseCooldown: number; pulseEffect: number; pulseHits: number; pulseHazardsCleared: number; bossSpawned: boolean; bossDefeated: boolean; bossWarning: number; bossIntro: number;
   bossAttackTimer: number; bossAttackPhaseTwo: boolean; bossAttackPending: boolean;
 }
 
@@ -39,6 +39,7 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 const makeArena = (bonusHull = 0): ArenaState => ({
   player: { x: WIDTH / 2, y: HEIGHT / 2 }, hp: 100 + bonusHull, maxHp: 100 + bonusHull, enemies: [], shots: [], hazards: [], drops: [], score: 0,
   energy: 0, level: 1, elapsed: 0, movementDistance: 0, nextId: 1, fireTimer: 0, spawnTimer: 0, invulnerable: 0, pulseCooldown: 0,
+  pulseEffect: 0, pulseHits: 0, pulseHazardsCleared: 0,
   bossSpawned: false, bossDefeated: false, bossWarning: 0, bossIntro: 0,
   bossAttackTimer: 0, bossAttackPhaseTwo: false, bossAttackPending: false,
 });
@@ -101,10 +102,17 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
     const state = arena.current;
     if (!running || effectivePaused || state.pulseCooldown > 0) return;
     const radius = 150 + (gameState.accessibility.aimHelp === "wide" ? 25 : 0);
-    state.enemies = state.enemies.map((enemy) => distance(enemy, state.player) < radius ? { ...enemy, hp: enemy.hp - 45 } : enemy);
+    const pulseHits = state.enemies.filter((enemy) => distance(enemy, state.player) < radius).length;
+    const pulseHazardsCleared = state.hazards.filter((hazard) => distance(hazard, state.player) < radius).length;
+    state.enemies = state.enemies.map((enemy) => distance(enemy, state.player) < radius ? { ...enemy, hp: enemy.hp - 45, pulseHit: 0.45 } : enemy);
     state.hazards = state.hazards.filter((hazard) => distance(hazard, state.player) >= radius);
     state.pulseCooldown = 9 * upgrades.current.pulseCooldown;
+    state.pulseEffect = 0.7;
+    state.pulseHits = pulseHits;
+    state.pulseHazardsCleared = pulseHazardsCleared;
+    setFrame({ ...state, enemies: [...state.enemies], hazards: [...state.hazards], player: { ...state.player } });
     playImpactSound();
+    pulseGamepad(110, pulseHits || pulseHazardsCleared ? 0.65 : 0.3);
   }, [gameState.accessibility.aimHelp, effectivePaused, running]);
   const combatInput = useCombatInput(activatePulse);
   const inputVector = combatInput.vector;
@@ -119,7 +127,8 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       lastTickRef.current = now;
       const dt = wallDelta * gameState.accessibility.combatSpeed;
       const state = arena.current;
-      state.elapsed += dt; state.fireTimer -= dt; state.spawnTimer -= dt; state.invulnerable -= dt; state.pulseCooldown -= dt; state.bossWarning -= dt; state.bossIntro -= dt; state.bossAttackTimer -= dt;
+      state.elapsed += dt; state.fireTimer -= dt; state.spawnTimer -= dt; state.invulnerable -= dt; state.pulseCooldown -= dt; state.pulseEffect -= dt; state.bossWarning -= dt; state.bossIntro -= dt; state.bossAttackTimer -= dt;
+      state.enemies.forEach((enemy) => { enemy.pulseHit = Math.max(0, (enemy.pulseHit ?? 0) - dt); });
 
       const { x: dx, y: dy } = inputVector.current;
       if (dx || dy) {
@@ -295,8 +304,10 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       {frame.drops.map((drop) => <span key={drop.id} className="combat-drop" style={{ left: `${drop.x / WIDTH * 100}%`, top: `${drop.y / HEIGHT * 100}%` }}>◆</span>)}
       {frame.shots.map((shot) => <span key={shot.id} className="combat-shot" style={{ left: `${shot.x / WIDTH * 100}%`, top: `${shot.y / HEIGHT * 100}%` }} />)}
       {frame.hazards.map((hazard) => <span key={hazard.id} className="combat-hazard" style={{ left: `${hazard.x / WIDTH * 100}%`, top: `${hazard.y / HEIGHT * 100}%` }} />)}
-      {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : enemy.kind === "elite" ? "◆" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
+      {frame.enemies.map((enemy) => <span key={enemy.id} className={`combat-enemy is-${enemy.kind} ${(enemy.pulseHit ?? 0) > 0 ? "is-pulse-hit" : ""} ${enemy.kind === "dasher" && enemy.timer < 0.35 && enemy.timer >= 0 ? "is-telegraph" : ""} ${enemy.kind === "boss" && frame.bossWarning > 0 ? "is-casting" : ""}`} style={{ left: `${enemy.x / WIDTH * 100}%`, top: `${enemy.y / HEIGHT * 100}%`, width: enemy.size * 2, height: enemy.size * 2 }}>{enemy.kind === "boss" ? <img src="/assets/galia-current/ahr-boss-master-v3.webp" alt="Ahr boss" /> : <b>{enemy.kind === "dasher" ? "›" : enemy.kind === "orbiter" ? "◎" : enemy.kind === "elite" ? "◆" : ""}</b>}{enemy.kind === "boss" && <i><b style={{ width: `${enemy.hp / enemy.maxHp * 100}%` }} /></i>}</span>)}
+      {frame.pulseEffect > 0 && <span className="combat-pulse-wave" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }} />}
       <span className="combat-player" style={{ left: `${frame.player.x / WIDTH * 100}%`, top: `${frame.player.y / HEIGHT * 100}%` }}><img src={pilot.image} alt="" /></span>
+      {frame.pulseEffect > 0 && <div className="combat-pulse-feedback" role="status" aria-live="polite">{frame.pulseHits || frame.pulseHazardsCleared ? tr(`Shock Pulse hit ${frame.pulseHits} and cleared ${frame.pulseHazardsCleared} hazards`, `คลื่นกระแทกโดนศัตรู ${frame.pulseHits} ตัว และสลายกระสุน ${frame.pulseHazardsCleared} ลูก`) : tr("Shock Pulse fired. No targets nearby.", "ปล่อยคลื่นกระแทกแล้ว แต่ไม่มีเป้าหมายอยู่ใกล้")}</div>}
       {!running && !ended && (
         <ModeStartOverlay
           mode="swarm"
@@ -318,7 +329,7 @@ export default function SwarmProtocol({ gameState, suspended = false, onActiveCh
       {ended && <div className="combat-run-finished" aria-hidden="true">{won ? tr("AHR CORE CLEARED", "ทำลายแกน AHR แล้ว") : tr("RUN COMPLETE", "จบรอบแล้ว")}</div>}
     </div></div>
     <div className="combat-touch" aria-label={tr("Movement controls", "ปุ่มเคลื่อนที่")}><button {...combatInput.directionHandlers("up")} aria-label={tr("Move up", "ขึ้น")}>▲</button><button {...combatInput.directionHandlers("left")} aria-label={tr("Move left", "ซ้าย")}>◀</button><button {...combatInput.directionHandlers("down")} aria-label={tr("Move down", "ลง")}>▼</button><button {...combatInput.directionHandlers("right")} aria-label={tr("Move right", "ขวา")}>▶</button></div>
-    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว ใช้อนาล็อกซ้ายเพื่อขยับ") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มบนหน้าจอเพื่อขยับ") : tr("WASD / arrows · Move", "ใช้ WASD หรือปุ่มลูกศรเพื่อขยับ")}</span><button className="combat-pulse-control" onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0} title={tr("45 damage and clears nearby hazard shots", "สร้างความเสียหาย 45 และทำลายกระสุนอันตรายรอบตัว")}><strong>Space / A · {tr("Shock Pulse", "คลื่นกระแทก")}</strong><small>{frame.pulseCooldown > 0 ? tr(`Ready in ${Math.ceil(frame.pulseCooldown)}s`, `ใช้อีกครั้งได้ใน ${Math.ceil(frame.pulseCooldown)} วิ`) : tr("45 damage · clears nearby hazards", "ความเสียหาย 45 ทำลายกระสุนรอบตัว")}</small></button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
+    <footer className="combat-controls"><span>{combatInput.source === "controller" ? tr("Controller connected · Left stick moves", "เชื่อมต่อจอยแล้ว ใช้อนาล็อกซ้ายเพื่อขยับ") : combatInput.source === "touch" ? tr("Touch controls active", "ใช้ปุ่มบนหน้าจอเพื่อขยับ") : tr("WASD / arrows · Move", "ใช้ WASD หรือปุ่มลูกศรเพื่อขยับ")}</span><button className={`combat-pulse-control ${frame.pulseCooldown > 0 ? "is-cooling" : "is-ready"}`} onClick={activatePulse} disabled={!running || effectivePaused || frame.pulseCooldown > 0} title={tr("Damages nearby enemies and clears nearby hazard shots", "โจมตีศัตรูและสลายกระสุนอันตรายรอบตัว")} aria-keyshortcuts="Space"><Zap className="h-4 w-4" /><span><strong>Space / A · {tr("Shock Pulse", "คลื่นกระแทก")}</strong><small>{frame.pulseCooldown > 0 ? tr(`Charging · ${Math.ceil(frame.pulseCooldown)}s`, `กำลังชาร์จ อีก ${Math.ceil(frame.pulseCooldown)} วิ`) : tr("READY · blast nearby enemies and hazards", "พร้อมใช้ โจมตีศัตรูและสลายกระสุนรอบตัว")}</small></span></button><button onClick={() => setPaused((value) => !value)} disabled={!running || suspended}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}{paused ? tr("Resume", "เล่นต่อ") : tr("Pause", "หยุด")}</button></footer>
     {boss && <div className="boss-banner">AHR · {tr(runVariant.bossPattern === "aimed-fan" ? "FAN BURST" : "NOVA RING", runVariant.bossPattern === "aimed-fan" ? "ยิงพัดกว้าง" : "คลื่นวงแหวน")} · {tr(`${Math.ceil(boss.hp)} integrity`, `พลัง ${Math.ceil(boss.hp)}`)}{boss.hp <= boss.maxHp * 0.5 ? tr(" · PHASE 2", " · ช่วงที่ 2") : ""}{frame.bossWarning > 0 ? tr(" · ATTACK INCOMING", " · กำลังโจมตี") : ""}</div>}
   </main>;
 }
